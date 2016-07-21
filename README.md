@@ -1,5 +1,5 @@
 <h1 align="center">Renderium</h1>
-<h4 align="center">Canvas and WebGl renderer</h2>
+<h4 align="center">Canvas and WebGL renderer</h2>
 
 <p align="center">
   <a href="https://github.com/feross/standard" target="_blank">
