@@ -1,0 +1,48 @@
+{
+  "name": "renderium",
+  "version": "1.0.0",
+  "description": "Canvas and WebGL renderer",
+  "keywords": [
+    "canvas",
+    "webgl",
+    "render",
+    "renderer"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/broadsw0rd/renderium",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/broadsw0rd/renderium"
+  },
+  "bugs": {
+    "url": "https://github.com/broadsw0rd/renderium/issues",
+    "email": "broadsw.rd@yandex.ru"
+  },
+  "author": {
+    "name": "Vladimir Bykov",
+    "email": "broadsw.rd@yandex.ru",
+    "url": "https://github.com/broadsw0rd"
+  },
+  "files": [
+    "dist"
+  ],
+  "main": "dist/renderium.js",
+  "devDependencies": {
+    "babel-preset-es2015-loose-rollup": "^7.0.0",
+    "rollup": "^0.34.7",
+    "rollup-plugin-babel": "^2.6.1",
+    "snazzy": "^4.0.1",
+    "uglify-js": "^2.6.2"
+  },
+  "babel": {
+    "presets": [
+      "es2015-loose-rollup"
+    ]
+  },
+  "scripts": {
+    "check": "snazzy src/*.js",
+    "build": "rollup -c",
+    "min": "uglifyjs -c -m -- dist/renderium.js > dist/renderium.min.js"
+  },
+  "dependencies": {}
+}
