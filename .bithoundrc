@@ -1,0 +1,13 @@
+{
+  "ignore": [
+    "**/dist/**"
+  ],
+  "critics": {
+    "lint": {
+      "engine": "standard"
+    },
+    "wc": { 
+      "limit": 800 
+    }
+  }
+}
