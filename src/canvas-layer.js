@@ -1,0 +1,176 @@
+import Vector from 'vectory'
+import * as helpers from './helpers.js'
+
+// -------------------------------------
+// CanvasLayer
+// -------------------------------------
+
+class CanvasLayer {
+  constructor ({ antialiasing }) {
+    this.antialiasing = Boolean(antialiasing)
+    this.canvas = document.createElement('canvas')
+    this.ctx = this.canvas.getContext('2d')
+    this.scale({
+      width: CanvasLayer.DEFAULT_WIDTH,
+      height: CanvasLayer.DEFAULT_HEIGHT
+    })
+    this.borders = [new Vector(0, 0), new Vector(0, 0)]
+  }
+
+  scale ({ width, height }) {
+    this.width = width || CanvasLayer.DEFAULT_WIDTH
+    this.height = height || CanvasLayer.DEFAULT_HEIGHT
+
+    this.canvas.removeAttribute('width')
+    this.canvas.removeAttribute('height')
+    this.canvas.removeAttribute('style')
+
+    this.ctx.canvas.width = this.width
+    this.ctx.canvas.height = this.height
+    this.ctx.canvas.style.width = `${this.width}px`
+    this.ctx.canvas.style.height = `${this.height}px`
+
+    if (window.devicePixelRatio) {
+      this.ctx.canvas.width = this.width *= window.devicePixelRatio
+      this.ctx.canvas.height = this.height *= window.devicePixelRatio
+    }
+
+    if (!this.antialiasing) {
+      this.ctx.translate(0.5, 0.5)
+    }
+  }
+
+  clear () {
+    this.computeBorders()
+    this.ctx.save()
+    this.ctx.setTransform(1, 0, 0, 1, 0, 0)
+    this.ctx.clearRect(
+      this.borders[0].x - CanvasLayer.EXTRA_PIXELS,
+      this.borders[0].y - CanvasLayer.EXTRA_PIXELS,
+      Math.abs(this.borders[1].x - this.borders[0].x) + CanvasLayer.EXTRA_PIXELS * 2,
+      Math.abs(this.borders[1].y - this.borders[0].y) + CanvasLayer.EXTRA_PIXELS * 2
+    )
+    this.ctx.restore()
+  }
+
+  computeBorders () {
+    var minX = this.width
+    var minY = this.height
+    var maxX = 0
+    var maxY = 0
+
+    this.borders[0].set(minX, minY)
+    this.borders[1].set(maxX, maxY)
+  }
+
+  drawArc ({ position, radius, startAngle, endAngle, color, width = 1 }) {
+    this.ctx.strokeStyle = color
+    this.ctx.lineWidth = width
+
+    this.ctx.beginPath()
+    this.ctx.arc(position.x, position.y, radius, startAngle, endAngle)
+    this.ctx.stroke()
+  }
+
+  drawArea ({ points, threshold, color, fillColor, width = 1 }) {
+    this.drawPolyline({
+      points,
+      color,
+      width
+    })
+
+    this.ctx.fillStyle = fillColor
+
+    this.ctx.lineTo(points[points.length - 1].x, threshold)
+    this.ctx.lineTo(points[0].x, threshold)
+    this.ctx.closePath()
+    this.ctx.fill()
+  }
+
+  drawCircle ({ position, radius, color, fillColor, width = 1 }) {
+    this.drawArc({
+      position,
+      radius,
+      startAngle: 0,
+      endAngle: 2 * Math.PI,
+      color,
+      width
+    })
+
+    if (fillColor) {
+      this.ctx.fillStyle = fillColor
+      this.ctx.fill()
+    }
+  }
+
+  drawImage ({ position, image, width = image.width, height = image.height, opacity = 1 }) {
+    var defaultAlpha = this.ctx.globalAlpha
+    this.ctx.globalAlpha = opacity
+    this.ctx.drawImage(image, position.x - width / 2, position.y - height / 2, width, height)
+    this.ctx.globalAlpha = defaultAlpha
+  }
+
+  drawPolygon ({ points, color, fillColor, width = 1 }) {
+    this.drawPolyline({
+      points: points.concat(points[0]),
+      color,
+      width
+    })
+
+    if (fillColor) {
+      this.ctx.fillStyle = fillColor
+      this.ctx.fill()
+    }
+  }
+
+  drawPolyline ({ points, color, lineDash = [], width = 1 }) {
+    this.ctx.strokeStyle = color
+    this.ctx.lineWidth = width
+
+    this.ctx.beginPath()
+    this.ctx.moveTo(points[0].x, points[0].y)
+
+    for (var i = 1, point; i < points.length; i++) {
+      point = points[i]
+      this.ctx.lineTo(point.x, point.y)
+    }
+
+    this.ctx.setLineDash(lineDash)
+
+    this.ctx.stroke()
+  }
+
+  drawRect ({ position, width, height, color, fillColor, strokeWidth = 1 }) {
+    this.drawPolygon({
+      points: [
+        new Vector(position.x - width / 2, position.y + height / 2),
+        new Vector(position.x + width / 2, position.y + height / 2),
+        new Vector(position.x + width / 2, position.y - height / 2),
+        new Vector(position.x - width / 2, position.y - height / 2)
+      ],
+      color: color,
+      fillColor: fillColor,
+      width: strokeWidth
+    })
+  }
+
+  drawText ({ position, text, color, font, size, align = 'center', baseline = 'middle' }) {
+    this.ctx.fillStyle = color
+    this.ctx.font = `${size * helpers.getDevicePixelRatio()}px ${font}`
+    this.ctx.textAlign = align
+    this.ctx.textBaseline = baseline
+
+    this.ctx.fillText(text, position.x, position.y)
+  }
+
+  measureText ({ text }) {
+    return this.ctx.measureText(text).width
+  }
+}
+
+CanvasLayer.DEFAULT_WIDTH = 100
+CanvasLayer.DEFAULT_HEIGHT = 100
+CanvasLayer.GRADIENT_DIRECTION_TOP_TO_BOT = 'top-to-bot'
+CanvasLayer.EXTRA_PIXELS = 10
+
+export default CanvasLayer
