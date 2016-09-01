@@ -4,11 +4,7 @@
 	(global.Renderium = factory());
 }(this, (function () { 'use strict';
 
-var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {}
-
-function interopDefault(ex) {
-	return ex && typeof ex === 'object' && 'default' in ex ? ex['default'] : ex;
-}
+var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
 
 function createCommonjsModule(fn, module) {
 	return module = { exports: {} }, fn(module, module.exports), module.exports;
@@ -358,8 +354,6 @@ var vectory = createCommonjsModule(function (module, exports) {
 });
 });
 
-var Vector = interopDefault(vectory);
-
 function getDevicePixelRatio() {
   return window.devicePixelRatio ? Math.floor(window.devicePixelRatio) : 1;
 }
@@ -386,7 +380,7 @@ var CanvasLayer = function () {
       width: CanvasLayer.DEFAULT_WIDTH,
       height: CanvasLayer.DEFAULT_HEIGHT
     });
-    this.borders = [new Vector(0, 0), new Vector(0, 0)];
+    this.borders = [new vectory(0, 0), new vectory(0, 0)];
   }
 
   CanvasLayer.prototype.scale = function scale(_ref2) {
@@ -564,7 +558,7 @@ var CanvasLayer = function () {
     var strokeWidth = _ref9$strokeWidth === undefined ? 1 : _ref9$strokeWidth;
 
     this.drawPolygon({
-      points: [new Vector(position.x - width / 2, position.y + height / 2), new Vector(position.x + width / 2, position.y + height / 2), new Vector(position.x + width / 2, position.y - height / 2), new Vector(position.x - width / 2, position.y - height / 2)],
+      points: [new vectory(position.x - width / 2, position.y + height / 2), new vectory(position.x + width / 2, position.y + height / 2), new vectory(position.x + width / 2, position.y - height / 2), new vectory(position.x - width / 2, position.y - height / 2)],
       color: color,
       fillColor: fillColor,
       width: strokeWidth
