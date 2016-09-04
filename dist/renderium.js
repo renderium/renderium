@@ -354,15 +354,50 @@ var vectory = createCommonjsModule(function (module, exports) {
 });
 });
 
-function getDevicePixelRatio() {
-  return window.devicePixelRatio ? Math.floor(window.devicePixelRatio) : 1;
-}
-
 var classCallCheck = function (instance, Constructor) {
   if (!(instance instanceof Constructor)) {
     throw new TypeError("Cannot call a class as a function");
   }
 };
+
+var imageStatuses = {};
+var images = {};
+
+var ImageLoader = function () {
+  function ImageLoader() {
+    classCallCheck(this, ImageLoader);
+  }
+
+  ImageLoader.prototype.getImage = function getImage(url) {
+    return images[url];
+  };
+
+  ImageLoader.prototype.getStatus = function getStatus(url) {
+    return imageStatuses[url];
+  };
+
+  ImageLoader.prototype.load = function load(url) {
+    var status = this.getStatus(url);
+    if (status !== ImageLoader.IMAGE_STATUS_LOADING && status !== ImageLoader.IMAGE_STATUS_LOADED) {
+      imageStatuses[url] = ImageLoader.IMAGE_STATUS_LOADING;
+      var image = new window.Image();
+      image.onload = function onload() {
+        imageStatuses[url] = ImageLoader.IMAGE_STATUS_LOADED;
+        images[url] = this;
+      };
+      image.src = url;
+    }
+  };
+
+  return ImageLoader;
+}();
+
+ImageLoader.IMAGE_STATUS_LOADING = 1;
+ImageLoader.IMAGE_STATUS_LOADED = 2;
+
+function getDevicePixelRatio() {
+  return window.devicePixelRatio ? Math.floor(window.devicePixelRatio) : 1;
+}
 
 // -------------------------------------
 // CanvasLayer
@@ -381,6 +416,7 @@ var CanvasLayer = function () {
       height: CanvasLayer.DEFAULT_HEIGHT
     });
     this.borders = [new vectory(0, 0), new vectory(0, 0)];
+    this.imageLoader = new ImageLoader();
   }
 
   CanvasLayer.prototype.scale = function scale(_ref2) {
@@ -498,6 +534,17 @@ var CanvasLayer = function () {
     var height = _ref6$height === undefined ? image.height : _ref6$height;
     var _ref6$opacity = _ref6.opacity;
     var opacity = _ref6$opacity === undefined ? 1 : _ref6$opacity;
+
+    if (typeof image === 'string') {
+      if (this.imageLoader.getStatus(image) === ImageLoader.IMAGE_STATUS_LOADED) {
+        image = this.imageLoader.getImage(image);
+        width = image.width;
+        height = image.height;
+      } else {
+        this.imageLoader.load(image);
+        return;
+      }
+    }
 
     var defaultAlpha = this.ctx.globalAlpha;
     this.ctx.globalAlpha = opacity;

@@ -1,4 +1,5 @@
 import Vector from 'vectory'
+import ImageLoader from './image-loader.js'
 import * as helpers from './helpers.js'
 
 // -------------------------------------
@@ -15,6 +16,7 @@ class CanvasLayer {
       height: CanvasLayer.DEFAULT_HEIGHT
     })
     this.borders = [new Vector(0, 0), new Vector(0, 0)]
+    this.imageLoader = new ImageLoader()
   }
 
   scale ({ width, height }) {
@@ -104,6 +106,17 @@ class CanvasLayer {
   }
 
   drawImage ({ position, image, width = image.width, height = image.height, opacity = 1 }) {
+    if (typeof image === 'string') {
+      if (this.imageLoader.getStatus(image) === ImageLoader.IMAGE_STATUS_LOADED) {
+        image = this.imageLoader.getImage(image)
+        width = image.width
+        height = image.height
+      } else {
+        this.imageLoader.load(image)
+        return
+      }
+    }
+
     var defaultAlpha = this.ctx.globalAlpha
     this.ctx.globalAlpha = opacity
     this.ctx.drawImage(image, position.x - width / 2, position.y - height / 2, width, height)
