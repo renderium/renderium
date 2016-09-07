@@ -404,6 +404,10 @@ function getDevicePixelRatio() {
 // -------------------------------------
 
 var Gradient = function () {
+  Gradient.isGradient = function isGradient(color) {
+    return color && color._isGradient;
+  };
+
   function Gradient(_ref) {
     var start = _ref.start;
     var end = _ref.end;
@@ -416,6 +420,7 @@ var Gradient = function () {
     this.from = from;
     this.to = to;
 
+    this._isGradient = true;
     this._gradient = null;
   }
 
@@ -502,6 +507,10 @@ var CanvasLayer = function () {
     this.borders[1].set(maxX, maxY);
   };
 
+  CanvasLayer.prototype.getColor = function getColor(color) {
+    return Gradient.isGradient(color) ? color.createGradient(this) : color;
+  };
+
   CanvasLayer.prototype.drawArc = function drawArc(_ref5) {
     var position = _ref5.position;
     var radius = _ref5.radius;
@@ -511,7 +520,7 @@ var CanvasLayer = function () {
     var _ref5$width = _ref5.width;
     var width = _ref5$width === undefined ? 1 : _ref5$width;
 
-    this.ctx.strokeStyle = color;
+    this.ctx.strokeStyle = this.getColor(color);
     this.ctx.lineWidth = width;
 
     this.ctx.beginPath();
@@ -533,7 +542,7 @@ var CanvasLayer = function () {
       width: width
     });
 
-    this.ctx.fillStyle = fillColor;
+    this.ctx.fillStyle = this.getColor(fillColor);
 
     this.ctx.lineTo(points[points.length - 1].x, threshold);
     this.ctx.lineTo(points[0].x, threshold);
@@ -559,7 +568,7 @@ var CanvasLayer = function () {
     });
 
     if (fillColor) {
-      this.ctx.fillStyle = fillColor;
+      this.ctx.fillStyle = this.getColor(fillColor);
       this.ctx.fill();
     }
   };
@@ -605,7 +614,7 @@ var CanvasLayer = function () {
     });
 
     if (fillColor) {
-      this.ctx.fillStyle = fillColor;
+      this.ctx.fillStyle = this.getColor(fillColor);
       this.ctx.fill();
     }
   };
@@ -618,7 +627,7 @@ var CanvasLayer = function () {
     var _ref10$width = _ref10.width;
     var width = _ref10$width === undefined ? 1 : _ref10$width;
 
-    this.ctx.strokeStyle = color;
+    this.ctx.strokeStyle = this.getColor(color);
     this.ctx.lineWidth = width;
 
     this.ctx.beginPath();
@@ -662,7 +671,7 @@ var CanvasLayer = function () {
     var _ref12$baseline = _ref12.baseline;
     var baseline = _ref12$baseline === undefined ? 'middle' : _ref12$baseline;
 
-    this.ctx.fillStyle = color;
+    this.ctx.fillStyle = this.getColor(color);
     this.ctx.font = size * getDevicePixelRatio() + 'px ' + font;
     this.ctx.textAlign = align;
     this.ctx.textBaseline = baseline;

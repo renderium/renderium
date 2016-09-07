@@ -7,12 +7,17 @@ import * as helpers from './helpers.js'
 // -------------------------------------
 
 class Gradient {
+  static isGradient (color) {
+    return color && color._isGradient
+  }
+
   constructor ({ start, end, from, to }) {
     this.start = start
     this.end = end
     this.from = from
     this.to = to
 
+    this._isGradient = true
     this._gradient = null
   }
 
@@ -91,8 +96,12 @@ class CanvasLayer {
     this.borders[1].set(maxX, maxY)
   }
 
+  getColor (color) {
+    return Gradient.isGradient(color) ? color.createGradient(this) : color
+  }
+
   drawArc ({ position, radius, startAngle, endAngle, color, width = 1 }) {
-    this.ctx.strokeStyle = color
+    this.ctx.strokeStyle = this.getColor(color)
     this.ctx.lineWidth = width
 
     this.ctx.beginPath()
@@ -107,7 +116,7 @@ class CanvasLayer {
       width
     })
 
-    this.ctx.fillStyle = fillColor
+    this.ctx.fillStyle = this.getColor(fillColor)
 
     this.ctx.lineTo(points[points.length - 1].x, threshold)
     this.ctx.lineTo(points[0].x, threshold)
@@ -126,7 +135,7 @@ class CanvasLayer {
     })
 
     if (fillColor) {
-      this.ctx.fillStyle = fillColor
+      this.ctx.fillStyle = this.getColor(fillColor)
       this.ctx.fill()
     }
   }
@@ -157,13 +166,13 @@ class CanvasLayer {
     })
 
     if (fillColor) {
-      this.ctx.fillStyle = fillColor
+      this.ctx.fillStyle = this.getColor(fillColor)
       this.ctx.fill()
     }
   }
 
   drawPolyline ({ points, color, lineDash = [], width = 1 }) {
-    this.ctx.strokeStyle = color
+    this.ctx.strokeStyle = this.getColor(color)
     this.ctx.lineWidth = width
 
     this.ctx.beginPath()
@@ -194,7 +203,7 @@ class CanvasLayer {
   }
 
   drawText ({ position, text, color, font, size, align = 'center', baseline = 'middle' }) {
-    this.ctx.fillStyle = color
+    this.ctx.fillStyle = this.getColor(color)
     this.ctx.font = `${size * helpers.getDevicePixelRatio()}px ${font}`
     this.ctx.textAlign = align
     this.ctx.textBaseline = baseline
