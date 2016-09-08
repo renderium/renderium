@@ -174,6 +174,7 @@ class CanvasLayer {
   drawPolyline ({ points, color, lineDash = [], width = 1 }) {
     this.ctx.strokeStyle = this.getColor(color)
     this.ctx.lineWidth = width
+    this.ctx.lineJoin = 'round'
 
     this.ctx.beginPath()
     this.ctx.moveTo(points[0].x, points[0].y)
