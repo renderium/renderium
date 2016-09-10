@@ -109,10 +109,12 @@ class CanvasLayer {
     if (typeof image === 'string') {
       if (this.imageLoader.getStatus(image) === ImageLoader.IMAGE_STATUS_LOADED) {
         image = this.imageLoader.getImage(image)
-        width = image.width
-        height = image.height
-      } else {
+        width = width || image.width
+        height = height || image.height
+      } else if (this.imageLoader.getStatus(image) !== ImageLoader.IMAGE_STATUS_LOADING) {
         this.imageLoader.load(image)
+        return
+      } else {
         return
       }
     }
