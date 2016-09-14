@@ -38,15 +38,14 @@ class CanvasLayer {
     return new Gradient({ start, end, from, to })
   }
 
-  constructor ({ antialiasing }) {
+  constructor ({ antialiasing, width, height }) {
     this.antialiasing = Boolean(antialiasing)
     this.canvas = document.createElement('canvas')
     this.ctx = this.canvas.getContext('2d')
     this.scale({
-      width: CanvasLayer.DEFAULT_WIDTH,
-      height: CanvasLayer.DEFAULT_HEIGHT
+      width: width || CanvasLayer.DEFAULT_WIDTH,
+      height: height || CanvasLayer.DEFAULT_HEIGHT
     })
-    this.borders = [new Vector(0, 0), new Vector(0, 0)]
     this.imageLoader = new ImageLoader()
   }
 
@@ -77,23 +76,8 @@ class CanvasLayer {
     this.computeBorders()
     this.ctx.save()
     this.ctx.setTransform(1, 0, 0, 1, 0, 0)
-    this.ctx.clearRect(
-      this.borders[0].x - CanvasLayer.EXTRA_PIXELS,
-      this.borders[0].y - CanvasLayer.EXTRA_PIXELS,
-      Math.abs(this.borders[1].x - this.borders[0].x) + CanvasLayer.EXTRA_PIXELS * 2,
-      Math.abs(this.borders[1].y - this.borders[0].y) + CanvasLayer.EXTRA_PIXELS * 2
-    )
+    this.ctx.clearRect(0, 0, this.width, this.height)
     this.ctx.restore()
-  }
-
-  computeBorders () {
-    var minX = this.width
-    var minY = this.height
-    var maxX = 0
-    var maxY = 0
-
-    this.borders[0].set(minX, minY)
-    this.borders[1].set(maxX, maxY)
   }
 
   getColor (color) {
@@ -212,8 +196,17 @@ class CanvasLayer {
     this.ctx.fillText(text, position.x, position.y)
   }
 
-  measureText ({ text }) {
-    return this.ctx.measureText(text).width
+  measureText ({ text, font, size }) {
+    var width
+    if (font && size) {
+      var defaultFont = this.ctx.font
+      this.ctx.font = `${size * helpers.getDevicePixelRatio()}px ${font}`
+      width = this.ctx.measureText(text).width
+      this.ctx.font = defaultFont
+    } else {
+      width = this.ctx.measureText(text).width
+    }
+    return width
   }
 }
 

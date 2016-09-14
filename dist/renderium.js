@@ -450,16 +450,17 @@ var CanvasLayer = function () {
 
   function CanvasLayer(_ref3) {
     var antialiasing = _ref3.antialiasing;
+    var width = _ref3.width;
+    var height = _ref3.height;
     classCallCheck(this, CanvasLayer);
 
     this.antialiasing = Boolean(antialiasing);
     this.canvas = document.createElement('canvas');
     this.ctx = this.canvas.getContext('2d');
     this.scale({
-      width: CanvasLayer.DEFAULT_WIDTH,
-      height: CanvasLayer.DEFAULT_HEIGHT
+      width: width || CanvasLayer.DEFAULT_WIDTH,
+      height: height || CanvasLayer.DEFAULT_HEIGHT
     });
-    this.borders = [new vectory(0, 0), new vectory(0, 0)];
     this.imageLoader = new ImageLoader();
   }
 
@@ -493,18 +494,8 @@ var CanvasLayer = function () {
     this.computeBorders();
     this.ctx.save();
     this.ctx.setTransform(1, 0, 0, 1, 0, 0);
-    this.ctx.clearRect(this.borders[0].x - CanvasLayer.EXTRA_PIXELS, this.borders[0].y - CanvasLayer.EXTRA_PIXELS, Math.abs(this.borders[1].x - this.borders[0].x) + CanvasLayer.EXTRA_PIXELS * 2, Math.abs(this.borders[1].y - this.borders[0].y) + CanvasLayer.EXTRA_PIXELS * 2);
+    this.ctx.clearRect(0, 0, this.width, this.height);
     this.ctx.restore();
-  };
-
-  CanvasLayer.prototype.computeBorders = function computeBorders() {
-    var minX = this.width;
-    var minY = this.height;
-    var maxX = 0;
-    var maxY = 0;
-
-    this.borders[0].set(minX, minY);
-    this.borders[1].set(maxX, maxY);
   };
 
   CanvasLayer.prototype.getColor = function getColor(color) {
@@ -682,8 +673,19 @@ var CanvasLayer = function () {
 
   CanvasLayer.prototype.measureText = function measureText(_ref13) {
     var text = _ref13.text;
+    var font = _ref13.font;
+    var size = _ref13.size;
 
-    return this.ctx.measureText(text).width;
+    var width;
+    if (font && size) {
+      var defaultFont = this.ctx.font;
+      this.ctx.font = size * getDevicePixelRatio() + 'px ' + font;
+      width = this.ctx.measureText(text).width;
+      this.ctx.font = defaultFont;
+    } else {
+      width = this.ctx.measureText(text).width;
+    }
+    return width;
   };
 
   return CanvasLayer;
