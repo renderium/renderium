@@ -1,10 +1,11 @@
 import Vector from 'vectory'
 import ImageLoader from './image-loader.js'
-import * as helpers from './helpers.js'
 
 // -------------------------------------
 // CanvasLayer
 // -------------------------------------
+
+const PIXEL_RATIO = window.devicePixelRatio || 1
 
 class Gradient {
   static isGradient (color) {
@@ -63,8 +64,9 @@ class CanvasLayer {
     this.ctx.canvas.style.height = `${this.height}px`
 
     if (window.devicePixelRatio) {
-      this.ctx.canvas.width = this.width *= window.devicePixelRatio
-      this.ctx.canvas.height = this.height *= window.devicePixelRatio
+      this.ctx.canvas.width = this.width * PIXEL_RATIO
+      this.ctx.canvas.height = this.height * PIXEL_RATIO
+      this.ctx.scale(PIXEL_RATIO, PIXEL_RATIO)
     }
 
     if (!this.antialiasing) {
@@ -73,11 +75,7 @@ class CanvasLayer {
   }
 
   clear () {
-    this.computeBorders()
-    this.ctx.save()
-    this.ctx.setTransform(1, 0, 0, 1, 0, 0)
     this.ctx.clearRect(0, 0, this.width, this.height)
-    this.ctx.restore()
   }
 
   getColor (color) {
@@ -191,7 +189,7 @@ class CanvasLayer {
 
   drawText ({ position, text, color, font, size, align = 'center', baseline = 'middle' }) {
     this.ctx.fillStyle = this.getColor(color)
-    this.ctx.font = `${size * helpers.getDevicePixelRatio()}px ${font}`
+    this.ctx.font = `${size}px ${font}`
     this.ctx.textAlign = align
     this.ctx.textBaseline = baseline
 
@@ -202,7 +200,7 @@ class CanvasLayer {
     var width
     if (font && size) {
       var defaultFont = this.ctx.font
-      this.ctx.font = `${size * helpers.getDevicePixelRatio()}px ${font}`
+      this.ctx.font = `${size}px ${font}`
       width = this.ctx.measureText(text).width
       this.ctx.font = defaultFont
     } else {
