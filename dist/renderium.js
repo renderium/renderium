@@ -395,13 +395,11 @@ var ImageLoader = function () {
 ImageLoader.IMAGE_STATUS_LOADING = 1;
 ImageLoader.IMAGE_STATUS_LOADED = 2;
 
-function getDevicePixelRatio() {
-  return window.devicePixelRatio ? Math.floor(window.devicePixelRatio) : 1;
-}
-
 // -------------------------------------
 // CanvasLayer
 // -------------------------------------
+
+var PIXEL_RATIO = window.devicePixelRatio || 1;
 
 var Gradient = function () {
   Gradient.isGradient = function isGradient(color) {
@@ -481,8 +479,9 @@ var CanvasLayer = function () {
     this.ctx.canvas.style.height = this.height + 'px';
 
     if (window.devicePixelRatio) {
-      this.ctx.canvas.width = this.width *= window.devicePixelRatio;
-      this.ctx.canvas.height = this.height *= window.devicePixelRatio;
+      this.ctx.canvas.width = this.width * PIXEL_RATIO;
+      this.ctx.canvas.height = this.height * PIXEL_RATIO;
+      this.ctx.scale(PIXEL_RATIO, PIXEL_RATIO);
     }
 
     if (!this.antialiasing) {
@@ -491,12 +490,10 @@ var CanvasLayer = function () {
   };
 
   CanvasLayer.prototype.clear = function clear() {
-    this.computeBorders();
-    this.ctx.save();
-    this.ctx.setTransform(1, 0, 0, 1, 0, 0);
     this.ctx.clearRect(0, 0, this.width, this.height);
-    this.ctx.restore();
   };
+
+  CanvasLayer.prototype.redraw = function redraw() {};
 
   CanvasLayer.prototype.getColor = function getColor(color) {
     return Gradient.isGradient(color) ? color.createGradient(this) : color;
@@ -666,7 +663,7 @@ var CanvasLayer = function () {
     var baseline = _ref12$baseline === undefined ? 'middle' : _ref12$baseline;
 
     this.ctx.fillStyle = this.getColor(color);
-    this.ctx.font = size * getDevicePixelRatio() + 'px ' + font;
+    this.ctx.font = size + 'px ' + font;
     this.ctx.textAlign = align;
     this.ctx.textBaseline = baseline;
 
@@ -681,7 +678,7 @@ var CanvasLayer = function () {
     var width;
     if (font && size) {
       var defaultFont = this.ctx.font;
-      this.ctx.font = size * getDevicePixelRatio() + 'px ' + font;
+      this.ctx.font = size + 'px ' + font;
       width = this.ctx.measureText(text).width;
       this.ctx.font = defaultFont;
     } else {
@@ -695,13 +692,101 @@ var CanvasLayer = function () {
 
 CanvasLayer.DEFAULT_WIDTH = 100;
 CanvasLayer.DEFAULT_HEIGHT = 100;
-CanvasLayer.GRADIENT_DIRECTION_TOP_TO_BOT = 'top-to-bot';
-CanvasLayer.EXTRA_PIXELS = 10;
 
-var renderium = {
-  CanvasLayer: CanvasLayer
-};
+var Renderium = function () {
+  Renderium.spawn = function spawn(renderer) {
+    Renderium.instances.push(renderer);
+  };
 
-return renderium;
+  Renderium.kill = function kill(renderer) {
+    var idx = Renderium.instances.indexOf(renderer);
+    if (idx !== -1) {
+      Renderium.instances.splice(idx, 1);
+    }
+  };
+
+  Renderium.digest = function digest() {
+    for (var i = 0; i < Renderium.instances.length; i++) {
+      var renderer = Renderium.instances[i];
+      renderer.clear();
+      renderer.scale();
+      renderer.redraw();
+    }
+  };
+
+  function Renderium(_ref) {
+    var el = _ref.el;
+    classCallCheck(this, Renderium);
+
+    this.el = el;
+    this.width = this.el.clientWidth;
+    this.height = this.el.clientHeight;
+    this.layers = [];
+    this.components = [];
+  }
+
+  Renderium.prototype.addLayer = function addLayer(layer) {
+    this.layers.push(layer);
+    this.el.appendChild(layer.canvas);
+    layer.scale({ width: this.width, height: this.height });
+  };
+
+  Renderium.prototype.removeLayer = function removeLayer(layer) {
+    var idx = this.layers.indexOf(layer);
+    if (idx !== -1) {
+      this.layers.splice(idx, 1);
+      this.el.removeChild(layer.canvas);
+    }
+  };
+
+  Renderium.prototype.addComponent = function addComponent(component) {
+    this.components.push(component);
+  };
+
+  Renderium.prototype.removeComponent = function removeComponent(component) {
+    var idx = this.components.indexOf(component);
+    if (idx !== -1) {
+      this.components.splice(idx, 1);
+    }
+  };
+
+  Renderium.prototype.scale = function scale() {
+    var width = this.el.clientWidth;
+    var height = this.el.clientHeight;
+
+    if (width !== this.width || height !== this.height) {
+      for (var i = 0; i < this.layers.length; i++) {
+        var layer = this.layers[i];
+        layer.scale({ width: width, height: height });
+      }
+      this.width = width;
+      this.height = height;
+    }
+  };
+
+  Renderium.prototype.clear = function clear() {
+    for (var i = 0; i < this.layers.length; i++) {
+      var layer = this.layers[i];
+      layer.clear();
+    }
+  };
+
+  Renderium.prototype.redraw = function redraw() {
+    for (var i = 0; i < this.components.length; i++) {
+      var component = this.components[i];
+      component.redraw();
+    }
+    for (i = 0; i < this.layers.length; i++) {
+      var layer = this.layers[i];
+      layer.redraw();
+    }
+  };
+
+  return Renderium;
+}();
+
+Renderium.CanvasLayer = CanvasLayer;
+
+return Renderium;
 
 })));

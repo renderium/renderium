@@ -78,6 +78,10 @@ class CanvasLayer {
     this.ctx.clearRect(0, 0, this.width, this.height)
   }
 
+  redraw () {
+
+  }
+
   getColor (color) {
     return Gradient.isGradient(color) ? color.createGradient(this) : color
   }
@@ -212,7 +216,5 @@ class CanvasLayer {
 
 CanvasLayer.DEFAULT_WIDTH = 100
 CanvasLayer.DEFAULT_HEIGHT = 100
-CanvasLayer.GRADIENT_DIRECTION_TOP_TO_BOT = 'top-to-bot'
-CanvasLayer.EXTRA_PIXELS = 10
 
 export default CanvasLayer
