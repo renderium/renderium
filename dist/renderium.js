@@ -786,6 +786,7 @@ var Renderium = function () {
 }();
 
 Renderium.CanvasLayer = CanvasLayer;
+Renderium.Vector = vectory;
 
 return Renderium;
 

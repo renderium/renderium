@@ -1,4 +1,5 @@
 import CanvasLayer from './canvas-layer.js'
+import Vector from 'vectory'
 
 class Renderium {
   static spawn (renderer) {
@@ -88,5 +89,6 @@ class Renderium {
 }
 
 Renderium.CanvasLayer = CanvasLayer
+Renderium.Vector = Vector
 
 export default Renderium
