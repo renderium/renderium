@@ -88,6 +88,8 @@ class Renderium {
   }
 }
 
+Renderium.instances = []
+
 Renderium.CanvasLayer = CanvasLayer
 Renderium.Vector = Vector
 
