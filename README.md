@@ -9,3 +9,58 @@
     <img src="https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat" alt="js-standard-style"></img>
   </a>
 </p>
+
+## Table of Contents
+
+- [Features](#features)
+- [Install](#install)
+- [Usage](#usage)
+- [Examples](#examples)
+- [API](#api)
+- [Development](#development)
+
+## Features
+
+- Designed with performance in mind and reviewed with [IRHydra](http://mrale.ph/irhydra/2/)
+
+## Install
+
+Download [dev](https://rawgit.com/broadsw0rd/renderium/master/dist/renderium.js) or [prod](https://rawgit.com/broadsw0rd/renderium/master/dist/renderium.min.js) version and put it in your html
+
+```html
+<script src="vendor/renderium.min.js"></script>
+```
+
+## Usage
+
+```js
+requestAnimationFrame(function loop () {
+  Renderium.digest()
+  requestAnimationFrame(loop)
+})
+
+var renderer = new Renderium({
+  el: document.getElementById('root')
+})
+
+var layer = new Renderium.CanvasLayer({})
+
+renderer.addLayer(layer)
+
+Renderium.spawn(renderer)
+```
+
+## Examples
+
+- **[All](http://codepen.io/collection/AEydae/)**
+- [Drawing text](http://codepen.io/broadsw0rd/pen/LRkoqJ)
+
+## API
+
+## Development
+
+Command | Description
+------- | -----------
+`npm run check` | Check standard code style by [snazzy](https://www.npmjs.com/package/snazzy)
+`npm run build` | Wrap source code in [UMD](https://github.com/umdjs/umd) by [rollup](http://rollupjs.org/)
+`npm run min` | Minify code by [UglifyJS](https://github.com/mishoo/UglifyJS)
