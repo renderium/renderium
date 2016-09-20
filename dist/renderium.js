@@ -395,13 +395,11 @@ var ImageLoader = function () {
 ImageLoader.IMAGE_STATUS_LOADING = 1;
 ImageLoader.IMAGE_STATUS_LOADED = 2;
 
-function getDevicePixelRatio() {
-  return window.devicePixelRatio ? Math.floor(window.devicePixelRatio) : 1;
-}
-
 // -------------------------------------
 // CanvasLayer
 // -------------------------------------
+
+var PIXEL_RATIO = window.devicePixelRatio || 1;
 
 var Gradient = function () {
   Gradient.isGradient = function isGradient(color) {
@@ -481,8 +479,9 @@ var CanvasLayer = function () {
     this.ctx.canvas.style.height = this.height + 'px';
 
     if (window.devicePixelRatio) {
-      this.ctx.canvas.width = this.width *= window.devicePixelRatio;
-      this.ctx.canvas.height = this.height *= window.devicePixelRatio;
+      this.ctx.canvas.width = this.width * PIXEL_RATIO;
+      this.ctx.canvas.height = this.height * PIXEL_RATIO;
+      this.ctx.scale(PIXEL_RATIO, PIXEL_RATIO);
     }
 
     if (!this.antialiasing) {
@@ -491,10 +490,9 @@ var CanvasLayer = function () {
   };
 
   CanvasLayer.prototype.clear = function clear() {
-    this.computeBorders();
     this.ctx.save();
     this.ctx.setTransform(1, 0, 0, 1, 0, 0);
-    this.ctx.clearRect(0, 0, this.width, this.height);
+    this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
     this.ctx.restore();
   };
 
@@ -666,7 +664,7 @@ var CanvasLayer = function () {
     var baseline = _ref12$baseline === undefined ? 'middle' : _ref12$baseline;
 
     this.ctx.fillStyle = this.getColor(color);
-    this.ctx.font = size * getDevicePixelRatio() + 'px ' + font;
+    this.ctx.font = size + 'px ' + font;
     this.ctx.textAlign = align;
     this.ctx.textBaseline = baseline;
 
@@ -681,7 +679,7 @@ var CanvasLayer = function () {
     var width;
     if (font && size) {
       var defaultFont = this.ctx.font;
-      this.ctx.font = size * getDevicePixelRatio() + 'px ' + font;
+      this.ctx.font = size + 'px ' + font;
       width = this.ctx.measureText(text).width;
       this.ctx.font = defaultFont;
     } else {
