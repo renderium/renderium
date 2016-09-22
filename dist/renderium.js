@@ -368,6 +368,8 @@ var ImageLoader = function () {
     classCallCheck(this, ImageLoader);
   }
 
+  ImageLoader.prototype.onload = function onload() {};
+
   ImageLoader.prototype.getImage = function getImage(url) {
     return images[url];
   };
@@ -378,12 +380,14 @@ var ImageLoader = function () {
 
   ImageLoader.prototype.load = function load(url) {
     var status = this.getStatus(url);
+    var _this = this;
     if (status !== ImageLoader.IMAGE_STATUS_LOADING && status !== ImageLoader.IMAGE_STATUS_LOADED) {
       imageStatuses[url] = ImageLoader.IMAGE_STATUS_LOADING;
       var image = new window.Image();
       image.onload = function onload() {
         imageStatuses[url] = ImageLoader.IMAGE_STATUS_LOADED;
         images[url] = this;
+        _this.onload();
       };
       image.src = url;
     }
@@ -460,6 +464,9 @@ var CanvasLayer = function () {
       height: height || CanvasLayer.DEFAULT_HEIGHT
     });
     this.imageLoader = new ImageLoader();
+    this.imageLoader.onload = this.forceRedraw.bind(this);
+
+    this._shouldRedraw = true;
   }
 
   CanvasLayer.prototype.scale = function scale(_ref4) {
@@ -487,6 +494,8 @@ var CanvasLayer = function () {
     if (!this.antialiasing) {
       this.ctx.translate(0.5, 0.5);
     }
+
+    this.forceRedraw();
   };
 
   CanvasLayer.prototype.clear = function clear() {
@@ -496,7 +505,17 @@ var CanvasLayer = function () {
     this.ctx.restore();
   };
 
-  CanvasLayer.prototype.redraw = function redraw() {};
+  CanvasLayer.prototype.redraw = function redraw() {
+    this._shouldRedraw = false;
+  };
+
+  CanvasLayer.prototype.forceRedraw = function forceRedraw() {
+    this._shouldRedraw = true;
+  };
+
+  CanvasLayer.prototype.shouldRedraw = function shouldRedraw() {
+    return this._shouldRedraw;
+  };
 
   CanvasLayer.prototype.getColor = function getColor(color) {
     return Gradient.isGradient(color) ? color.createGradient(this) : color;

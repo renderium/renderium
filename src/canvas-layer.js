@@ -48,6 +48,9 @@ class CanvasLayer {
       height: height || CanvasLayer.DEFAULT_HEIGHT
     })
     this.imageLoader = new ImageLoader()
+    this.imageLoader.onload = this.forceRedraw.bind(this)
+
+    this._shouldRedraw = false
   }
 
   scale ({ width, height }) {
@@ -72,6 +75,8 @@ class CanvasLayer {
     if (!this.antialiasing) {
       this.ctx.translate(0.5, 0.5)
     }
+
+    this.forceRedraw()
   }
 
   clear () {
@@ -82,7 +87,15 @@ class CanvasLayer {
   }
 
   redraw () {
+    this._shouldRedraw = false
+  }
 
+  forceRedraw () {
+    this._shouldRedraw = true
+  }
+
+  shouldRedraw () {
+    return this._shouldRedraw
   }
 
   getColor (color) {
