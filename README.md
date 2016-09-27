@@ -17,10 +17,12 @@
 - [Usage](#usage)
 - [Examples](#examples)
 - [API](#api)
+- [Redraw policy](#redraw-policy)
 - [Development](#development)
 
 ## Features
 
+- [Redraw Policy](#redraw-policy)
 - Designed with performance in mind and reviewed with [IRHydra](http://mrale.ph/irhydra/2/)
 
 ## Install
@@ -56,6 +58,58 @@ Renderium.spawn(renderer)
 - [Drawing text with different alignments](http://codepen.io/broadsw0rd/pen/LRkoqJ)
 
 ## API
+
+### `Renderium`
+
+#### `.digest()`
+
+#### `.spawn(renderer)`
+
+#### `.kill(renderer)`
+
+#### `#constructor(options)`
+
+#### `#addLayer(layer)`
+
+#### `#removeLayer(layer)`
+
+#### `#scale()`
+
+#### `#clear()`
+
+#### `#redraw()`
+
+### `Renderium.CanvasLayer`
+
+#### `#constructor(options)`
+
+#### `#scale(options)`
+
+#### `#clear()`
+
+#### `#redraw()`
+
+#### `#forceRedraw()`
+
+#### `#shouldRedraw()`
+
+#### `#drawArc(options)`
+
+#### `#drawCircle(options)`
+
+#### `#drawImage(options)`
+
+#### `#drawPolygon(options)`
+
+#### `#drawPolyline(options)`
+
+#### `#drawRect(options)`
+
+#### `#drawText(options)`
+
+#### `#measureText(options)`
+
+## Redraw Policy
 
 ## Development
 
