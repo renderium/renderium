@@ -53,7 +53,7 @@ Renderium.spawn(renderer)
 ## Examples
 
 - **[All](http://codepen.io/collection/AEydae/)**
-- [Drawing text](http://codepen.io/broadsw0rd/pen/LRkoqJ)
+- [Drawing text with different alignments](http://codepen.io/broadsw0rd/pen/LRkoqJ)
 
 ## API
 
