@@ -79,7 +79,7 @@ Renderium.spawn(renderer)
 
 #### `#redraw()`
 
-### `Renderium.CanvasLayer`
+### `Renderium.Layer`
 
 #### `#constructor(options)`
 
