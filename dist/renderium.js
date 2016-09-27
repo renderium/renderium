@@ -466,7 +466,7 @@ var CanvasLayer = function () {
     this.imageLoader = new ImageLoader();
     this.imageLoader.onload = this.forceRedraw.bind(this);
 
-    this._shouldRedraw = true;
+    this._shouldRedraw = false;
   }
 
   CanvasLayer.prototype.scale = function scale(_ref4) {
@@ -538,35 +538,13 @@ var CanvasLayer = function () {
     this.ctx.stroke();
   };
 
-  CanvasLayer.prototype.drawArea = function drawArea(_ref6) {
-    var points = _ref6.points;
-    var threshold = _ref6.threshold;
+  CanvasLayer.prototype.drawCircle = function drawCircle(_ref6) {
+    var position = _ref6.position;
+    var radius = _ref6.radius;
     var color = _ref6.color;
     var fillColor = _ref6.fillColor;
     var _ref6$width = _ref6.width;
     var width = _ref6$width === undefined ? 1 : _ref6$width;
-
-    this.drawPolyline({
-      points: points,
-      color: color,
-      width: width
-    });
-
-    this.ctx.fillStyle = this.getColor(fillColor);
-
-    this.ctx.lineTo(points[points.length - 1].x, threshold);
-    this.ctx.lineTo(points[0].x, threshold);
-    this.ctx.closePath();
-    this.ctx.fill();
-  };
-
-  CanvasLayer.prototype.drawCircle = function drawCircle(_ref7) {
-    var position = _ref7.position;
-    var radius = _ref7.radius;
-    var color = _ref7.color;
-    var fillColor = _ref7.fillColor;
-    var _ref7$width = _ref7.width;
-    var width = _ref7$width === undefined ? 1 : _ref7$width;
 
     this.drawArc({
       position: position,
@@ -583,15 +561,15 @@ var CanvasLayer = function () {
     }
   };
 
-  CanvasLayer.prototype.drawImage = function drawImage(_ref8) {
-    var position = _ref8.position;
-    var image = _ref8.image;
-    var _ref8$width = _ref8.width;
-    var width = _ref8$width === undefined ? image.width : _ref8$width;
-    var _ref8$height = _ref8.height;
-    var height = _ref8$height === undefined ? image.height : _ref8$height;
-    var _ref8$opacity = _ref8.opacity;
-    var opacity = _ref8$opacity === undefined ? 1 : _ref8$opacity;
+  CanvasLayer.prototype.drawImage = function drawImage(_ref7) {
+    var position = _ref7.position;
+    var image = _ref7.image;
+    var _ref7$width = _ref7.width;
+    var width = _ref7$width === undefined ? image.width : _ref7$width;
+    var _ref7$height = _ref7.height;
+    var height = _ref7$height === undefined ? image.height : _ref7$height;
+    var _ref7$opacity = _ref7.opacity;
+    var opacity = _ref7$opacity === undefined ? 1 : _ref7$opacity;
 
     if (typeof image === 'string') {
       if (this.imageLoader.getStatus(image) === ImageLoader.IMAGE_STATUS_LOADED) {
@@ -612,12 +590,12 @@ var CanvasLayer = function () {
     this.ctx.globalAlpha = defaultAlpha;
   };
 
-  CanvasLayer.prototype.drawPolygon = function drawPolygon(_ref9) {
-    var points = _ref9.points;
-    var color = _ref9.color;
-    var fillColor = _ref9.fillColor;
-    var _ref9$width = _ref9.width;
-    var width = _ref9$width === undefined ? 1 : _ref9$width;
+  CanvasLayer.prototype.drawPolygon = function drawPolygon(_ref8) {
+    var points = _ref8.points;
+    var color = _ref8.color;
+    var fillColor = _ref8.fillColor;
+    var _ref8$width = _ref8.width;
+    var width = _ref8$width === undefined ? 1 : _ref8$width;
 
     this.drawPolyline({
       points: points.concat(points[0]),
@@ -631,13 +609,13 @@ var CanvasLayer = function () {
     }
   };
 
-  CanvasLayer.prototype.drawPolyline = function drawPolyline(_ref10) {
-    var points = _ref10.points;
-    var color = _ref10.color;
-    var _ref10$lineDash = _ref10.lineDash;
-    var lineDash = _ref10$lineDash === undefined ? [] : _ref10$lineDash;
-    var _ref10$width = _ref10.width;
-    var width = _ref10$width === undefined ? 1 : _ref10$width;
+  CanvasLayer.prototype.drawPolyline = function drawPolyline(_ref9) {
+    var points = _ref9.points;
+    var color = _ref9.color;
+    var _ref9$lineDash = _ref9.lineDash;
+    var lineDash = _ref9$lineDash === undefined ? [] : _ref9$lineDash;
+    var _ref9$width = _ref9.width;
+    var width = _ref9$width === undefined ? 1 : _ref9$width;
 
     this.ctx.strokeStyle = this.getColor(color);
     this.ctx.lineWidth = width;
@@ -656,14 +634,14 @@ var CanvasLayer = function () {
     this.ctx.stroke();
   };
 
-  CanvasLayer.prototype.drawRect = function drawRect(_ref11) {
-    var position = _ref11.position;
-    var width = _ref11.width;
-    var height = _ref11.height;
-    var color = _ref11.color;
-    var fillColor = _ref11.fillColor;
-    var _ref11$strokeWidth = _ref11.strokeWidth;
-    var strokeWidth = _ref11$strokeWidth === undefined ? 1 : _ref11$strokeWidth;
+  CanvasLayer.prototype.drawRect = function drawRect(_ref10) {
+    var position = _ref10.position;
+    var width = _ref10.width;
+    var height = _ref10.height;
+    var color = _ref10.color;
+    var fillColor = _ref10.fillColor;
+    var _ref10$strokeWidth = _ref10.strokeWidth;
+    var strokeWidth = _ref10$strokeWidth === undefined ? 1 : _ref10$strokeWidth;
 
     this.drawPolygon({
       points: [new vectory(position.x - width / 2, position.y + height / 2), new vectory(position.x + width / 2, position.y + height / 2), new vectory(position.x + width / 2, position.y - height / 2), new vectory(position.x - width / 2, position.y - height / 2)],
@@ -673,16 +651,16 @@ var CanvasLayer = function () {
     });
   };
 
-  CanvasLayer.prototype.drawText = function drawText(_ref12) {
-    var position = _ref12.position;
-    var text = _ref12.text;
-    var color = _ref12.color;
-    var font = _ref12.font;
-    var size = _ref12.size;
-    var _ref12$align = _ref12.align;
-    var align = _ref12$align === undefined ? 'center' : _ref12$align;
-    var _ref12$baseline = _ref12.baseline;
-    var baseline = _ref12$baseline === undefined ? 'middle' : _ref12$baseline;
+  CanvasLayer.prototype.drawText = function drawText(_ref11) {
+    var position = _ref11.position;
+    var text = _ref11.text;
+    var color = _ref11.color;
+    var font = _ref11.font;
+    var size = _ref11.size;
+    var _ref11$align = _ref11.align;
+    var align = _ref11$align === undefined ? 'center' : _ref11$align;
+    var _ref11$baseline = _ref11.baseline;
+    var baseline = _ref11$baseline === undefined ? 'middle' : _ref11$baseline;
 
     this.ctx.fillStyle = this.getColor(color);
     this.ctx.font = size + 'px ' + font;
@@ -692,10 +670,10 @@ var CanvasLayer = function () {
     this.ctx.fillText(text, position.x, position.y);
   };
 
-  CanvasLayer.prototype.measureText = function measureText(_ref13) {
-    var text = _ref13.text;
-    var font = _ref13.font;
-    var size = _ref13.size;
+  CanvasLayer.prototype.measureText = function measureText(_ref12) {
+    var text = _ref12.text;
+    var font = _ref12.font;
+    var size = _ref12.size;
 
     var width;
     if (font && size) {
