@@ -181,6 +181,8 @@ Renderium.spawn(renderer)
 
 #### `#measureText(options)`
 
+**options:**
+
 | Name  | Type | Default |
 | ---- | ---- | ---- |
 | `text` | `String` |  |
