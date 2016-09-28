@@ -95,7 +95,7 @@ Renderium.spawn(renderer)
 
 #### `#drawArc(options)`
 
-**options:**
+**options**
 
 | Name  | Type | Default |
 | ---- | ---- | ---- |
@@ -108,7 +108,7 @@ Renderium.spawn(renderer)
 
 #### `#drawCircle(options)`
 
-**options:**
+**options**
 
 | Name  | Type | Default |
 | ---- | ---- | ---- |
@@ -120,7 +120,7 @@ Renderium.spawn(renderer)
 
 #### `#drawImage(options)`
 
-**options:**
+**options**
 
 | Name  | Type | Default |
 | ---- | ---- | ---- |
@@ -132,7 +132,7 @@ Renderium.spawn(renderer)
 
 #### `#drawPolygon(options)`
 
-**options:**
+**options**
 
 | Name  | Type | Default |
 | ---- | ---- | ---- |
@@ -143,7 +143,7 @@ Renderium.spawn(renderer)
 
 #### `#drawPolyline(options)`
 
-**options:**
+**options**
 
 | Name  | Type | Default |
 | ---- | ---- | ---- |
@@ -154,7 +154,7 @@ Renderium.spawn(renderer)
 
 #### `#drawRect(options)`
 
-**options:**
+**options**
 
 | Name  | Type | Default |
 | ---- | ---- | ---- |
@@ -167,7 +167,7 @@ Renderium.spawn(renderer)
 
 #### `#drawText(options)`
 
-**options:**
+**options**
 
 | Name  | Type | Default |
 | ---- | ---- | ---- |
@@ -181,7 +181,7 @@ Renderium.spawn(renderer)
 
 #### `#measureText(options)`
 
-**options:**
+**options**
 
 | Name  | Type | Default |
 | ---- | ---- | ---- |
