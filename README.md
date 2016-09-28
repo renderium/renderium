@@ -95,19 +95,97 @@ Renderium.spawn(renderer)
 
 #### `#drawArc(options)`
 
+**options:**
+
+| Name  | Type | Default |
+| ---- | ---- | ---- |
+| `position` | `Vector`  |  |
+| `radius` | `Number` |  |
+| `startAngle` | `Number` |  |
+| `endAngle` | `Number` |  |
+| `color` | `String` |  |
+| `width` | `Number` | `1` |
+
 #### `#drawCircle(options)`
+
+**options:**
+
+| Name  | Type | Default |
+| ---- | ---- | ---- |
+| `position` | `Vector`  |  |
+| `radius` | `Number` |  |
+| `color` | `String` |  |
+| `fillColor` | `String` |  |
+| `width` | `Number` | `1` |
 
 #### `#drawImage(options)`
 
+**options:**
+
+| Name  | Type | Default |
+| ---- | ---- | ---- |
+| `position` | `Vector`  |  |
+| `image` | `Image|String` | |
+| `width` | `Number` | `image.width` |
+| `height` | `Number` | `image.height` |
+| `opacity` | `Number` | `1` |
+
 #### `#drawPolygon(options)`
+
+**options:**
+
+| Name  | Type | Default |
+| ---- | ---- | ---- |
+| `points` | `Array<Vector>` |  |
+| `color` | `String` |  |
+| `fillColor` | `String` |  |
+| `width` | `Number` | `1` |
 
 #### `#drawPolyline(options)`
 
+**options:**
+
+| Name  | Type | Default |
+| ---- | ---- | ---- |
+| `points` | `Array<Vector>` |  |
+| `color` | `String` |  |
+| `lineDash` | `Array<Number>` | `[]` |
+| `width` | `Number` | `1` |
+
 #### `#drawRect(options)`
+
+**options:**
+
+| Name  | Type | Default |
+| ---- | ---- | ---- |
+| `position` | `Vector`  |  |
+| `width` | `Number` |  |
+| `height` | `Number` |  |
+| `color` | `String` |  |
+| `fillColor` | `String` |  |
+| `strokeWidth` | `Number` | `1` |
 
 #### `#drawText(options)`
 
+**options:**
+
+| Name  | Type | Default |
+| ---- | ---- | ---- |
+| `position` | `Vector`  |  |
+| `text` | `String` |  |
+| `color` | `String` |  |
+| `font` | `String` |  |
+| `size` | `Number` |  |
+| `align` | `String` | `'center'` |
+| `baseline` | `String` | `'middle'` |
+
 #### `#measureText(options)`
+
+| Name  | Type | Default |
+| ---- | ---- | ---- |
+| `text` | `String` |  |
+| `font` | `String` |  |
+| `size` | `Number` |  |
 
 ## Redraw Policy
 
