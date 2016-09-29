@@ -89,9 +89,11 @@ Renderium.spawn(renderer)
 
 #### `#redraw()`
 
-#### `#forceRedraw()`
-
 #### `#shouldRedraw()`
+
+#### `#addComponent()`
+
+#### `#removeComponent()`
 
 #### `#drawArc(options)`
 

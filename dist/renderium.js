@@ -466,6 +466,8 @@ var CanvasLayer = function () {
     this.imageLoader = new ImageLoader();
     this.imageLoader.onload = this.forceRedraw.bind(this);
 
+    this.components = [];
+
     this._shouldRedraw = false;
   }
 
@@ -506,6 +508,10 @@ var CanvasLayer = function () {
   };
 
   CanvasLayer.prototype.redraw = function redraw() {
+    for (var i = 0; i < this.components.length; i++) {
+      var component = this.components[i];
+      component.redraw();
+    }
     this._shouldRedraw = false;
   };
 
@@ -514,7 +520,24 @@ var CanvasLayer = function () {
   };
 
   CanvasLayer.prototype.shouldRedraw = function shouldRedraw() {
+    for (var i = 0; i < this.components.length; i++) {
+      var component = this.components[i];
+      if (component.shouldRedraw()) {
+        return true;
+      }
+    }
     return this._shouldRedraw;
+  };
+
+  CanvasLayer.prototype.addComponent = function addComponent(component) {
+    this.components.push(component);
+  };
+
+  CanvasLayer.prototype.removeComponent = function removeComponent(component) {
+    var idx = this.components.indexOf(component);
+    if (idx !== -1) {
+      this.components.splice(idx, 1);
+    }
   };
 
   CanvasLayer.prototype.getColor = function getColor(color) {
@@ -722,7 +745,6 @@ var Renderium = function () {
     this.width = this.el.clientWidth;
     this.height = this.el.clientHeight;
     this.layers = [];
-    this.components = [];
   }
 
   Renderium.prototype.addLayer = function addLayer(layer) {
@@ -736,17 +758,6 @@ var Renderium = function () {
     if (idx !== -1) {
       this.layers.splice(idx, 1);
       this.el.removeChild(layer.canvas);
-    }
-  };
-
-  Renderium.prototype.addComponent = function addComponent(component) {
-    this.components.push(component);
-  };
-
-  Renderium.prototype.removeComponent = function removeComponent(component) {
-    var idx = this.components.indexOf(component);
-    if (idx !== -1) {
-      this.components.splice(idx, 1);
     }
   };
 
@@ -767,18 +778,18 @@ var Renderium = function () {
   Renderium.prototype.clear = function clear() {
     for (var i = 0; i < this.layers.length; i++) {
       var layer = this.layers[i];
-      layer.clear();
+      if (layer.shouldRedraw()) {
+        layer.clear();
+      }
     }
   };
 
   Renderium.prototype.redraw = function redraw() {
-    for (var i = 0; i < this.components.length; i++) {
-      var component = this.components[i];
-      component.redraw();
-    }
-    for (i = 0; i < this.layers.length; i++) {
+    for (var i = 0; i < this.layers.length; i++) {
       var layer = this.layers[i];
-      layer.redraw();
+      if (layer.shouldRedraw()) {
+        layer.redraw();
+      }
     }
   };
 

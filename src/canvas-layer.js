@@ -50,6 +50,8 @@ class CanvasLayer {
     this.imageLoader = new ImageLoader()
     this.imageLoader.onload = this.forceRedraw.bind(this)
 
+    this.components = []
+
     this._shouldRedraw = false
   }
 
@@ -87,6 +89,10 @@ class CanvasLayer {
   }
 
   redraw () {
+    for (var i = 0; i < this.components.length; i++) {
+      var component = this.components[i]
+      component.redraw()
+    }
     this._shouldRedraw = false
   }
 
@@ -95,7 +101,24 @@ class CanvasLayer {
   }
 
   shouldRedraw () {
+    for (var i = 0; i < this.components.length; i++) {
+      var component = this.components[i]
+      if (component.shouldRedraw()) {
+        return true
+      }
+    }
     return this._shouldRedraw
+  }
+
+  addComponent (component) {
+    this.components.push(component)
+  }
+
+  removeComponent (component) {
+    var idx = this.components.indexOf(component)
+    if (idx !== -1) {
+      this.components.splice(idx, 1)
+    }
   }
 
   getColor (color) {
