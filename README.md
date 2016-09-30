@@ -55,6 +55,7 @@ Renderium.spawn(renderer)
 ## Examples
 
 - **[All](http://codepen.io/collection/AEydae/)**
+- [Drawing arcs](http://codepen.io/broadsw0rd/pen/amyjmZ)
 - [Drawing text with different alignments](http://codepen.io/broadsw0rd/pen/LRkoqJ)
 
 ## API
