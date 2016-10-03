@@ -77,23 +77,9 @@ Renderium.spawn(renderer)
 
 #### `#removeLayer(layer)`
 
-#### `#scale()`
-
-#### `#clear()`
-
-#### `#redraw()`
-
 ### `Renderium.Layer`
 
 #### `#constructor(options)`
-
-#### `#scale(options)`
-
-#### `#clear()`
-
-#### `#redraw()`
-
-#### `#shouldRedraw()`
 
 #### `#addComponent()`
 
@@ -110,7 +96,7 @@ Renderium.spawn(renderer)
 | `from` | `String` |  |
 | `to` | `String` |  |
 
-Creates gradient, based on [this](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/createLinearGradient) behaviour, and then used like common color
+Create gradient, based on [this](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/createLinearGradient) behaviour, and then used like common color
 
 ```js
 var gradient = layer.createGradient({
@@ -161,7 +147,7 @@ Check [examples](http://codepen.io/broadsw0rd/pen/amyjmZ)
 | `fillColor` | `String|Gradient` |  |
 | `width` | `Number` | `1` |
 
-Draw simple circle, base on [this](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/arc) behaviour
+Draw simple circle, based on [this](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/arc) behaviour
 
 ```js
 layer.drawCircle({
