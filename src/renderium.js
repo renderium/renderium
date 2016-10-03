@@ -1,4 +1,5 @@
 import CanvasLayer from './canvas-layer.js'
+import colors from './colors.js'
 import Vector from 'vectory'
 
 class Renderium {
@@ -80,5 +81,6 @@ Renderium.instances = []
 
 Renderium.CanvasLayer = CanvasLayer
 Renderium.Vector = Vector
+Renderium.colors = colors
 
 export default Renderium
