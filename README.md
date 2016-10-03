@@ -56,6 +56,7 @@ Renderium.spawn(renderer)
 
 - **[All](http://codepen.io/collection/AEydae/)**
 - [Drawing arcs](http://codepen.io/broadsw0rd/pen/amyjmZ)
+- [Drawing circles](http://codepen.io/broadsw0rd/pen/xEXNkP)
 - [Drawing text with different alignments](http://codepen.io/broadsw0rd/pen/LRkoqJ)
 
 ## API
