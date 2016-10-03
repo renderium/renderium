@@ -174,6 +174,20 @@ Check [examples](http://codepen.io/broadsw0rd/pen/xEXNkP)
 | `height` | `Number` | `image.height` |
 | `opacity` | `Number` | `1` |
 
+Draw simple image, if you pass url instead of image instance, it will be loaded first, and then reused
+
+```js
+layer.drawImage({
+  position: new Renderium.Vector(350, 100),
+  image: 'https://upload.wikimedia.org/wikipedia/en/2/24/Lenna.png',
+  width: 256,
+  height: 256,
+  opacity: 1
+})
+```
+
+Check [examples](http://codepen.io/broadsw0rd/pen/zKPOKd)
+
 #### `#drawPolygon(options)`
 
 **options**
