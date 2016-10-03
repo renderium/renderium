@@ -22,6 +22,8 @@
 
 ## Features
 
+- Autoresizing
+- Image loading
 - [Redraw Policy](#redraw-policy)
 - Designed with performance in mind and reviewed with [IRHydra](http://mrale.ph/irhydra/2/)
 
@@ -108,6 +110,17 @@ Renderium.spawn(renderer)
 | `from` | `String` |  |
 | `to` | `String` |  |
 
+Creates gradient, based on [this](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/createLinearGradient) behaviour, and then used like common color
+
+```js
+var gradient = layer.createGradient({
+  start: new Renderium.Vector(0, 75),
+  end: new Renderium.Vector(0, 125),
+  from: '#03a9f4',
+  to: '#3f51b5'
+})
+```
+
 #### `#drawArc(options)`
 
 **options**
@@ -121,6 +134,21 @@ Renderium.spawn(renderer)
 | `color` | `String|Gradient` |  |
 | `width` | `Number` | `1` |
 
+Draw simple arc, based on [this](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/arc) behaviour
+
+```js
+layer.drawArc({
+  position: new Renderium.Vector(300, 100),
+  color: '#4caf50',
+  radius: 25,
+  startAngle: Math.PI,
+  endAngle: Math.PI / 2,
+  width: 2
+})
+```
+
+Check [examples](http://codepen.io/broadsw0rd/pen/amyjmZ)
+
 #### `#drawCircle(options)`
 
 **options**
@@ -132,6 +160,19 @@ Renderium.spawn(renderer)
 | `color` | `String|Gradient` |  |
 | `fillColor` | `String|Gradient` |  |
 | `width` | `Number` | `1` |
+
+Draw sinple circle, base on [this](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/arc) behaviour
+
+```js
+layer.drawCircle({
+  position: new Renderium.Vector(300, 100),
+  color: '#2196f3',
+  fillColor: '#2196f3',
+  radius: 25
+})
+```
+
+Check [examples](http://codepen.io/broadsw0rd/pen/xEXNkP)
 
 #### `#drawImage(options)`
 
