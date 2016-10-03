@@ -441,19 +441,10 @@ var Gradient = function () {
 }();
 
 var CanvasLayer = function () {
-  CanvasLayer.createGradient = function createGradient(_ref2) {
-    var start = _ref2.start;
-    var end = _ref2.end;
-    var from = _ref2.from;
-    var to = _ref2.to;
-
-    return new Gradient({ start: start, end: end, from: from, to: to });
-  };
-
-  function CanvasLayer(_ref3) {
-    var antialiasing = _ref3.antialiasing;
-    var width = _ref3.width;
-    var height = _ref3.height;
+  function CanvasLayer(_ref2) {
+    var antialiasing = _ref2.antialiasing;
+    var width = _ref2.width;
+    var height = _ref2.height;
     classCallCheck(this, CanvasLayer);
 
     this.antialiasing = Boolean(antialiasing);
@@ -471,9 +462,9 @@ var CanvasLayer = function () {
     this._shouldRedraw = false;
   }
 
-  CanvasLayer.prototype.scale = function scale(_ref4) {
-    var width = _ref4.width;
-    var height = _ref4.height;
+  CanvasLayer.prototype.scale = function scale(_ref3) {
+    var width = _ref3.width;
+    var height = _ref3.height;
 
     this.width = width || CanvasLayer.DEFAULT_WIDTH;
     this.height = height || CanvasLayer.DEFAULT_HEIGHT;
@@ -538,6 +529,15 @@ var CanvasLayer = function () {
     if (idx !== -1) {
       this.components.splice(idx, 1);
     }
+  };
+
+  CanvasLayer.prototype.createGradient = function createGradient(_ref4) {
+    var start = _ref4.start;
+    var end = _ref4.end;
+    var from = _ref4.from;
+    var to = _ref4.to;
+
+    return new Gradient({ start: start, end: end, from: from, to: to });
   };
 
   CanvasLayer.prototype.getColor = function getColor(color) {

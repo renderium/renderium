@@ -96,6 +96,17 @@ Renderium.spawn(renderer)
 
 #### `#removeComponent()`
 
+#### `#createGradient(options)`
+
+**options**
+
+| Name  | Type | Default |
+| ---- | ---- | ---- |
+| `start` | `Vector`  |  |
+| `end` | `Vector` |  |
+| `from` | `String` |  |
+| `to` | `String` |  |
+
 #### `#drawArc(options)`
 
 **options**

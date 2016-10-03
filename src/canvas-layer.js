@@ -35,10 +35,6 @@ class Gradient {
 }
 
 class CanvasLayer {
-  static createGradient ({ start, end, from, to }) {
-    return new Gradient({ start, end, from, to })
-  }
-
   constructor ({ antialiasing, width, height }) {
     this.antialiasing = Boolean(antialiasing)
     this.canvas = document.createElement('canvas')
@@ -119,6 +115,10 @@ class CanvasLayer {
     if (idx !== -1) {
       this.components.splice(idx, 1)
     }
+  }
+
+  createGradient ({ start, end, from, to }) {
+    return new Gradient({ start, end, from, to })
   }
 
   getColor (color) {
