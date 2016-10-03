@@ -106,7 +106,7 @@ Renderium.spawn(renderer)
 | `radius` | `Number` |  |
 | `startAngle` | `Number` |  |
 | `endAngle` | `Number` |  |
-| `color` | `String` |  |
+| `color` | `String|Gradient` |  |
 | `width` | `Number` | `1` |
 
 #### `#drawCircle(options)`
@@ -117,8 +117,8 @@ Renderium.spawn(renderer)
 | ---- | ---- | ---- |
 | `position` | `Vector`  |  |
 | `radius` | `Number` |  |
-| `color` | `String` |  |
-| `fillColor` | `String` |  |
+| `color` | `String|Gradient` |  |
+| `fillColor` | `String|Gradient` |  |
 | `width` | `Number` | `1` |
 
 #### `#drawImage(options)`
@@ -140,8 +140,8 @@ Renderium.spawn(renderer)
 | Name  | Type | Default |
 | ---- | ---- | ---- |
 | `points` | `Array<Vector>` |  |
-| `color` | `String` |  |
-| `fillColor` | `String` |  |
+| `color` | `String|Gradient` |  |
+| `fillColor` | `String|Gradient` |  |
 | `width` | `Number` | `1` |
 
 #### `#drawPolyline(options)`
@@ -151,7 +151,7 @@ Renderium.spawn(renderer)
 | Name  | Type | Default |
 | ---- | ---- | ---- |
 | `points` | `Array<Vector>` |  |
-| `color` | `String` |  |
+| `color` | `String|Gradient` |  |
 | `lineDash` | `Array<Number>` | `[]` |
 | `width` | `Number` | `1` |
 
@@ -164,8 +164,8 @@ Renderium.spawn(renderer)
 | `position` | `Vector`  |  |
 | `width` | `Number` |  |
 | `height` | `Number` |  |
-| `color` | `String` |  |
-| `fillColor` | `String` |  |
+| `color` | `String|Gradient` |  |
+| `fillColor` | `String|Gradient` |  |
 | `strokeWidth` | `Number` | `1` |
 
 #### `#drawText(options)`
@@ -176,7 +176,7 @@ Renderium.spawn(renderer)
 | ---- | ---- | ---- |
 | `position` | `Vector`  |  |
 | `text` | `String` |  |
-| `color` | `String` |  |
+| `color` | `String|Gradient` |  |
 | `font` | `String` |  |
 | `size` | `Number` |  |
 | `align` | `String` | `'center'` |

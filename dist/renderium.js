@@ -510,7 +510,7 @@ var CanvasLayer = function () {
   CanvasLayer.prototype.redraw = function redraw() {
     for (var i = 0; i < this.components.length; i++) {
       var component = this.components[i];
-      component.redraw();
+      component.redraw(this);
     }
     this._shouldRedraw = false;
   };
