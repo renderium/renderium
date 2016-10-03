@@ -161,7 +161,7 @@ Check [examples](http://codepen.io/broadsw0rd/pen/amyjmZ)
 | `fillColor` | `String|Gradient` |  |
 | `width` | `Number` | `1` |
 
-Draw sinple circle, base on [this](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/arc) behaviour
+Draw simple circle, base on [this](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/arc) behaviour
 
 ```js
 layer.drawCircle({
