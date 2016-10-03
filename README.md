@@ -25,6 +25,7 @@
 - Autoresizing
 - Image loading
 - [Redraw Policy](#redraw-policy)
+- Logs
 - Designed with performance in mind and reviewed with [IRHydra](http://mrale.ph/irhydra/2/)
 
 ## Install
