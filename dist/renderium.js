@@ -558,7 +558,11 @@ var CanvasLayer = function () {
 
     this.ctx.beginPath();
     this.ctx.arc(position.x, position.y, radius, startAngle, endAngle);
-    this.ctx.stroke();
+    this.ctx.closePath();
+
+    if (color) {
+      this.ctx.stroke();
+    }
   };
 
   CanvasLayer.prototype.drawCircle = function drawCircle(_ref6) {

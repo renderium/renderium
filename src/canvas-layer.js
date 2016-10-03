@@ -131,7 +131,11 @@ class CanvasLayer {
 
     this.ctx.beginPath()
     this.ctx.arc(position.x, position.y, radius, startAngle, endAngle)
-    this.ctx.stroke()
+    this.ctx.closePath()
+
+    if (color) {
+      this.ctx.stroke()
+    }
   }
 
   drawCircle ({ position, radius, color, fillColor, width = 1 }) {
