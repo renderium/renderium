@@ -247,6 +247,16 @@ Check [examples](http://codepen.io/broadsw0rd/pen/zKPOKd)
 | `font` | `String` |  |
 | `size` | `Number` |  |
 
+Returns only text width, based on [this](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/measureText) behaviour. Because there is no [adequate method](http://stackoverflow.com/questions/1134586/how-can-you-find-the-height-of-text-on-an-html-canvas) to measure text height and different browsers render text [differently](http://codepen.io/broadsw0rd/pen/LRkoqJ)
+
+```js
+var textWidth = layer.measureText({
+  text: 'Sample text',
+  font: 'Helvetica',
+  size: 24
+})
+```
+
 ## Redraw Policy
 
 ## Development
