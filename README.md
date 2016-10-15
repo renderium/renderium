@@ -23,7 +23,7 @@
 ## Features
 
 - Autoresizing
-- Image loading
+- [Image loading](https://github.com/broadsw0rd/renderium#drawimageoptions)
 - [Redraw Policy](#redraw-policy)
 - Logs
 - Designed with performance in mind and reviewed with [IRHydra](http://mrale.ph/irhydra/2/)
