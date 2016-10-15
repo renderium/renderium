@@ -61,6 +61,7 @@ Renderium.spawn(renderer)
 - [Drawing arcs](http://codepen.io/broadsw0rd/pen/amyjmZ)
 - [Drawing circles](http://codepen.io/broadsw0rd/pen/xEXNkP)
 - [Drawing images](http://codepen.io/broadsw0rd/pen/zKPOKd)
+- [Drawing polygons](http://codepen.io/broadsw0rd/pen/NRBJpB)
 - [Drawing text with different alignments](http://codepen.io/broadsw0rd/pen/LRkoqJ)
 
 ## API
@@ -198,6 +199,23 @@ Check [examples](http://codepen.io/broadsw0rd/pen/zKPOKd)
 | `color` | `String|Gradient` |  |
 | `fillColor` | `String|Gradient` |  |
 | `width` | `Number` | `1` |
+
+Draw polygon. `points` is vertices of polygon
+
+```js
+layer.drawPolygon({
+  points: [
+    new Renderium.Vector(50, 50),
+    new Renderium.Vector(100, 50),
+    new Renderium.Vector(75, 75)
+  ],
+  color: '#2196f3',
+  fillColor: '#2196f3',
+  width: 2
+})
+```
+
+Check [examples](http://codepen.io/broadsw0rd/pen/NRBJpB)
 
 #### `#drawPolyline(options)`
 
