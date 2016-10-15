@@ -29,11 +29,11 @@
   "main": "dist/renderium.js",
   "devDependencies": {
     "babel-preset-es2015-loose-rollup": "^7.0.0",
-    "rollup": "^0.34.12",
+    "rollup": "^0.36.03",
     "rollup-plugin-babel": "^2.6.1",
-    "rollup-plugin-commonjs": "^4.0.1",
+    "rollup-plugin-commonjs": "^5.0.5",
     "rollup-plugin-node-resolve": "^2.0.0",
-    "snazzy": "^4.0.1",
+    "snazzy": "^5.0.0",
     "uglify-js": "^2.6.2"
   },
   "dependencies": {
