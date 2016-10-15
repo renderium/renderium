@@ -629,6 +629,8 @@ var CanvasLayer = function () {
       width: width
     });
 
+    this.ctx.closePath();
+
     if (fillColor) {
       this.ctx.fillStyle = this.getColor(fillColor);
       this.ctx.fill();
@@ -643,7 +645,6 @@ var CanvasLayer = function () {
     var _ref9$width = _ref9.width;
     var width = _ref9$width === undefined ? 1 : _ref9$width;
 
-    this.ctx.strokeStyle = this.getColor(color);
     this.ctx.lineWidth = width;
     this.ctx.lineJoin = 'round';
 
@@ -657,7 +658,10 @@ var CanvasLayer = function () {
 
     this.ctx.setLineDash(lineDash);
 
-    this.ctx.stroke();
+    if (color) {
+      this.ctx.strokeStyle = this.getColor(color);
+      this.ctx.stroke();
+    }
   };
 
   CanvasLayer.prototype.drawRect = function drawRect(_ref10) {

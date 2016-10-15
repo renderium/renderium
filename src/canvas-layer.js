@@ -180,6 +180,8 @@ class CanvasLayer {
       width
     })
 
+    this.ctx.closePath()
+
     if (fillColor) {
       this.ctx.fillStyle = this.getColor(fillColor)
       this.ctx.fill()
@@ -187,7 +189,6 @@ class CanvasLayer {
   }
 
   drawPolyline ({ points, color, lineDash = [], width = 1 }) {
-    this.ctx.strokeStyle = this.getColor(color)
     this.ctx.lineWidth = width
     this.ctx.lineJoin = 'round'
 
@@ -201,7 +202,10 @@ class CanvasLayer {
 
     this.ctx.setLineDash(lineDash)
 
-    this.ctx.stroke()
+    if (color) {
+      this.ctx.strokeStyle = this.getColor(color)
+      this.ctx.stroke()
+    }
   }
 
   drawRect ({ position, width, height, color, fillColor, strokeWidth = 1 }) {
