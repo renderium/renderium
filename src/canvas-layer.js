@@ -180,8 +180,6 @@ class CanvasLayer {
       width
     })
 
-    this.ctx.closePath()
-
     if (fillColor) {
       this.ctx.fillStyle = this.getColor(fillColor)
       this.ctx.fill()
@@ -201,6 +199,10 @@ class CanvasLayer {
     }
 
     this.ctx.setLineDash(lineDash)
+
+    if (points[0].equals(points[points.length - 1])) {
+      this.ctx.closePath()
+    }
 
     if (color) {
       this.ctx.strokeStyle = this.getColor(color)
