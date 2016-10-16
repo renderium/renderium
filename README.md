@@ -64,6 +64,7 @@ Renderium.spawn(renderer)
 - [Drawing polygons](http://codepen.io/broadsw0rd/pen/NRBJpB)
 - [Drawing polylines](http://codepen.io/broadsw0rd/pen/amjrKN)
 - [Drawing rectangles](http://codepen.io/broadsw0rd/pen/VKGZRq)
+- [Drawing text](http://codepen.io/broadsw0rd/pen/ozPbRa)
 - [Drawing text with different alignments](http://codepen.io/broadsw0rd/pen/LRkoqJ)
 
 ## API
@@ -288,6 +289,20 @@ Check [examples](http://codepen.io/broadsw0rd/pen/VKGZRq)
 | `size` | `Number` |  |
 | `align` | `String` | `'center'` |
 | `baseline` | `String` | `'middle'` |
+
+Draw text
+
+```js
+layer.drawText({
+  position: new Renderium.Vector(300, 100),
+  text: 'Sample text',
+  color: '#2196f3',
+  font: 'sans-serif',
+  size: 16
+})
+```
+
+Check [examples](http://codepen.io/broadsw0rd/pen/ozPbRa) and [different alignments](http://codepen.io/broadsw0rd/pen/LRkoqJ)
 
 #### `#measureText(options)`
 
