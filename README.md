@@ -63,6 +63,7 @@ Renderium.spawn(renderer)
 - [Drawing images](http://codepen.io/broadsw0rd/pen/zKPOKd)
 - [Drawing polygons](http://codepen.io/broadsw0rd/pen/NRBJpB)
 - [Drawing polylines](http://codepen.io/broadsw0rd/pen/amjrKN)
+- [Drawing rectangles](http://codepen.io/broadsw0rd/pen/VKGZRq)
 - [Drawing text with different alignments](http://codepen.io/broadsw0rd/pen/LRkoqJ)
 
 ## API
@@ -258,6 +259,21 @@ Check [examples](http://codepen.io/broadsw0rd/pen/amjrKN)
 | `color` | `String|Gradient` |  |
 | `fillColor` | `String|Gradient` |  |
 | `strokeWidth` | `Number` | `1` |
+
+Draw rectangle. `position` is a center of rectangle
+
+```js
+layer.drawRect({
+  position: new Renderium.Vector(300, 100),
+  color: '#2196f3',
+  fillColor: '#2196f3',
+  width: 100,
+  height: 50,
+  strokeWidth: 2
+})
+```
+
+Check [examples](http://codepen.io/broadsw0rd/pen/VKGZRq)
 
 #### `#drawText(options)`
 
