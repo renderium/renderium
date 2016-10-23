@@ -66,6 +66,7 @@ Renderium.spawn(renderer)
 - [Drawing rectangles](http://codepen.io/broadsw0rd/pen/VKGZRq)
 - [Drawing text](http://codepen.io/broadsw0rd/pen/ozPbRa)
 - [Drawing text with different alignments](http://codepen.io/broadsw0rd/pen/LRkoqJ)
+- [Conway's Game of Life](http://codepen.io/broadsw0rd/pen/KgJrLy)
 
 ## API
 
