@@ -758,7 +758,6 @@ var CanvasLayer = function () {
     var width = _ref9$width === undefined ? 1 : _ref9$width;
 
     this.ctx.lineWidth = width;
-    this.ctx.lineJoin = 'round';
 
     this.ctx.beginPath();
     this.ctx.moveTo(points[0].x, points[0].y);
