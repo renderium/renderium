@@ -87,7 +87,8 @@ class CanvasLayer {
   redraw () {
     for (var i = 0; i < this.components.length; i++) {
       var component = this.components[i]
-      component.redraw(this)
+      component.plot(this)
+      component.draw(this)
     }
     this._shouldRedraw = false
   }
