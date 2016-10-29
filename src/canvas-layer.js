@@ -1,4 +1,3 @@
-import Vector from 'vectory'
 import ImageLoader from './image-loader.js'
 
 // -------------------------------------
@@ -211,17 +210,19 @@ class CanvasLayer {
   }
 
   drawRect ({ position, width, height, color, fillColor, strokeWidth = 1 }) {
-    this.drawPolygon({
-      points: [
-        new Vector(position.x - width / 2, position.y + height / 2),
-        new Vector(position.x + width / 2, position.y + height / 2),
-        new Vector(position.x + width / 2, position.y - height / 2),
-        new Vector(position.x - width / 2, position.y - height / 2)
-      ],
-      color: color,
-      fillColor: fillColor,
-      width: strokeWidth
-    })
+    this.ctx.lineWidth = strokeWidth
+
+    this.ctx.rect(position.x, position.y, width, height)
+
+    if (color) {
+      this.ctx.strokeStyle = this.getColor(color)
+      this.ctx.stroke()
+    }
+
+    if (fillColor) {
+      this.ctx.fillStyle = this.getColor(fillColor)
+      this.ctx.fill()
+    }
   }
 
   drawText ({ position, text, color, font, size, align = 'center', baseline = 'middle' }) {
