@@ -440,7 +440,9 @@ var CanvasLayer = function () {
 
     this.ctx.lineWidth = strokeWidth;
 
+    this.ctx.beginPath();
     this.ctx.rect(position.x, position.y, width, height);
+    this.ctx.closePath();
 
     if (color) {
       this.ctx.strokeStyle = this.getColor(color);
