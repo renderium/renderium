@@ -497,6 +497,22 @@ var CanvasLayer = function () {
 CanvasLayer.DEFAULT_WIDTH = 100;
 CanvasLayer.DEFAULT_HEIGHT = 100;
 
+var Component = function () {
+  function Component() {
+    classCallCheck(this, Component);
+  }
+
+  Component.prototype.plot = function plot(layer) {};
+
+  Component.prototype.draw = function draw(layer) {};
+
+  Component.prototype.shouldRedraw = function shouldRedraw() {
+    return false;
+  };
+
+  return Component;
+}();
+
 var colors = {
   RED: '#f44336',
   PINK: '#e91e63',
@@ -952,6 +968,7 @@ var Renderium = function () {
 Renderium.instances = [];
 
 Renderium.CanvasLayer = CanvasLayer;
+Renderium.Component = Component;
 Renderium.Vector = vectory;
 Renderium.colors = colors;
 
