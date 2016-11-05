@@ -70,8 +70,7 @@ Renderium.spawn(renderer)
 
 ## API
 
-<details>
-<summary>`Renderium`</summary>
+## `Renderium`
 
 #### `.digest()`
 
@@ -85,10 +84,7 @@ Renderium.spawn(renderer)
 
 #### `#removeLayer(layer)`
 
-</details>
-
-<details>
-<summary>`Renderium.Layer`</summary>
+## `Renderium.CanvasLayer`
 
 #### `#constructor(options)`
 
@@ -328,8 +324,6 @@ var textWidth = layer.measureText({
   size: 24
 })
 ```
-
-</details>
 
 ## Redraw Policy
 
