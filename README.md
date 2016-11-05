@@ -1,5 +1,5 @@
 <h1 align="center">Renderium</h1>
-<h4 align="center">Canvas and WebGL renderer</h2>
+<h4 align="center">Canvas renderer what you missed</h4>
 
 <p align="center">
   <a href="https://www.bithound.io/github/broadsw0rd/renderium">
