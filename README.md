@@ -3,10 +3,10 @@
 
 <p align="center">
   <a href="https://www.bithound.io/github/broadsw0rd/renderium">
-    <img src="https://www.bithound.io/github/broadsw0rd/renderium/badges/score.svg" alt="bitHound Overall Score">
+    <img src="https://www.bithound.io/github/broadsw0rd/renderium/badges/score.svg" alt="bitHound Overall Score"/>
   </a>
   <a href="https://github.com/feross/standard" target="_blank">
-    <img src="https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat" alt="js-standard-style"></img>
+    <img src="https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat" alt="js-standard-style"/>
   </a>
 </p>
 
@@ -39,20 +39,44 @@ Download [dev](https://rawgit.com/broadsw0rd/renderium/master/dist/renderium.js)
 ## Usage
 
 ```js
+class MyComponent extends Renderium.Component {
+  draw (layer) {
+    layer.drawRect({
+      position: new Renderium.Vector(10, 10),
+      width: 100,
+      height: 100,
+      color: '#03a9f4'
+    })
+  }
+}
+```
+
+```js
+// start the digest loop
 requestAnimationFrame(function loop () {
   Renderium.digest()
   requestAnimationFrame(loop)
 })
 
+// create the renderer
 var renderer = new Renderium({
   el: document.getElementById('root')
 })
 
+// spawn it
+Renderium.spawn(renderer)
+
+// create a layer
 var layer = new Renderium.CanvasLayer({})
 
+// add layer to the renderer
 renderer.addLayer(layer)
 
-Renderium.spawn(renderer)
+// create component instance
+var component = new MyComponent()
+
+// add component to the layer
+layer.addComponent(component)
 ```
 
 ## Examples
