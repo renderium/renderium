@@ -286,7 +286,7 @@ Check [examples](http://codepen.io/broadsw0rd/pen/amjrKN)
 | `fillColor` | `String|Gradient` |  |
 | `strokeWidth` | `Number` | `1` |
 
-Draw rectangle. `position` is a center of rectangle
+Draw rectangle. `position` is the upper left corner of rectangle
 
 ```js
 layer.drawRect({
