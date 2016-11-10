@@ -286,12 +286,14 @@ var CanvasLayer = function () {
 
   CanvasLayer.prototype.addComponent = function addComponent(component) {
     this.components.push(component);
+    this._shouldRedraw = true;
   };
 
   CanvasLayer.prototype.removeComponent = function removeComponent(component) {
     var idx = this.components.indexOf(component);
     if (idx !== -1) {
       this.components.splice(idx, 1);
+      this._shouldRedraw = true;
     }
   };
 

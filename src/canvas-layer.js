@@ -108,12 +108,14 @@ class CanvasLayer {
 
   addComponent (component) {
     this.components.push(component)
+    this._shouldRedraw = true
   }
 
   removeComponent (component) {
     var idx = this.components.indexOf(component)
     if (idx !== -1) {
       this.components.splice(idx, 1)
+      this._shouldRedraw = true
     }
   }
 
