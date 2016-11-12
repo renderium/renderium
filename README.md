@@ -98,6 +98,15 @@ layer.addComponent(component)
 
 #### `.digest()`
 
+Guarantees per frame synchronization of all renderers. Recommended to use [`requestAnimationFrame`](https://developer.mozilla.org/en-US/docs/Web/API/window/requestAnimationFrame) or [raf](https://www.npmjs.com/package/raf)
+
+```js
+requestAnimationFrame(function loop (t) {
+  Renderium.digest()
+  requestAnimationFrame(loop)
+})
+```
+
 #### `.spawn(renderer)`
 
 #### `.kill(renderer)`
