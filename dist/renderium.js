@@ -211,7 +211,7 @@ var CanvasLayer = function () {
     classCallCheck(this, CanvasLayer);
 
     this.antialiasing = Boolean(antialiasing);
-    this.canvas = document.createElement('canvas');
+    this.canvas = this.createElement();
     this.ctx = this.canvas.getContext('2d');
     this.scale({
       width: width || CanvasLayer.DEFAULT_WIDTH,
@@ -224,6 +224,16 @@ var CanvasLayer = function () {
 
     this._shouldRedraw = false;
   }
+
+  CanvasLayer.prototype.createElement = function createElement() {
+    var canvas = document.createElement('canvas');
+    canvas.style.position = 'absolute';
+    canvas.style.top = 0;
+    canvas.style.left = 0;
+    canvas.style.right = 0;
+    canvas.style.bottom = 0;
+    return canvas;
+  };
 
   CanvasLayer.prototype.scale = function scale(_ref3) {
     var width = _ref3.width;
@@ -913,6 +923,9 @@ var Renderium = function () {
     classCallCheck(this, Renderium);
 
     this.el = el;
+    this.el.style.position = 'relative';
+    this.el.style.width = '100%';
+    this.el.style.height = '100%';
     this.width = this.el.clientWidth;
     this.height = this.el.clientHeight;
     this.layers = [];

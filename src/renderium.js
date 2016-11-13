@@ -26,6 +26,9 @@ class Renderium {
 
   constructor ({ el }) {
     this.el = el
+    this.el.style.position = 'relative'
+    this.el.style.width = '100%'
+    this.el.style.height = '100%'
     this.width = this.el.clientWidth
     this.height = this.el.clientHeight
     this.layers = []

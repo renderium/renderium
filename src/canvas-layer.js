@@ -36,7 +36,7 @@ class Gradient {
 class CanvasLayer {
   constructor ({ antialiasing, width, height }) {
     this.antialiasing = Boolean(antialiasing)
-    this.canvas = document.createElement('canvas')
+    this.canvas = this.createElement()
     this.ctx = this.canvas.getContext('2d')
     this.scale({
       width: width || CanvasLayer.DEFAULT_WIDTH,
@@ -48,6 +48,16 @@ class CanvasLayer {
     this.components = []
 
     this._shouldRedraw = false
+  }
+
+  createElement () {
+    var canvas = document.createElement('canvas')
+    canvas.style.position = 'absolute'
+    canvas.style.top = 0
+    canvas.style.left = 0
+    canvas.style.right = 0
+    canvas.style.bottom = 0
+    return canvas
   }
 
   scale ({ width, height }) {
