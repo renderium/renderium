@@ -211,7 +211,7 @@ var CanvasLayer = function () {
     classCallCheck(this, CanvasLayer);
 
     this.antialiasing = Boolean(antialiasing);
-    this.canvas = this.createElement();
+    this.canvas = document.createElement('canvas');
     this.ctx = this.canvas.getContext('2d');
     this.scale({
       width: width || CanvasLayer.DEFAULT_WIDTH,
@@ -225,14 +225,14 @@ var CanvasLayer = function () {
     this._shouldRedraw = false;
   }
 
-  CanvasLayer.prototype.createElement = function createElement() {
-    var canvas = document.createElement('canvas');
-    canvas.style.position = 'absolute';
-    canvas.style.top = 0;
-    canvas.style.left = 0;
-    canvas.style.right = 0;
-    canvas.style.bottom = 0;
-    return canvas;
+  CanvasLayer.prototype.applyStyles = function applyStyles() {
+    this.ctx.canvas.style.width = this.width + 'px';
+    this.ctx.canvas.style.height = this.height + 'px';
+    this.ctx.canvas.style.position = 'absolute';
+    this.ctx.canvas.style.top = 0;
+    this.ctx.canvas.style.left = 0;
+    this.ctx.canvas.style.right = 0;
+    this.ctx.canvas.style.bottom = 0;
   };
 
   CanvasLayer.prototype.scale = function scale(_ref3) {
@@ -248,8 +248,8 @@ var CanvasLayer = function () {
 
     this.ctx.canvas.width = this.width;
     this.ctx.canvas.height = this.height;
-    this.ctx.canvas.style.width = this.width + 'px';
-    this.ctx.canvas.style.height = this.height + 'px';
+
+    this.applyStyles();
 
     if (window.devicePixelRatio) {
       this.ctx.canvas.width = this.width * PIXEL_RATIO;
