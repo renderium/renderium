@@ -181,7 +181,11 @@ class CanvasLayer {
 
     var defaultAlpha = this.ctx.globalAlpha
     this.ctx.globalAlpha = opacity
-    this.ctx.drawImage(image, position.x - width / 2, position.y - height / 2, width, height)
+    if (this.antialiasing) {
+      this.ctx.drawImage(image, position.x, position.y, width, height)
+    } else {
+      this.ctx.drawImage(image, position.x - 0.5, position.y - 0.5, width, height)
+    }
     this.ctx.globalAlpha = defaultAlpha
   }
 
@@ -225,7 +229,11 @@ class CanvasLayer {
     this.ctx.lineWidth = strokeWidth
 
     this.ctx.beginPath()
-    this.ctx.rect(position.x, position.y, width, height)
+    if (this.antialiasing) {
+      this.ctx.rect(position.x, position.y, width, height)
+    } else {
+      this.ctx.rect(position.x - 0.5, position.y - 0.5, width, height)
+    }
     this.ctx.closePath()
 
     if (color) {
