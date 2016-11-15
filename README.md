@@ -212,7 +212,7 @@ Check [examples](http://codepen.io/broadsw0rd/pen/xEXNkP)
 | `height` | `Number` | `image.height` |
 | `opacity` | `Number` | `1` |
 
-Draw simple image, if you pass url instead of image instance, it will be loaded first, and then reused
+Draw simple image, if you pass url instead of image instance, it will be loaded first, and then reused. `position` is the upper left corner of image
 
 ```js
 layer.drawImage({
