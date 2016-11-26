@@ -121,9 +121,19 @@ requestAnimationFrame(function loop (t) {
 
 #### `#constructor(options)`
 
+List of useful properties
+
+- `.canvas` - `<canvas/>` element
+- `.ctx` - canvas 2d context
+- `.width` - layer width
+- `.height` - layer height
+- `.components` - list of added components
+
 #### `#addComponent()`
 
 #### `#removeComponent()`
+
+#### `#forceRedraw()`
 
 #### `#createGradient(options)`
 
