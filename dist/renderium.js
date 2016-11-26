@@ -10,6 +10,77 @@ var classCallCheck = function (instance, Constructor) {
   }
 };
 
+
+
+
+
+
+
+
+
+var get = function get(object, property, receiver) {
+  if (object === null) object = Function.prototype;
+  var desc = Object.getOwnPropertyDescriptor(object, property);
+
+  if (desc === undefined) {
+    var parent = Object.getPrototypeOf(object);
+
+    if (parent === null) {
+      return undefined;
+    } else {
+      return get(parent, property, receiver);
+    }
+  } else if ("value" in desc) {
+    return desc.value;
+  } else {
+    var getter = desc.get;
+
+    if (getter === undefined) {
+      return undefined;
+    }
+
+    return getter.call(receiver);
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+var set = function set(object, property, value, receiver) {
+  var desc = Object.getOwnPropertyDescriptor(object, property);
+
+  if (desc === undefined) {
+    var parent = Object.getPrototypeOf(object);
+
+    if (parent !== null) {
+      set(parent, property, value, receiver);
+    }
+  } else if ("value" in desc && desc.writable) {
+    desc.value = value;
+  } else {
+    var setter = desc.set;
+
+    if (setter !== undefined) {
+      setter.call(receiver, value);
+    }
+  }
+
+  return value;
+};
+
 var imageStatuses = {};
 var images = {};
 
@@ -61,10 +132,10 @@ var Gradient = function () {
   };
 
   function Gradient(_ref) {
-    var start = _ref.start;
-    var end = _ref.end;
-    var from = _ref.from;
-    var to = _ref.to;
+    var start = _ref.start,
+        end = _ref.end,
+        from = _ref.from,
+        to = _ref.to;
     classCallCheck(this, Gradient);
 
     this.start = start;
@@ -92,9 +163,9 @@ var Gradient = function () {
 
 var CanvasLayer = function () {
   function CanvasLayer(_ref2) {
-    var antialiasing = _ref2.antialiasing;
-    var width = _ref2.width;
-    var height = _ref2.height;
+    var antialiasing = _ref2.antialiasing,
+        width = _ref2.width,
+        height = _ref2.height;
     classCallCheck(this, CanvasLayer);
 
     this.antialiasing = Boolean(antialiasing);
@@ -123,8 +194,8 @@ var CanvasLayer = function () {
   };
 
   CanvasLayer.prototype.scale = function scale(_ref3) {
-    var width = _ref3.width;
-    var height = _ref3.height;
+    var width = _ref3.width,
+        height = _ref3.height;
 
     this.width = width || CanvasLayer.DEFAULT_WIDTH;
     this.height = height || CanvasLayer.DEFAULT_HEIGHT;
@@ -183,22 +254,22 @@ var CanvasLayer = function () {
 
   CanvasLayer.prototype.addComponent = function addComponent(component) {
     this.components.push(component);
-    this._shouldRedraw = true;
+    this.forceRedraw();
   };
 
   CanvasLayer.prototype.removeComponent = function removeComponent(component) {
     var idx = this.components.indexOf(component);
     if (idx !== -1) {
       this.components.splice(idx, 1);
-      this._shouldRedraw = true;
+      this.forceRedraw();
     }
   };
 
   CanvasLayer.prototype.createGradient = function createGradient(_ref4) {
-    var start = _ref4.start;
-    var end = _ref4.end;
-    var from = _ref4.from;
-    var to = _ref4.to;
+    var start = _ref4.start,
+        end = _ref4.end,
+        from = _ref4.from,
+        to = _ref4.to;
 
     return new Gradient({ start: start, end: end, from: from, to: to });
   };
@@ -208,13 +279,13 @@ var CanvasLayer = function () {
   };
 
   CanvasLayer.prototype.drawArc = function drawArc(_ref5) {
-    var position = _ref5.position;
-    var radius = _ref5.radius;
-    var startAngle = _ref5.startAngle;
-    var endAngle = _ref5.endAngle;
-    var color = _ref5.color;
-    var _ref5$width = _ref5.width;
-    var width = _ref5$width === undefined ? 1 : _ref5$width;
+    var position = _ref5.position,
+        radius = _ref5.radius,
+        startAngle = _ref5.startAngle,
+        endAngle = _ref5.endAngle,
+        color = _ref5.color,
+        _ref5$width = _ref5.width,
+        width = _ref5$width === undefined ? 1 : _ref5$width;
 
     this.ctx.strokeStyle = this.getColor(color);
     this.ctx.lineWidth = width;
@@ -228,12 +299,12 @@ var CanvasLayer = function () {
   };
 
   CanvasLayer.prototype.drawCircle = function drawCircle(_ref6) {
-    var position = _ref6.position;
-    var radius = _ref6.radius;
-    var color = _ref6.color;
-    var fillColor = _ref6.fillColor;
-    var _ref6$width = _ref6.width;
-    var width = _ref6$width === undefined ? 1 : _ref6$width;
+    var position = _ref6.position,
+        radius = _ref6.radius,
+        color = _ref6.color,
+        fillColor = _ref6.fillColor,
+        _ref6$width = _ref6.width,
+        width = _ref6$width === undefined ? 1 : _ref6$width;
 
     this.drawArc({
       position: position,
@@ -251,14 +322,14 @@ var CanvasLayer = function () {
   };
 
   CanvasLayer.prototype.drawImage = function drawImage(_ref7) {
-    var position = _ref7.position;
-    var image = _ref7.image;
-    var _ref7$width = _ref7.width;
-    var width = _ref7$width === undefined ? image.width : _ref7$width;
-    var _ref7$height = _ref7.height;
-    var height = _ref7$height === undefined ? image.height : _ref7$height;
-    var _ref7$opacity = _ref7.opacity;
-    var opacity = _ref7$opacity === undefined ? 1 : _ref7$opacity;
+    var position = _ref7.position,
+        image = _ref7.image,
+        _ref7$width = _ref7.width,
+        width = _ref7$width === undefined ? image.width : _ref7$width,
+        _ref7$height = _ref7.height,
+        height = _ref7$height === undefined ? image.height : _ref7$height,
+        _ref7$opacity = _ref7.opacity,
+        opacity = _ref7$opacity === undefined ? 1 : _ref7$opacity;
 
     if (typeof image === 'string') {
       if (this.imageLoader.getStatus(image) === ImageLoader.IMAGE_STATUS_LOADED) {
@@ -284,11 +355,11 @@ var CanvasLayer = function () {
   };
 
   CanvasLayer.prototype.drawPolygon = function drawPolygon(_ref8) {
-    var points = _ref8.points;
-    var color = _ref8.color;
-    var fillColor = _ref8.fillColor;
-    var _ref8$width = _ref8.width;
-    var width = _ref8$width === undefined ? 1 : _ref8$width;
+    var points = _ref8.points,
+        color = _ref8.color,
+        fillColor = _ref8.fillColor,
+        _ref8$width = _ref8.width,
+        width = _ref8$width === undefined ? 1 : _ref8$width;
 
     this.drawPolyline({
       points: points.concat(points[0]),
@@ -303,12 +374,12 @@ var CanvasLayer = function () {
   };
 
   CanvasLayer.prototype.drawPolyline = function drawPolyline(_ref9) {
-    var points = _ref9.points;
-    var color = _ref9.color;
-    var _ref9$lineDash = _ref9.lineDash;
-    var lineDash = _ref9$lineDash === undefined ? [] : _ref9$lineDash;
-    var _ref9$width = _ref9.width;
-    var width = _ref9$width === undefined ? 1 : _ref9$width;
+    var points = _ref9.points,
+        color = _ref9.color,
+        _ref9$lineDash = _ref9.lineDash,
+        lineDash = _ref9$lineDash === undefined ? [] : _ref9$lineDash,
+        _ref9$width = _ref9.width,
+        width = _ref9$width === undefined ? 1 : _ref9$width;
 
     this.ctx.lineWidth = width;
 
@@ -333,13 +404,13 @@ var CanvasLayer = function () {
   };
 
   CanvasLayer.prototype.drawRect = function drawRect(_ref10) {
-    var position = _ref10.position;
-    var width = _ref10.width;
-    var height = _ref10.height;
-    var color = _ref10.color;
-    var fillColor = _ref10.fillColor;
-    var _ref10$strokeWidth = _ref10.strokeWidth;
-    var strokeWidth = _ref10$strokeWidth === undefined ? 1 : _ref10$strokeWidth;
+    var position = _ref10.position,
+        width = _ref10.width,
+        height = _ref10.height,
+        color = _ref10.color,
+        fillColor = _ref10.fillColor,
+        _ref10$strokeWidth = _ref10.strokeWidth,
+        strokeWidth = _ref10$strokeWidth === undefined ? 1 : _ref10$strokeWidth;
 
     this.ctx.lineWidth = strokeWidth;
 
@@ -363,15 +434,15 @@ var CanvasLayer = function () {
   };
 
   CanvasLayer.prototype.drawText = function drawText(_ref11) {
-    var position = _ref11.position;
-    var text = _ref11.text;
-    var color = _ref11.color;
-    var font = _ref11.font;
-    var size = _ref11.size;
-    var _ref11$align = _ref11.align;
-    var align = _ref11$align === undefined ? 'center' : _ref11$align;
-    var _ref11$baseline = _ref11.baseline;
-    var baseline = _ref11$baseline === undefined ? 'middle' : _ref11$baseline;
+    var position = _ref11.position,
+        text = _ref11.text,
+        color = _ref11.color,
+        font = _ref11.font,
+        size = _ref11.size,
+        _ref11$align = _ref11.align,
+        align = _ref11$align === undefined ? 'center' : _ref11$align,
+        _ref11$baseline = _ref11.baseline,
+        baseline = _ref11$baseline === undefined ? 'middle' : _ref11$baseline;
 
     this.ctx.fillStyle = this.getColor(color);
     this.ctx.font = size + 'px ' + font;
@@ -382,9 +453,9 @@ var CanvasLayer = function () {
   };
 
   CanvasLayer.prototype.measureText = function measureText(_ref12) {
-    var text = _ref12.text;
-    var font = _ref12.font;
-    var size = _ref12.size;
+    var text = _ref12.text,
+        font = _ref12.font,
+        size = _ref12.size;
 
     var width;
     if (font && size) {
@@ -443,6 +514,10 @@ var colors = {
 };
 
 var commonjsGlobal = typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
+
+
+
+
 
 function createCommonjsModule(fn, module) {
 	return module = { exports: {} }, fn(module, module.exports), module.exports;
