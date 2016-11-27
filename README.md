@@ -133,8 +133,6 @@ List of useful properties
 
 #### `#removeComponent()`
 
-#### `#forceRedraw()`
-
 #### `#createGradient(options)`
 
 **options**
