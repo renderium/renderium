@@ -109,11 +109,19 @@ requestAnimationFrame(function loop (t) {
 
 #### `.spawn(renderer)`
 
+**Throw errors:**
+
+- if renderer already spawned
+
 #### `.kill(renderer)`
 
 #### `#constructor(options)`
 
 #### `#addLayer(layer)`
+
+**Throw errors:**
+
+- if layer already added
 
 #### `#removeLayer(layer)`
 
@@ -130,6 +138,11 @@ List of useful properties
 - `.components` - list of added components
 
 #### `#addComponent()`
+
+**Throw errors:**
+
+- if component already added
+- if component do not implement [Component](#renderiumcomponent) interface
 
 #### `#removeComponent()`
 
