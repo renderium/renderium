@@ -111,7 +111,7 @@ requestAnimationFrame(function loop (t) {
 
 **Throw errors:**
 
-- if renderer already spawned
+- if renderer has already been spawned
 
 #### `.kill(renderer)`
 
@@ -121,7 +121,7 @@ requestAnimationFrame(function loop (t) {
 
 **Throw errors:**
 
-- if layer already added
+- if layer has already been added to renderer
 
 #### `#removeLayer(layer)`
 
@@ -141,8 +141,8 @@ List of useful properties
 
 **Throw errors:**
 
-- if component already added
-- if component do not implement [Component](#renderiumcomponent) interface
+- if component has already been added to layer
+- if component has not implemented [Component](#renderiumcomponent) interface
 
 #### `#removeComponent()`
 
