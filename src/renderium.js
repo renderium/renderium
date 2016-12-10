@@ -5,6 +5,10 @@ import Vector from 'vectory'
 
 class Renderium {
   static spawn (renderer) {
+    var idx = Renderium.instances.indexOf(renderer)
+    if (idx !== -1) {
+      throw new Error('renderer has already been spawned')
+    }
     Renderium.instances.push(renderer)
   }
 
@@ -35,6 +39,10 @@ class Renderium {
   }
 
   addLayer (layer) {
+    var idx = this.layers.indexOf(layer)
+    if (idx !== -1) {
+      throw new Error('layer has already been added to renderer')
+    }
     this.layers.push(layer)
     this.el.appendChild(layer.canvas)
     layer.scale({ width: this.width, height: this.height })

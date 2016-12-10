@@ -117,6 +117,13 @@ class CanvasLayer {
   }
 
   addComponent (component) {
+    var idx = this.components.indexOf(component)
+    if (idx !== -1) {
+      throw new Error('component has already been added to layer')
+    }
+    if (typeof component.plot !== 'function' || typeof component.draw !== 'function' || typeof component.shouldRedraw !== 'function') {
+      throw new Error('component has not implemented Component interface')
+    }
     this.components.push(component)
     this.forceRedraw()
   }

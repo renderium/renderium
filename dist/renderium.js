@@ -253,6 +253,13 @@ var CanvasLayer = function () {
   };
 
   CanvasLayer.prototype.addComponent = function addComponent(component) {
+    var idx = this.components.indexOf(component);
+    if (idx !== -1) {
+      throw new Error('component has already been added to layer');
+    }
+    if (typeof component.plot !== 'function' || typeof component.draw !== 'function' || typeof component.shouldRedraw !== 'function') {
+      throw new Error('component has not implemented Component interface');
+    }
     this.components.push(component);
     this.forceRedraw();
   };
@@ -869,6 +876,10 @@ var vectory = createCommonjsModule(function (module, exports) {
 
 var Renderium = function () {
   Renderium.spawn = function spawn(renderer) {
+    var idx = Renderium.instances.indexOf(renderer);
+    if (idx !== -1) {
+      throw new Error('renderer has already been spawned');
+    }
     Renderium.instances.push(renderer);
   };
 
@@ -902,6 +913,10 @@ var Renderium = function () {
   }
 
   Renderium.prototype.addLayer = function addLayer(layer) {
+    var idx = this.layers.indexOf(layer);
+    if (idx !== -1) {
+      throw new Error('layer has already been added to renderer');
+    }
     this.layers.push(layer);
     this.el.appendChild(layer.canvas);
     layer.scale({ width: this.width, height: this.height });
