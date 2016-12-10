@@ -39,6 +39,7 @@ Download [dev](https://rawgit.com/broadsw0rd/renderium/master/dist/renderium.js)
 ## Usage
 
 ```js
+// implement a component
 class MyComponent extends Renderium.Component {
   draw (layer) {
     layer.drawRect({
@@ -77,6 +78,8 @@ var component = new MyComponent()
 
 // add component to the layer
 layer.addComponent(component)
+
+// enjoy!
 ```
 
 ## Examples
