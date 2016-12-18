@@ -1,7 +1,7 @@
 {
   "name": "renderium",
   "version": "1.0.0",
-  "description": "Canvas renderer what you missed",
+  "description": "Component based canvas renderer what you missed",
   "keywords": [
     "canvas",
     "webgl",
