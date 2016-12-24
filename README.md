@@ -13,6 +13,7 @@
 ## Table of Contents
 
 - [Features](#features)
+- [Dependencies](#dependencies)
 - [Install](#install)
 - [Usage](#usage)
 - [Examples](#examples)
@@ -28,11 +29,16 @@
 - Logs
 - Designed with performance in mind and reviewed with [IRHydra](http://mrale.ph/irhydra/2/)
 
+## Dependencies
+
+- [Vectory](https://www.npmjs.com/package/vectory)
+
 ## Install
 
 Download [dev](https://rawgit.com/broadsw0rd/renderium/master/dist/renderium.js) or [prod](https://rawgit.com/broadsw0rd/renderium/master/dist/renderium.min.js) version and put it in your html
 
 ```html
+<script src="vendor/vectory.min.js"></script>
 <script src="vendor/renderium.min.js"></script>
 ```
 
