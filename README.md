@@ -49,7 +49,7 @@ Download [dev](https://rawgit.com/broadsw0rd/renderium/master/dist/renderium.js)
 class MyComponent extends Renderium.Component {
   draw (layer) {
     layer.drawRect({
-      position: new Renderium.Vector(10, 10),
+      position: new Vector(10, 10),
       width: 100,
       height: 100,
       color: '#03a9f4'
@@ -170,8 +170,8 @@ Create gradient, based on [this](https://developer.mozilla.org/en-US/docs/Web/AP
 
 ```js
 var gradient = layer.createGradient({
-  start: new Renderium.Vector(0, 75),
-  end: new Renderium.Vector(0, 125),
+  start: new Vector(0, 75),
+  end: new Vector(0, 125),
   from: '#03a9f4',
   to: '#3f51b5'
 })
@@ -194,7 +194,7 @@ Draw simple arc, based on [this](https://developer.mozilla.org/en-US/docs/Web/AP
 
 ```js
 layer.drawArc({
-  position: new Renderium.Vector(300, 100),
+  position: new Vector(300, 100),
   color: '#4caf50',
   radius: 25,
   startAngle: Math.PI,
@@ -221,7 +221,7 @@ Draw simple circle, based on [this](https://developer.mozilla.org/en-US/docs/Web
 
 ```js
 layer.drawCircle({
-  position: new Renderium.Vector(300, 100),
+  position: new Vector(300, 100),
   color: '#2196f3',
   fillColor: '#2196f3',
   radius: 25
@@ -246,7 +246,7 @@ Draw simple image, if you pass url instead of image instance, it will be loaded 
 
 ```js
 layer.drawImage({
-  position: new Renderium.Vector(350, 100),
+  position: new Vector(350, 100),
   image: 'https://upload.wikimedia.org/wikipedia/en/2/24/Lenna.png',
   width: 256,
   height: 256,
@@ -272,9 +272,9 @@ Draw polygon. `points` is vertices of polygon
 ```js
 layer.drawPolygon({
   points: [
-    new Renderium.Vector(50, 50),
-    new Renderium.Vector(100, 50),
-    new Renderium.Vector(75, 75)
+    new Vector(50, 50),
+    new Vector(100, 50),
+    new Vector(75, 75)
   ],
   color: '#2196f3',
   fillColor: '#2196f3',
@@ -300,9 +300,9 @@ Draw polyline. `points` is vertices of polyline
 ```js
 layer.drawPolyline({
   points: [
-    new Renderium.Vector(50, 50),
-    new Renderium.Vector(100, 50),
-    new Renderium.Vector(75, 75)
+    new Vector(50, 50),
+    new Vector(100, 50),
+    new Vector(75, 75)
   ],
   color: '#2196f3',
   lineDash: [2, 2],
@@ -329,7 +329,7 @@ Draw rectangle. `position` is the upper left corner of rectangle
 
 ```js
 layer.drawRect({
-  position: new Renderium.Vector(300, 100),
+  position: new Vector(300, 100),
   color: '#2196f3',
   fillColor: '#2196f3',
   width: 100,
@@ -358,7 +358,7 @@ Draw text
 
 ```js
 layer.drawText({
-  position: new Renderium.Vector(300, 100),
+  position: new Vector(300, 100),
   text: 'Sample text',
   color: '#2196f3',
   font: 'sans-serif',
