@@ -293,6 +293,7 @@ var CanvasLayer = function () {
       component.plot(this);
       component.draw(this);
     }
+    this.drawStats();
     this._shouldRedraw = false;
   };
 
