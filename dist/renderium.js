@@ -4,6 +4,47 @@
   (global.Renderium = factory());
 }(this, (function () { 'use strict';
 
+/* This program is free software. It comes without any warranty, to
+     * the extent permitted by applicable law. You can redistribute it
+     * and/or modify it under the terms of the Do What The Fuck You Want
+     * To Public License, Version 2, as published by Sam Hocevar. See
+     * http://www.wtfpl.net/ for more details. */
+var index = leftPad;
+
+var cache = ['', ' ', '  ', '   ', '    ', '     ', '      ', '       ', '        ', '         '];
+
+function leftPad(str, len, ch) {
+  // convert `str` to `string`
+  str = str + '';
+  // `len` is the `pad`'s length now
+  len = len - str.length;
+  // doesn't need to pad
+  if (len <= 0) return str;
+  // `ch` defaults to `' '`
+  if (!ch && ch !== 0) ch = ' ';
+  // convert `ch` to `string`
+  ch = ch + '';
+  // cache common use cases
+  if (ch === ' ' && len < 10) return cache[len] + str;
+  // `pad` starts with an empty string
+  var pad = '';
+  // loop
+  while (true) {
+    // add `ch` to `pad` if `len` is odd
+    if (len & 1) pad += ch;
+    // divide `len` by 2, ditch the remainder
+    len >>= 1;
+    // "double" the `ch` so this operation count grows logarithmically on `len`
+    // each time `ch` is "doubled", the `len` would need to be "doubled" too
+    // similar to finding a value in binary search tree, hence O(log(n))
+    if (len) ch += ch;
+    // `len` is 0, exit the loop
+    else break;
+  }
+  // pad `str`!
+  return pad + str;
+}
+
 var classCallCheck = function (instance, Constructor) {
   if (!(instance instanceof Constructor)) {
     throw new TypeError("Cannot call a class as a function");
@@ -148,6 +189,8 @@ var Gradient = function () {
   }
 
   Gradient.prototype.createGradient = function createGradient(layer) {
+    layer.collectStats('createGradient');
+
     this._gradient = layer.ctx.createLinearGradient(this.start.x, this.start.y, this.end.x, this.end.y);
     this._gradient.addColorStop(0, this.from);
     this._gradient.addColorStop(1, this.to);
@@ -179,6 +222,20 @@ var CanvasLayer = function () {
     this.imageLoader.onload = this.forceRedraw.bind(this);
 
     this.components = [];
+
+    this.stats = {
+      createGradient: 0,
+      drawArc: 0,
+      drawCircle: 0,
+      drawImage: 0,
+      drawPolygon: 0,
+      drawPolyline: 0,
+      drawRect: 0,
+      drawText: 0,
+      measureText: 0,
+      stroke: 0,
+      fill: 0
+    };
 
     this._shouldRedraw = false;
   }
@@ -223,6 +280,7 @@ var CanvasLayer = function () {
   };
 
   CanvasLayer.prototype.clear = function clear() {
+    this.clearStats();
     this.ctx.save();
     this.ctx.setTransform(1, 0, 0, 1, 0, 0);
     this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
@@ -294,6 +352,8 @@ var CanvasLayer = function () {
         _ref5$width = _ref5.width,
         width = _ref5$width === undefined ? 1 : _ref5$width;
 
+    this.collectStats('drawArc');
+
     this.ctx.strokeStyle = this.getColor(color);
     this.ctx.lineWidth = width;
 
@@ -301,6 +361,7 @@ var CanvasLayer = function () {
     this.ctx.arc(position.x, position.y, radius, startAngle, endAngle);
 
     if (color) {
+      this.collectStats('stroke');
       this.ctx.stroke();
     }
   };
@@ -313,6 +374,8 @@ var CanvasLayer = function () {
         _ref6$width = _ref6.width,
         width = _ref6$width === undefined ? 1 : _ref6$width;
 
+    this.collectStats('drawCircle');
+
     this.drawArc({
       position: position,
       radius: radius,
@@ -323,6 +386,7 @@ var CanvasLayer = function () {
     });
 
     if (fillColor) {
+      this.collectStats('fill');
       this.ctx.fillStyle = this.getColor(fillColor);
       this.ctx.fill();
     }
@@ -337,6 +401,8 @@ var CanvasLayer = function () {
         height = _ref7$height === undefined ? image.height : _ref7$height,
         _ref7$opacity = _ref7.opacity,
         opacity = _ref7$opacity === undefined ? 1 : _ref7$opacity;
+
+    this.collectStats('drawImage');
 
     if (typeof image === 'string') {
       if (this.imageLoader.getStatus(image) === ImageLoader.IMAGE_STATUS_LOADED) {
@@ -368,6 +434,8 @@ var CanvasLayer = function () {
         _ref8$width = _ref8.width,
         width = _ref8$width === undefined ? 1 : _ref8$width;
 
+    this.collectStats('drawPolygon');
+
     this.drawPolyline({
       points: points.concat(points[0]),
       color: color,
@@ -375,6 +443,7 @@ var CanvasLayer = function () {
     });
 
     if (fillColor) {
+      this.collectStats('fill');
       this.ctx.fillStyle = this.getColor(fillColor);
       this.ctx.fill();
     }
@@ -387,6 +456,8 @@ var CanvasLayer = function () {
         lineDash = _ref9$lineDash === undefined ? [] : _ref9$lineDash,
         _ref9$width = _ref9.width,
         width = _ref9$width === undefined ? 1 : _ref9$width;
+
+    this.collectStats('drawPolyline');
 
     this.ctx.lineWidth = width;
 
@@ -405,6 +476,7 @@ var CanvasLayer = function () {
     }
 
     if (color) {
+      this.collectStats('stroke');
       this.ctx.strokeStyle = this.getColor(color);
       this.ctx.stroke();
     }
@@ -419,6 +491,8 @@ var CanvasLayer = function () {
         _ref10$strokeWidth = _ref10.strokeWidth,
         strokeWidth = _ref10$strokeWidth === undefined ? 1 : _ref10$strokeWidth;
 
+    this.collectStats('drawRect');
+
     this.ctx.lineWidth = strokeWidth;
 
     this.ctx.beginPath();
@@ -430,11 +504,13 @@ var CanvasLayer = function () {
     this.ctx.closePath();
 
     if (color) {
+      this.collectStats('stroke');
       this.ctx.strokeStyle = this.getColor(color);
       this.ctx.stroke();
     }
 
     if (fillColor) {
+      this.collectStats('fill');
       this.ctx.fillStyle = this.getColor(fillColor);
       this.ctx.fill();
     }
@@ -451,6 +527,8 @@ var CanvasLayer = function () {
         _ref11$baseline = _ref11.baseline,
         baseline = _ref11$baseline === undefined ? 'middle' : _ref11$baseline;
 
+    this.collectStats('drawText');
+
     this.ctx.fillStyle = this.getColor(color);
     this.ctx.font = size + 'px ' + font;
     this.ctx.textAlign = align;
@@ -464,6 +542,8 @@ var CanvasLayer = function () {
         font = _ref12.font,
         size = _ref12.size;
 
+    this.collectStats('measureText');
+
     var width;
     if (font && size) {
       var defaultFont = this.ctx.font;
@@ -475,6 +555,29 @@ var CanvasLayer = function () {
     }
     return width;
   };
+
+  CanvasLayer.prototype.clearStats = function clearStats() {
+    for (var methodName in this.stats) {
+      this.stats[methodName] = 0;
+    }
+  };
+
+  CanvasLayer.prototype.collectStats = function collectStats(methodName) {
+    this.stats[methodName]++;
+  };
+
+  CanvasLayer.prototype.formatStats = function formatStats() {
+    var result = [];
+    var maxStringLength = 20;
+
+    for (var methodName in this.stats) {
+      result.push(methodName + index(this.stats[methodName], maxStringLength - methodName.length));
+    }
+
+    return result;
+  };
+
+  CanvasLayer.prototype.drawStats = function drawStats() {};
 
   return CanvasLayer;
 }();

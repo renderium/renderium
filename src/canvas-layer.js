@@ -1,3 +1,4 @@
+import leftPad from 'left-pad'
 import ImageLoader from './image-loader.js'
 
 // -------------------------------------
@@ -22,6 +23,8 @@ class Gradient {
   }
 
   createGradient (layer) {
+    layer.collectStats('createGradient')
+
     this._gradient = layer.ctx.createLinearGradient(this.start.x, this.start.y, this.end.x, this.end.y)
     this._gradient.addColorStop(0, this.from)
     this._gradient.addColorStop(1, this.to)
@@ -46,6 +49,20 @@ class CanvasLayer {
     this.imageLoader.onload = this.forceRedraw.bind(this)
 
     this.components = []
+
+    this.stats = {
+      createGradient: 0,
+      drawArc: 0,
+      drawCircle: 0,
+      drawImage: 0,
+      drawPolygon: 0,
+      drawPolyline: 0,
+      drawRect: 0,
+      drawText: 0,
+      measureText: 0,
+      stroke: 0,
+      fill: 0
+    }
 
     this._shouldRedraw = false
   }
@@ -87,6 +104,7 @@ class CanvasLayer {
   }
 
   clear () {
+    this.clearStats()
     this.ctx.save()
     this.ctx.setTransform(1, 0, 0, 1, 0, 0)
     this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height)
@@ -145,6 +163,8 @@ class CanvasLayer {
   }
 
   drawArc ({ position, radius, startAngle, endAngle, color, width = 1 }) {
+    this.collectStats('drawArc')
+
     this.ctx.strokeStyle = this.getColor(color)
     this.ctx.lineWidth = width
 
@@ -152,11 +172,14 @@ class CanvasLayer {
     this.ctx.arc(position.x, position.y, radius, startAngle, endAngle)
 
     if (color) {
+      this.collectStats('stroke')
       this.ctx.stroke()
     }
   }
 
   drawCircle ({ position, radius, color, fillColor, width = 1 }) {
+    this.collectStats('drawCircle')
+
     this.drawArc({
       position,
       radius,
@@ -167,12 +190,15 @@ class CanvasLayer {
     })
 
     if (fillColor) {
+      this.collectStats('fill')
       this.ctx.fillStyle = this.getColor(fillColor)
       this.ctx.fill()
     }
   }
 
   drawImage ({ position, image, width = image.width, height = image.height, opacity = 1 }) {
+    this.collectStats('drawImage')
+
     if (typeof image === 'string') {
       if (this.imageLoader.getStatus(image) === ImageLoader.IMAGE_STATUS_LOADED) {
         image = this.imageLoader.getImage(image)
@@ -197,6 +223,8 @@ class CanvasLayer {
   }
 
   drawPolygon ({ points, color, fillColor, width = 1 }) {
+    this.collectStats('drawPolygon')
+
     this.drawPolyline({
       points: points.concat(points[0]),
       color,
@@ -204,12 +232,15 @@ class CanvasLayer {
     })
 
     if (fillColor) {
+      this.collectStats('fill')
       this.ctx.fillStyle = this.getColor(fillColor)
       this.ctx.fill()
     }
   }
 
   drawPolyline ({ points, color, lineDash = [], width = 1 }) {
+    this.collectStats('drawPolyline')
+
     this.ctx.lineWidth = width
 
     this.ctx.beginPath()
@@ -227,12 +258,15 @@ class CanvasLayer {
     }
 
     if (color) {
+      this.collectStats('stroke')
       this.ctx.strokeStyle = this.getColor(color)
       this.ctx.stroke()
     }
   }
 
   drawRect ({ position, width, height, color, fillColor, strokeWidth = 1 }) {
+    this.collectStats('drawRect')
+
     this.ctx.lineWidth = strokeWidth
 
     this.ctx.beginPath()
@@ -244,17 +278,21 @@ class CanvasLayer {
     this.ctx.closePath()
 
     if (color) {
+      this.collectStats('stroke')
       this.ctx.strokeStyle = this.getColor(color)
       this.ctx.stroke()
     }
 
     if (fillColor) {
+      this.collectStats('fill')
       this.ctx.fillStyle = this.getColor(fillColor)
       this.ctx.fill()
     }
   }
 
   drawText ({ position, text, color, font, size, align = 'center', baseline = 'middle' }) {
+    this.collectStats('drawText')
+
     this.ctx.fillStyle = this.getColor(color)
     this.ctx.font = `${size}px ${font}`
     this.ctx.textAlign = align
@@ -264,6 +302,8 @@ class CanvasLayer {
   }
 
   measureText ({ text, font, size }) {
+    this.collectStats('measureText')
+
     var width
     if (font && size) {
       var defaultFont = this.ctx.font
@@ -274,6 +314,31 @@ class CanvasLayer {
       width = this.ctx.measureText(text).width
     }
     return width
+  }
+
+  clearStats () {
+    for (var methodName in this.stats) {
+      this.stats[methodName] = 0
+    }
+  }
+
+  collectStats (methodName) {
+    this.stats[methodName]++
+  }
+
+  formatStats () {
+    var result = []
+    var maxStringLength = 20
+
+    for (var methodName in this.stats) {
+      result.push(methodName + leftPad(this.stats[methodName], maxStringLength - methodName.length))
+    }
+
+    return result
+  }
+
+  drawStats () {
+
   }
 }
 
