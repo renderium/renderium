@@ -65,7 +65,7 @@ export default MyComponent
 
 ```js
 import Renderium from 'renderium'
-import MyCompnent from './my-component'
+import MyComponent from './my-component'
 
 // start the digest loop
 requestAnimationFrame(function loop () {
