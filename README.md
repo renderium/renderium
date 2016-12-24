@@ -45,6 +45,9 @@ Download [dev](https://rawgit.com/broadsw0rd/renderium/master/dist/renderium.js)
 ## Usage
 
 ```js
+import Renderium from 'renderium'
+import Vector from 'vectory'
+
 // implement a component
 class MyComponent extends Renderium.Component {
   draw (layer) {
@@ -56,9 +59,14 @@ class MyComponent extends Renderium.Component {
     })
   }
 }
+
+export default MyComponent
 ```
 
 ```js
+import Renderium from 'renderium'
+import MyCompnent from './my-component'
+
 // start the digest loop
 requestAnimationFrame(function loop () {
   Renderium.digest()
