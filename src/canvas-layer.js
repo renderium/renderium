@@ -37,7 +37,8 @@ class Gradient {
 }
 
 class CanvasLayer {
-  constructor ({ antialiasing, width, height }) {
+  constructor ({ stats, antialiasing, width, height }) {
+    this.logStats = Boolean(stats)
     this.antialiasing = Boolean(antialiasing)
     this.canvas = document.createElement('canvas')
     this.ctx = this.canvas.getContext('2d')
@@ -117,7 +118,9 @@ class CanvasLayer {
       component.plot(this)
       component.draw(this)
     }
-    this.drawStats()
+    if (this.logStats) {
+      this.drawStats()
+    }
     this._shouldRedraw = false
   }
 
@@ -339,7 +342,22 @@ class CanvasLayer {
   }
 
   drawStats () {
+    var stats = this.formatStats()
 
+    for (var i = stats.length; i--;) {
+      this.drawText({
+        position: {
+          x: this.width - 10,
+          y: this.height - 14 * (stats.length - i)
+        },
+        text: stats[i],
+        color: '#fff',
+        font: 'Courier, monospace',
+        size: 14,
+        align: 'right',
+        baleline: 'bottom'
+      })
+    }
   }
 }
 

@@ -206,11 +206,13 @@ var Gradient = function () {
 
 var CanvasLayer = function () {
   function CanvasLayer(_ref2) {
-    var antialiasing = _ref2.antialiasing,
+    var stats = _ref2.stats,
+        antialiasing = _ref2.antialiasing,
         width = _ref2.width,
         height = _ref2.height;
     classCallCheck(this, CanvasLayer);
 
+    this.logStats = Boolean(stats);
     this.antialiasing = Boolean(antialiasing);
     this.canvas = document.createElement('canvas');
     this.ctx = this.canvas.getContext('2d');
@@ -293,7 +295,9 @@ var CanvasLayer = function () {
       component.plot(this);
       component.draw(this);
     }
-    this.drawStats();
+    if (this.logStats) {
+      this.drawStats();
+    }
     this._shouldRedraw = false;
   };
 
@@ -578,7 +582,24 @@ var CanvasLayer = function () {
     return result;
   };
 
-  CanvasLayer.prototype.drawStats = function drawStats() {};
+  CanvasLayer.prototype.drawStats = function drawStats() {
+    var stats = this.formatStats();
+
+    for (var i = stats.length; i--;) {
+      this.drawText({
+        position: {
+          x: this.width - 10,
+          y: this.height - 14 * (stats.length - i)
+        },
+        text: stats[i],
+        color: '#fff',
+        font: 'Courier, monospace',
+        size: 14,
+        align: 'right',
+        baleline: 'bottom'
+      });
+    }
+  };
 
   return CanvasLayer;
 }();
