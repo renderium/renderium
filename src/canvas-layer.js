@@ -37,7 +37,8 @@ class Gradient {
 }
 
 class CanvasLayer {
-  constructor ({ stats, antialiasing, width, height }) {
+  constructor ({ Vector, stats, antialiasing, width, height }) {
+    this.Vector = Vector || window.Vector
     this.logStats = Boolean(stats)
     this.antialiasing = Boolean(antialiasing)
     this.canvas = document.createElement('canvas')
@@ -346,10 +347,7 @@ class CanvasLayer {
 
     for (var i = stats.length; i--;) {
       this.drawText({
-        position: {
-          x: this.width - 10,
-          y: this.height - 14 * (stats.length - i)
-        },
+        position: new this.Vector(this.width - 10, this.height - 14 * (stats.length - i)),
         text: stats[i],
         color: '#fff',
         font: 'Courier, monospace',

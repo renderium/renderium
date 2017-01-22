@@ -66,6 +66,7 @@ export default MyComponent
 
 ```js
 import Renderium from 'renderium'
+import Vector from 'vectory'
 import MyComponent from './my-component'
 
 // start the digest loop
@@ -83,7 +84,9 @@ var renderer = new Renderium({
 Renderium.spawn(renderer)
 
 // create a layer
-var layer = new Renderium.CanvasLayer({})
+var layer = new Renderium.CanvasLayer({
+  Vector
+})
 
 // add layer to the renderer
 renderer.addLayer(layer)

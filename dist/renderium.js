@@ -206,12 +206,14 @@ var Gradient = function () {
 
 var CanvasLayer = function () {
   function CanvasLayer(_ref2) {
-    var stats = _ref2.stats,
+    var Vector = _ref2.Vector,
+        stats = _ref2.stats,
         antialiasing = _ref2.antialiasing,
         width = _ref2.width,
         height = _ref2.height;
     classCallCheck(this, CanvasLayer);
 
+    this.Vector = Vector || window.Vector;
     this.logStats = Boolean(stats);
     this.antialiasing = Boolean(antialiasing);
     this.canvas = document.createElement('canvas');
@@ -587,10 +589,7 @@ var CanvasLayer = function () {
 
     for (var i = stats.length; i--;) {
       this.drawText({
-        position: {
-          x: this.width - 10,
-          y: this.height - 14 * (stats.length - i)
-        },
+        position: new this.Vector(this.width - 10, this.height - 14 * (stats.length - i)),
         text: stats[i],
         color: '#fff',
         font: 'Courier, monospace',
