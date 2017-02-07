@@ -102,16 +102,18 @@ layer.addComponent(component)
 
 ## Examples
 
-- **[All](http://codepen.io/collection/AEydae/)**
-- [Drawing arcs](http://codepen.io/broadsw0rd/pen/amyjmZ)
-- [Drawing circles](http://codepen.io/broadsw0rd/pen/xEXNkP)
-- [Drawing images](http://codepen.io/broadsw0rd/pen/zKPOKd)
-- [Drawing polygons](http://codepen.io/broadsw0rd/pen/NRBJpB)
-- [Drawing polylines](http://codepen.io/broadsw0rd/pen/amjrKN)
-- [Drawing rectangles](http://codepen.io/broadsw0rd/pen/VKGZRq)
-- [Drawing text](http://codepen.io/broadsw0rd/pen/ozPbRa)
-- [Drawing text with different alignments](http://codepen.io/broadsw0rd/pen/LRkoqJ)
-- [Conway's Game of Life](http://codepen.io/broadsw0rd/pen/KgJrLy)
+Canvas Layer |
+------- |
+**[All](http://codepen.io/collection/AEydae/)** |
+[Drawing arcs](http://codepen.io/broadsw0rd/pen/amyjmZ) |
+[Drawing circles](http://codepen.io/broadsw0rd/pen/xEXNkP) |
+[Drawing images](http://codepen.io/broadsw0rd/pen/zKPOKd) |
+[Drawing polygons](http://codepen.io/broadsw0rd/pen/NRBJpB) |
+[Drawing polylines](http://codepen.io/broadsw0rd/pen/amjrKN) |
+[Drawing rectangles](http://codepen.io/broadsw0rd/pen/VKGZRq) |
+[Drawing text](http://codepen.io/broadsw0rd/pen/ozPbRa) |
+[Drawing text with different alignments](http://codepen.io/broadsw0rd/pen/LRkoqJ) |
+[Conway's Game of Life](http://codepen.io/broadsw0rd/pen/KgJrLy) |
 
 ## [API](https://github.com/broadsw0rd/renderium/wiki)
 
