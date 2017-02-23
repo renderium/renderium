@@ -17,15 +17,14 @@
 - [Install](#install)
 - [Usage](#usage)
 - [Examples](#examples)
-- [API](#api)
-- [Redraw policy](#redraw-policy)
 - [Development](#development)
 
 ## Features
 
-- [Components](#components)
-- [Redraw Policy](#redraw-policy)
-- [Logs](#logs)
+- [Rich API](https://github.com/broadsw0rd/renderium/wiki/API)
+- [Components](https://github.com/broadsw0rd/renderium/wiki/Components)
+- [Redraw Policy](https://github.com/broadsw0rd/renderium/wiki/Redraw-Policy)
+- [Logs](https://github.com/broadsw0rd/renderium/wiki/Logs)
 - Designed with performance in mind and reviewed with [IRHydra](http://mrale.ph/irhydra/2/)
 
 ## Dependencies
@@ -112,14 +111,6 @@ Canvas Layer |
 [Drawing text](http://codepen.io/broadsw0rd/pen/ozPbRa) |
 [Drawing text with different alignments](http://codepen.io/broadsw0rd/pen/LRkoqJ) |
 [Conway's Game of Life](http://codepen.io/broadsw0rd/pen/KgJrLy) |
-
-## [API](https://github.com/broadsw0rd/renderium/wiki)
-
-## Components
-
-## Redraw Policy
-
-## Logs
 
 ## Development
 
