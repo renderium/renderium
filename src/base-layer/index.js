@@ -1,7 +1,8 @@
 import leftPad from 'left-pad'
 
 class BaseLayer {
-  constructor ({ width, height }) {
+  constructor ({ Vector, width, height }) {
+    this.Vector = Vector || window.Vector
     this.canvas = document.createElement('canvas')
     this.scale({ width, height })
     this.components = []

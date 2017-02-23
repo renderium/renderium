@@ -1,4 +1,4 @@
-import CanvasLayer from './canvas-layer.js'
+import CanvasLayer from './canvas-layer'
 import Component from './component.js'
 import colors from './colors.js'
 

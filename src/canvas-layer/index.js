@@ -1,5 +1,6 @@
-import leftPad from 'left-pad'
-import ImageLoader from './image-loader.js'
+import BaseLayer from '../base-layer'
+import ImageLoader from '../image-loader.js'
+import Gradient from './gradient.js'
 
 // -------------------------------------
 // CanvasLayer
@@ -7,50 +8,16 @@ import ImageLoader from './image-loader.js'
 
 const PIXEL_RATIO = window.devicePixelRatio || 1
 
-class Gradient {
-  static isGradient (color) {
-    return color && color._isGradient
-  }
-
-  constructor ({ start, end, from, to }) {
-    this.start = start
-    this.end = end
-    this.from = from
-    this.to = to
-
-    this._isGradient = true
-    this._gradient = null
-  }
-
-  createGradient (layer) {
-    layer.collectStats('createGradient')
-
-    this._gradient = layer.ctx.createLinearGradient(this.start.x, this.start.y, this.end.x, this.end.y)
-    this._gradient.addColorStop(0, this.from)
-    this._gradient.addColorStop(1, this.to)
-    return this._gradient
-  }
-
-  valueOf () {
-    return this._gradient
-  }
-}
-
-class CanvasLayer {
+class CanvasLayer extends BaseLayer {
   constructor ({ Vector, stats, antialiasing, width, height }) {
-    this.Vector = Vector || window.Vector
+    super({ Vector, width, height })
+
     this.logStats = Boolean(stats)
     this.antialiasing = Boolean(antialiasing)
-    this.canvas = document.createElement('canvas')
     this.ctx = this.canvas.getContext('2d')
-    this.scale({
-      width: width || CanvasLayer.DEFAULT_WIDTH,
-      height: height || CanvasLayer.DEFAULT_HEIGHT
-    })
+
     this.imageLoader = new ImageLoader()
     this.imageLoader.onload = this.forceRedraw.bind(this)
-
-    this.components = []
 
     this.stats = {
       createGradient: 0,
@@ -65,48 +32,24 @@ class CanvasLayer {
       stroke: 0,
       fill: 0
     }
-
-    this._shouldRedraw = false
-  }
-
-  applyStyles () {
-    this.ctx.canvas.style.width = `${this.width}px`
-    this.ctx.canvas.style.height = `${this.height}px`
-    this.ctx.canvas.style.position = 'absolute'
-    this.ctx.canvas.style.top = 0
-    this.ctx.canvas.style.left = 0
-    this.ctx.canvas.style.right = 0
-    this.ctx.canvas.style.bottom = 0
   }
 
   scale ({ width, height }) {
-    this.width = width || CanvasLayer.DEFAULT_WIDTH
-    this.height = height || CanvasLayer.DEFAULT_HEIGHT
-
-    this.canvas.removeAttribute('width')
-    this.canvas.removeAttribute('height')
-    this.canvas.removeAttribute('style')
-
-    this.ctx.canvas.width = this.width
-    this.ctx.canvas.height = this.height
-
-    this.applyStyles()
+    super.scale({ width, height })
 
     if (window.devicePixelRatio) {
-      this.ctx.canvas.width = this.width * PIXEL_RATIO
-      this.ctx.canvas.height = this.height * PIXEL_RATIO
+      this.canvas.width = this.width * PIXEL_RATIO
+      this.canvas.height = this.height * PIXEL_RATIO
       this.ctx.scale(PIXEL_RATIO, PIXEL_RATIO)
     }
 
     if (!this.antialiasing) {
       this.ctx.translate(0.5, 0.5)
     }
-
-    this.forceRedraw()
   }
 
   clear () {
-    this.clearStats()
+    super.clear()
     this.ctx.save()
     this.ctx.setTransform(1, 0, 0, 1, 0, 0)
     this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height)
@@ -114,48 +57,9 @@ class CanvasLayer {
   }
 
   redraw () {
-    for (var i = 0; i < this.components.length; i++) {
-      var component = this.components[i]
-      component.plot(this)
-      component.draw(this)
-    }
+    super.redraw()
     if (this.logStats) {
       this.drawStats()
-    }
-    this._shouldRedraw = false
-  }
-
-  forceRedraw () {
-    this._shouldRedraw = true
-  }
-
-  shouldRedraw () {
-    for (var i = 0; i < this.components.length; i++) {
-      var component = this.components[i]
-      if (component.shouldRedraw()) {
-        return true
-      }
-    }
-    return this._shouldRedraw
-  }
-
-  addComponent (component) {
-    var idx = this.components.indexOf(component)
-    if (idx !== -1) {
-      throw new Error(`component ${component.constructor.name} has already been added to layer`)
-    }
-    if (typeof component.plot !== 'function' || typeof component.draw !== 'function' || typeof component.shouldRedraw !== 'function') {
-      throw new Error(`component ${component.constructor.name} has not implemented Component interface`)
-    }
-    this.components.push(component)
-    this.forceRedraw()
-  }
-
-  removeComponent (component) {
-    var idx = this.components.indexOf(component)
-    if (idx !== -1) {
-      this.components.splice(idx, 1)
-      this.forceRedraw()
     }
   }
 
@@ -321,27 +225,6 @@ class CanvasLayer {
     return width
   }
 
-  clearStats () {
-    for (var methodName in this.stats) {
-      this.stats[methodName] = 0
-    }
-  }
-
-  collectStats (methodName) {
-    this.stats[methodName]++
-  }
-
-  formatStats () {
-    var result = []
-    var maxStringLength = 20
-
-    for (var methodName in this.stats) {
-      result.push(methodName + leftPad(this.stats[methodName], maxStringLength - methodName.length))
-    }
-
-    return result
-  }
-
   drawStats () {
     var stats = this.formatStats()
 
@@ -358,8 +241,5 @@ class CanvasLayer {
     }
   }
 }
-
-CanvasLayer.DEFAULT_WIDTH = 100
-CanvasLayer.DEFAULT_HEIGHT = 100
 
 export default CanvasLayer
