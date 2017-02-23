@@ -3,8 +3,9 @@ import leftPad from 'left-pad'
 class BaseLayer {
   constructor ({ Vector, width, height }) {
     this.Vector = Vector || window.Vector
+    this.width = width || BaseLayer.DEFAULT_WIDTH
+    this.height = height || BaseLayer.DEFAULT_HEIGHT
     this.canvas = document.createElement('canvas')
-    this.scale({ width, height })
     this.components = []
     this.stats = {}
     this._shouldRedraw = false

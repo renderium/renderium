@@ -16,6 +16,8 @@ class CanvasLayer extends BaseLayer {
     this.antialiasing = Boolean(antialiasing)
     this.ctx = this.canvas.getContext('2d')
 
+    this.scale({ width, height })
+
     this.imageLoader = new ImageLoader()
     this.imageLoader.onload = this.forceRedraw.bind(this)
 

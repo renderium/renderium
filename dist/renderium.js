@@ -103,8 +103,9 @@ var BaseLayer = function () {
     classCallCheck(this, BaseLayer);
 
     this.Vector = Vector || window.Vector;
+    this.width = width || BaseLayer.DEFAULT_WIDTH;
+    this.height = height || BaseLayer.DEFAULT_HEIGHT;
     this.canvas = document.createElement('canvas');
-    this.scale({ width: width, height: height });
     this.components = [];
     this.stats = {};
     this._shouldRedraw = false;
@@ -311,6 +312,8 @@ var CanvasLayer = function (_BaseLayer) {
     _this.logStats = Boolean(stats);
     _this.antialiasing = Boolean(antialiasing);
     _this.ctx = _this.canvas.getContext('2d');
+
+    _this.scale({ width: width, height: height });
 
     _this.imageLoader = new ImageLoader();
     _this.imageLoader.onload = _this.forceRedraw.bind(_this);
