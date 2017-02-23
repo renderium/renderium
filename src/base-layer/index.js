@@ -76,12 +76,25 @@ class BaseLayer {
     this.forceRedraw()
   }
 
+  addComponents (components) {
+    components.forEach(this.addComponent, this)
+  }
+
   removeComponent (component) {
     var idx = this.components.indexOf(component)
     if (idx !== -1) {
       this.components.splice(idx, 1)
       this.forceRedraw()
     }
+  }
+
+  removeComponents (components) {
+    components.forEach(tis.removeComponent, this)
+  }
+
+  clearComponents () {
+    this.components = []
+    this.forceRedraw()
   }
 
   clearStats () {
