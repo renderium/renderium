@@ -95,17 +95,62 @@ var possibleConstructorReturn = function (self, call) {
   return call && (typeof call === "object" || typeof call === "function") ? call : self;
 };
 
+var imageStatuses = {};
+var images = {};
+
+var ImageLoader = function () {
+  function ImageLoader() {
+    classCallCheck(this, ImageLoader);
+  }
+
+  ImageLoader.prototype.onload = function onload() {};
+
+  ImageLoader.prototype.getImage = function getImage(url) {
+    return images[url];
+  };
+
+  ImageLoader.prototype.getStatus = function getStatus(url) {
+    return imageStatuses[url];
+  };
+
+  ImageLoader.prototype.load = function load(url) {
+    var status = this.getStatus(url);
+    var _this = this;
+    if (status !== ImageLoader.IMAGE_STATUS_LOADING && status !== ImageLoader.IMAGE_STATUS_LOADED) {
+      imageStatuses[url] = ImageLoader.IMAGE_STATUS_LOADING;
+      var image = new window.Image();
+      image.onload = function onload() {
+        imageStatuses[url] = ImageLoader.IMAGE_STATUS_LOADED;
+        images[url] = this;
+        _this.onload();
+      };
+      image.src = url;
+    }
+  };
+
+  return ImageLoader;
+}();
+
+ImageLoader.prototype.IMAGE_STATUS_LOADING = ImageLoader.IMAGE_STATUS_LOADING = 1;
+ImageLoader.prototype.IMAGE_STATUS_LOADED = ImageLoader.IMAGE_STATUS_LOADED = 2;
+
 var BaseLayer = function () {
   function BaseLayer(_ref) {
     var Vector = _ref.Vector,
+        stats = _ref.stats,
         width = _ref.width,
         height = _ref.height;
     classCallCheck(this, BaseLayer);
 
     this.Vector = Vector || window.Vector;
-    this.width = width || BaseLayer.DEFAULT_WIDTH;
-    this.height = height || BaseLayer.DEFAULT_HEIGHT;
+    this.width = Number(width) || BaseLayer.DEFAULT_WIDTH;
+    this.height = Number(height) || BaseLayer.DEFAULT_HEIGHT;
+    this.logStats = Boolean(stats);
+
     this.canvas = document.createElement('canvas');
+
+    this.imageLoader = new ImageLoader();
+
     this.components = [];
     this.stats = {};
     this._shouldRedraw = false;
@@ -115,8 +160,8 @@ var BaseLayer = function () {
     var width = _ref2.width,
         height = _ref2.height;
 
-    this.width = width || BaseLayer.DEFAULT_WIDTH;
-    this.height = height || BaseLayer.DEFAULT_HEIGHT;
+    this.width = Number(width) || BaseLayer.DEFAULT_WIDTH;
+    this.height = Number(height) || BaseLayer.DEFAULT_HEIGHT;
 
     this.canvas.removeAttribute('width');
     this.canvas.removeAttribute('height');
@@ -179,12 +224,25 @@ var BaseLayer = function () {
     this.forceRedraw();
   };
 
+  BaseLayer.prototype.addComponents = function addComponents(components) {
+    components.forEach(this.addComponent, this);
+  };
+
   BaseLayer.prototype.removeComponent = function removeComponent(component) {
     var idx = this.components.indexOf(component);
     if (idx !== -1) {
       this.components.splice(idx, 1);
       this.forceRedraw();
     }
+  };
+
+  BaseLayer.prototype.removeComponents = function removeComponents(components) {
+    components.forEach(tis.removeComponent, this);
+  };
+
+  BaseLayer.prototype.clearComponents = function clearComponents() {
+    this.components = [];
+    this.forceRedraw();
   };
 
   BaseLayer.prototype.clearStats = function clearStats() {
@@ -213,45 +271,6 @@ var BaseLayer = function () {
 
 BaseLayer.DEFAULT_WIDTH = 100;
 BaseLayer.DEFAULT_HEIGHT = 100;
-
-var imageStatuses = {};
-var images = {};
-
-var ImageLoader = function () {
-  function ImageLoader() {
-    classCallCheck(this, ImageLoader);
-  }
-
-  ImageLoader.prototype.onload = function onload() {};
-
-  ImageLoader.prototype.getImage = function getImage(url) {
-    return images[url];
-  };
-
-  ImageLoader.prototype.getStatus = function getStatus(url) {
-    return imageStatuses[url];
-  };
-
-  ImageLoader.prototype.load = function load(url) {
-    var status = this.getStatus(url);
-    var _this = this;
-    if (status !== ImageLoader.IMAGE_STATUS_LOADING && status !== ImageLoader.IMAGE_STATUS_LOADED) {
-      imageStatuses[url] = ImageLoader.IMAGE_STATUS_LOADING;
-      var image = new window.Image();
-      image.onload = function onload() {
-        imageStatuses[url] = ImageLoader.IMAGE_STATUS_LOADED;
-        images[url] = this;
-        _this.onload();
-      };
-      image.src = url;
-    }
-  };
-
-  return ImageLoader;
-}();
-
-ImageLoader.IMAGE_STATUS_LOADING = 1;
-ImageLoader.IMAGE_STATUS_LOADED = 2;
 
 var Gradient = function () {
   Gradient.isGradient = function isGradient(color) {
@@ -307,15 +326,13 @@ var CanvasLayer = function (_BaseLayer) {
         height = _ref.height;
     classCallCheck(this, CanvasLayer);
 
-    var _this = possibleConstructorReturn(this, _BaseLayer.call(this, { Vector: Vector, width: width, height: height }));
+    var _this = possibleConstructorReturn(this, _BaseLayer.call(this, { Vector: Vector, stats: stats, width: width, height: height }));
 
-    _this.logStats = Boolean(stats);
     _this.antialiasing = Boolean(antialiasing);
     _this.ctx = _this.canvas.getContext('2d');
 
     _this.scale({ width: width, height: height });
 
-    _this.imageLoader = new ImageLoader();
     _this.imageLoader.onload = _this.forceRedraw.bind(_this);
 
     _this.stats = {
@@ -441,11 +458,11 @@ var CanvasLayer = function (_BaseLayer) {
     this.collectStats('drawImage');
 
     if (typeof image === 'string') {
-      if (this.imageLoader.getStatus(image) === ImageLoader.IMAGE_STATUS_LOADED) {
+      if (this.imageLoader.getStatus(image) === this.imageLoader.IMAGE_STATUS_LOADED) {
         image = this.imageLoader.getImage(image);
         width = width || image.width;
         height = height || image.height;
-      } else if (this.imageLoader.getStatus(image) !== ImageLoader.IMAGE_STATUS_LOADING) {
+      } else if (this.imageLoader.getStatus(image) !== this.imageLoader.IMAGE_STATUS_LOADING) {
         this.imageLoader.load(image);
         return;
       } else {

@@ -1,19 +1,25 @@
 import leftPad from 'left-pad'
+import ImageLoader from './image-loader.js'
 
 class BaseLayer {
-  constructor ({ Vector, width, height }) {
+  constructor ({ Vector, stats, width, height }) {
     this.Vector = Vector || window.Vector
-    this.width = width || BaseLayer.DEFAULT_WIDTH
-    this.height = height || BaseLayer.DEFAULT_HEIGHT
+    this.width = Number(width) || BaseLayer.DEFAULT_WIDTH
+    this.height = Number(height) || BaseLayer.DEFAULT_HEIGHT
+    this.logStats = Boolean(stats)
+
     this.canvas = document.createElement('canvas')
+
+    this.imageLoader = new ImageLoader()
+
     this.components = []
     this.stats = {}
     this._shouldRedraw = false
   }
 
   scale ({ width, height }) {
-    this.width = width || BaseLayer.DEFAULT_WIDTH
-    this.height = height || BaseLayer.DEFAULT_HEIGHT
+    this.width = Number(width) || BaseLayer.DEFAULT_WIDTH
+    this.height = Number(height) || BaseLayer.DEFAULT_HEIGHT
 
     this.canvas.removeAttribute('width')
     this.canvas.removeAttribute('height')

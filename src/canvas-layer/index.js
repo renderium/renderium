@@ -1,5 +1,4 @@
 import BaseLayer from '../base-layer'
-import ImageLoader from '../image-loader.js'
 import Gradient from './gradient.js'
 
 // -------------------------------------
@@ -10,15 +9,13 @@ const PIXEL_RATIO = window.devicePixelRatio || 1
 
 class CanvasLayer extends BaseLayer {
   constructor ({ Vector, stats, antialiasing, width, height }) {
-    super({ Vector, width, height })
+    super({ Vector, stats, width, height })
 
-    this.logStats = Boolean(stats)
     this.antialiasing = Boolean(antialiasing)
     this.ctx = this.canvas.getContext('2d')
 
     this.scale({ width, height })
 
-    this.imageLoader = new ImageLoader()
     this.imageLoader.onload = this.forceRedraw.bind(this)
 
     this.stats = {
@@ -111,11 +108,11 @@ class CanvasLayer extends BaseLayer {
     this.collectStats('drawImage')
 
     if (typeof image === 'string') {
-      if (this.imageLoader.getStatus(image) === ImageLoader.IMAGE_STATUS_LOADED) {
+      if (this.imageLoader.getStatus(image) === this.imageLoader.IMAGE_STATUS_LOADED) {
         image = this.imageLoader.getImage(image)
         width = width || image.width
         height = height || image.height
-      } else if (this.imageLoader.getStatus(image) !== ImageLoader.IMAGE_STATUS_LOADING) {
+      } else if (this.imageLoader.getStatus(image) !== this.imageLoader.IMAGE_STATUS_LOADING) {
         this.imageLoader.load(image)
         return
       } else {
