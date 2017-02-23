@@ -51,6 +51,50 @@ var classCallCheck = function (instance, Constructor) {
   }
 };
 
+
+
+
+
+
+
+
+
+
+
+var inherits = function (subClass, superClass) {
+  if (typeof superClass !== "function" && superClass !== null) {
+    throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
+  }
+
+  subClass.prototype = Object.create(superClass && superClass.prototype, {
+    constructor: {
+      value: subClass,
+      enumerable: false,
+      writable: true,
+      configurable: true
+    }
+  });
+  if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
+};
+
+
+
+
+
+
+
+
+
+
+
+var possibleConstructorReturn = function (self, call) {
+  if (!self) {
+    throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+  }
+
+  return call && (typeof call === "object" || typeof call === "function") ? call : self;
+};
+
 var imageStatuses = {};
 var images = {};
 
@@ -87,14 +131,146 @@ var ImageLoader = function () {
   return ImageLoader;
 }();
 
-ImageLoader.IMAGE_STATUS_LOADING = 1;
-ImageLoader.IMAGE_STATUS_LOADED = 2;
+ImageLoader.prototype.IMAGE_STATUS_LOADING = ImageLoader.IMAGE_STATUS_LOADING = 1;
+ImageLoader.prototype.IMAGE_STATUS_LOADED = ImageLoader.IMAGE_STATUS_LOADED = 2;
 
-// -------------------------------------
-// CanvasLayer
-// -------------------------------------
+var BaseLayer = function () {
+  function BaseLayer(_ref) {
+    var Vector = _ref.Vector,
+        stats = _ref.stats,
+        width = _ref.width,
+        height = _ref.height;
+    classCallCheck(this, BaseLayer);
 
-var PIXEL_RATIO = window.devicePixelRatio || 1;
+    this.Vector = Vector || window.Vector;
+    this.width = Number(width) || BaseLayer.DEFAULT_WIDTH;
+    this.height = Number(height) || BaseLayer.DEFAULT_HEIGHT;
+    this.logStats = Boolean(stats);
+
+    this.canvas = document.createElement('canvas');
+
+    this.imageLoader = new ImageLoader();
+
+    this.components = [];
+    this.stats = {};
+    this._shouldRedraw = false;
+  }
+
+  BaseLayer.prototype.scale = function scale(_ref2) {
+    var width = _ref2.width,
+        height = _ref2.height;
+
+    this.width = Number(width) || BaseLayer.DEFAULT_WIDTH;
+    this.height = Number(height) || BaseLayer.DEFAULT_HEIGHT;
+
+    this.canvas.removeAttribute('width');
+    this.canvas.removeAttribute('height');
+    this.canvas.removeAttribute('style');
+
+    this.canvas.width = this.width;
+    this.canvas.height = this.height;
+
+    this.applyStyles();
+
+    this.forceRedraw();
+  };
+
+  BaseLayer.prototype.applyStyles = function applyStyles() {
+    this.canvas.style.width = this.width + 'px';
+    this.canvas.style.height = this.height + 'px';
+    this.canvas.style.position = 'absolute';
+    this.canvas.style.top = 0;
+    this.canvas.style.left = 0;
+    this.canvas.style.right = 0;
+    this.canvas.style.bottom = 0;
+  };
+
+  BaseLayer.prototype.clear = function clear() {
+    this.clearStats();
+  };
+
+  BaseLayer.prototype.redraw = function redraw() {
+    for (var i = 0; i < this.components.length; i++) {
+      var component = this.components[i];
+      component.plot(this);
+      component.draw(this);
+    }
+    this._shouldRedraw = false;
+  };
+
+  BaseLayer.prototype.forceRedraw = function forceRedraw() {
+    this._shouldRedraw = true;
+  };
+
+  BaseLayer.prototype.shouldRedraw = function shouldRedraw() {
+    for (var i = 0; i < this.components.length; i++) {
+      var component = this.components[i];
+      if (component.shouldRedraw()) {
+        return true;
+      }
+    }
+    return this._shouldRedraw;
+  };
+
+  BaseLayer.prototype.addComponent = function addComponent(component) {
+    var idx = this.components.indexOf(component);
+    if (idx !== -1) {
+      throw new Error('component ' + component.constructor.name + ' has already been added to layer');
+    }
+    if (typeof component.plot !== 'function' || typeof component.draw !== 'function' || typeof component.shouldRedraw !== 'function') {
+      throw new Error('component ' + component.constructor.name + ' has not implemented Component interface');
+    }
+    this.components.push(component);
+    this.forceRedraw();
+  };
+
+  BaseLayer.prototype.addComponents = function addComponents(components) {
+    components.forEach(this.addComponent, this);
+  };
+
+  BaseLayer.prototype.removeComponent = function removeComponent(component) {
+    var idx = this.components.indexOf(component);
+    if (idx !== -1) {
+      this.components.splice(idx, 1);
+      this.forceRedraw();
+    }
+  };
+
+  BaseLayer.prototype.removeComponents = function removeComponents(components) {
+    components.forEach(tis.removeComponent, this);
+  };
+
+  BaseLayer.prototype.clearComponents = function clearComponents() {
+    this.components = [];
+    this.forceRedraw();
+  };
+
+  BaseLayer.prototype.clearStats = function clearStats() {
+    for (var methodName in this.stats) {
+      this.stats[methodName] = 0;
+    }
+  };
+
+  BaseLayer.prototype.collectStats = function collectStats(methodName) {
+    this.stats[methodName]++;
+  };
+
+  BaseLayer.prototype.formatStats = function formatStats() {
+    var result = [];
+    var maxStringLength = 20;
+
+    for (var methodName in this.stats) {
+      result.push(methodName + index(this.stats[methodName], maxStringLength - methodName.length));
+    }
+
+    return result;
+  };
+
+  return BaseLayer;
+}();
+
+BaseLayer.DEFAULT_WIDTH = 100;
+BaseLayer.DEFAULT_HEIGHT = 100;
 
 var Gradient = function () {
   Gradient.isGradient = function isGradient(color) {
@@ -133,30 +309,33 @@ var Gradient = function () {
   return Gradient;
 }();
 
-var CanvasLayer = function () {
-  function CanvasLayer(_ref2) {
-    var Vector = _ref2.Vector,
-        stats = _ref2.stats,
-        antialiasing = _ref2.antialiasing,
-        width = _ref2.width,
-        height = _ref2.height;
+// -------------------------------------
+// CanvasLayer
+// -------------------------------------
+
+var PIXEL_RATIO = window.devicePixelRatio || 1;
+
+var CanvasLayer = function (_BaseLayer) {
+  inherits(CanvasLayer, _BaseLayer);
+
+  function CanvasLayer(_ref) {
+    var Vector = _ref.Vector,
+        stats = _ref.stats,
+        antialiasing = _ref.antialiasing,
+        width = _ref.width,
+        height = _ref.height;
     classCallCheck(this, CanvasLayer);
 
-    this.Vector = Vector || window.Vector;
-    this.logStats = Boolean(stats);
-    this.antialiasing = Boolean(antialiasing);
-    this.canvas = document.createElement('canvas');
-    this.ctx = this.canvas.getContext('2d');
-    this.scale({
-      width: width || CanvasLayer.DEFAULT_WIDTH,
-      height: height || CanvasLayer.DEFAULT_HEIGHT
-    });
-    this.imageLoader = new ImageLoader();
-    this.imageLoader.onload = this.forceRedraw.bind(this);
+    var _this = possibleConstructorReturn(this, _BaseLayer.call(this, { Vector: Vector, stats: stats, width: width, height: height }));
 
-    this.components = [];
+    _this.antialiasing = Boolean(antialiasing);
+    _this.ctx = _this.canvas.getContext('2d');
 
-    this.stats = {
+    _this.scale({ width: width, height: height });
+
+    _this.imageLoader.onload = _this.forceRedraw.bind(_this);
+
+    _this.stats = {
       createGradient: 0,
       drawArc: 0,
       drawCircle: 0,
@@ -169,51 +348,28 @@ var CanvasLayer = function () {
       stroke: 0,
       fill: 0
     };
-
-    this._shouldRedraw = false;
+    return _this;
   }
 
-  CanvasLayer.prototype.applyStyles = function applyStyles() {
-    this.ctx.canvas.style.width = this.width + 'px';
-    this.ctx.canvas.style.height = this.height + 'px';
-    this.ctx.canvas.style.position = 'absolute';
-    this.ctx.canvas.style.top = 0;
-    this.ctx.canvas.style.left = 0;
-    this.ctx.canvas.style.right = 0;
-    this.ctx.canvas.style.bottom = 0;
-  };
+  CanvasLayer.prototype.scale = function scale(_ref2) {
+    var width = _ref2.width,
+        height = _ref2.height;
 
-  CanvasLayer.prototype.scale = function scale(_ref3) {
-    var width = _ref3.width,
-        height = _ref3.height;
-
-    this.width = width || CanvasLayer.DEFAULT_WIDTH;
-    this.height = height || CanvasLayer.DEFAULT_HEIGHT;
-
-    this.canvas.removeAttribute('width');
-    this.canvas.removeAttribute('height');
-    this.canvas.removeAttribute('style');
-
-    this.ctx.canvas.width = this.width;
-    this.ctx.canvas.height = this.height;
-
-    this.applyStyles();
+    _BaseLayer.prototype.scale.call(this, { width: width, height: height });
 
     if (window.devicePixelRatio) {
-      this.ctx.canvas.width = this.width * PIXEL_RATIO;
-      this.ctx.canvas.height = this.height * PIXEL_RATIO;
+      this.canvas.width = this.width * PIXEL_RATIO;
+      this.canvas.height = this.height * PIXEL_RATIO;
       this.ctx.scale(PIXEL_RATIO, PIXEL_RATIO);
     }
 
     if (!this.antialiasing) {
       this.ctx.translate(0.5, 0.5);
     }
-
-    this.forceRedraw();
   };
 
   CanvasLayer.prototype.clear = function clear() {
-    this.clearStats();
+    _BaseLayer.prototype.clear.call(this);
     this.ctx.save();
     this.ctx.setTransform(1, 0, 0, 1, 0, 0);
     this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
@@ -221,56 +377,17 @@ var CanvasLayer = function () {
   };
 
   CanvasLayer.prototype.redraw = function redraw() {
-    for (var i = 0; i < this.components.length; i++) {
-      var component = this.components[i];
-      component.plot(this);
-      component.draw(this);
-    }
+    _BaseLayer.prototype.redraw.call(this);
     if (this.logStats) {
       this.drawStats();
     }
-    this._shouldRedraw = false;
   };
 
-  CanvasLayer.prototype.forceRedraw = function forceRedraw() {
-    this._shouldRedraw = true;
-  };
-
-  CanvasLayer.prototype.shouldRedraw = function shouldRedraw() {
-    for (var i = 0; i < this.components.length; i++) {
-      var component = this.components[i];
-      if (component.shouldRedraw()) {
-        return true;
-      }
-    }
-    return this._shouldRedraw;
-  };
-
-  CanvasLayer.prototype.addComponent = function addComponent(component) {
-    var idx = this.components.indexOf(component);
-    if (idx !== -1) {
-      throw new Error('component ' + component.constructor.name + ' has already been added to layer');
-    }
-    if (typeof component.plot !== 'function' || typeof component.draw !== 'function' || typeof component.shouldRedraw !== 'function') {
-      throw new Error('component ' + component.constructor.name + ' has not implemented Component interface');
-    }
-    this.components.push(component);
-    this.forceRedraw();
-  };
-
-  CanvasLayer.prototype.removeComponent = function removeComponent(component) {
-    var idx = this.components.indexOf(component);
-    if (idx !== -1) {
-      this.components.splice(idx, 1);
-      this.forceRedraw();
-    }
-  };
-
-  CanvasLayer.prototype.createGradient = function createGradient(_ref4) {
-    var start = _ref4.start,
-        end = _ref4.end,
-        from = _ref4.from,
-        to = _ref4.to;
+  CanvasLayer.prototype.createGradient = function createGradient(_ref3) {
+    var start = _ref3.start,
+        end = _ref3.end,
+        from = _ref3.from,
+        to = _ref3.to;
 
     return new Gradient({ start: start, end: end, from: from, to: to });
   };
@@ -279,14 +396,14 @@ var CanvasLayer = function () {
     return Gradient.isGradient(color) ? color.createGradient(this) : color;
   };
 
-  CanvasLayer.prototype.drawArc = function drawArc(_ref5) {
-    var position = _ref5.position,
-        radius = _ref5.radius,
-        startAngle = _ref5.startAngle,
-        endAngle = _ref5.endAngle,
-        color = _ref5.color,
-        _ref5$width = _ref5.width,
-        width = _ref5$width === undefined ? 1 : _ref5$width;
+  CanvasLayer.prototype.drawArc = function drawArc(_ref4) {
+    var position = _ref4.position,
+        radius = _ref4.radius,
+        startAngle = _ref4.startAngle,
+        endAngle = _ref4.endAngle,
+        color = _ref4.color,
+        _ref4$width = _ref4.width,
+        width = _ref4$width === undefined ? 1 : _ref4$width;
 
     this.collectStats('drawArc');
 
@@ -302,13 +419,13 @@ var CanvasLayer = function () {
     }
   };
 
-  CanvasLayer.prototype.drawCircle = function drawCircle(_ref6) {
-    var position = _ref6.position,
-        radius = _ref6.radius,
-        color = _ref6.color,
-        fillColor = _ref6.fillColor,
-        _ref6$width = _ref6.width,
-        width = _ref6$width === undefined ? 1 : _ref6$width;
+  CanvasLayer.prototype.drawCircle = function drawCircle(_ref5) {
+    var position = _ref5.position,
+        radius = _ref5.radius,
+        color = _ref5.color,
+        fillColor = _ref5.fillColor,
+        _ref5$width = _ref5.width,
+        width = _ref5$width === undefined ? 1 : _ref5$width;
 
     this.collectStats('drawCircle');
 
@@ -328,24 +445,24 @@ var CanvasLayer = function () {
     }
   };
 
-  CanvasLayer.prototype.drawImage = function drawImage(_ref7) {
-    var position = _ref7.position,
-        image = _ref7.image,
-        _ref7$width = _ref7.width,
-        width = _ref7$width === undefined ? image.width : _ref7$width,
-        _ref7$height = _ref7.height,
-        height = _ref7$height === undefined ? image.height : _ref7$height,
-        _ref7$opacity = _ref7.opacity,
-        opacity = _ref7$opacity === undefined ? 1 : _ref7$opacity;
+  CanvasLayer.prototype.drawImage = function drawImage(_ref6) {
+    var position = _ref6.position,
+        image = _ref6.image,
+        _ref6$width = _ref6.width,
+        width = _ref6$width === undefined ? image.width : _ref6$width,
+        _ref6$height = _ref6.height,
+        height = _ref6$height === undefined ? image.height : _ref6$height,
+        _ref6$opacity = _ref6.opacity,
+        opacity = _ref6$opacity === undefined ? 1 : _ref6$opacity;
 
     this.collectStats('drawImage');
 
     if (typeof image === 'string') {
-      if (this.imageLoader.getStatus(image) === ImageLoader.IMAGE_STATUS_LOADED) {
+      if (this.imageLoader.getStatus(image) === this.imageLoader.IMAGE_STATUS_LOADED) {
         image = this.imageLoader.getImage(image);
         width = width || image.width;
         height = height || image.height;
-      } else if (this.imageLoader.getStatus(image) !== ImageLoader.IMAGE_STATUS_LOADING) {
+      } else if (this.imageLoader.getStatus(image) !== this.imageLoader.IMAGE_STATUS_LOADING) {
         this.imageLoader.load(image);
         return;
       } else {
@@ -363,12 +480,12 @@ var CanvasLayer = function () {
     this.ctx.globalAlpha = defaultAlpha;
   };
 
-  CanvasLayer.prototype.drawPolygon = function drawPolygon(_ref8) {
-    var points = _ref8.points,
-        color = _ref8.color,
-        fillColor = _ref8.fillColor,
-        _ref8$width = _ref8.width,
-        width = _ref8$width === undefined ? 1 : _ref8$width;
+  CanvasLayer.prototype.drawPolygon = function drawPolygon(_ref7) {
+    var points = _ref7.points,
+        color = _ref7.color,
+        fillColor = _ref7.fillColor,
+        _ref7$width = _ref7.width,
+        width = _ref7$width === undefined ? 1 : _ref7$width;
 
     this.collectStats('drawPolygon');
 
@@ -385,13 +502,13 @@ var CanvasLayer = function () {
     }
   };
 
-  CanvasLayer.prototype.drawPolyline = function drawPolyline(_ref9) {
-    var points = _ref9.points,
-        color = _ref9.color,
-        _ref9$lineDash = _ref9.lineDash,
-        lineDash = _ref9$lineDash === undefined ? [] : _ref9$lineDash,
-        _ref9$width = _ref9.width,
-        width = _ref9$width === undefined ? 1 : _ref9$width;
+  CanvasLayer.prototype.drawPolyline = function drawPolyline(_ref8) {
+    var points = _ref8.points,
+        color = _ref8.color,
+        _ref8$lineDash = _ref8.lineDash,
+        lineDash = _ref8$lineDash === undefined ? [] : _ref8$lineDash,
+        _ref8$width = _ref8.width,
+        width = _ref8$width === undefined ? 1 : _ref8$width;
 
     this.collectStats('drawPolyline');
 
@@ -418,14 +535,14 @@ var CanvasLayer = function () {
     }
   };
 
-  CanvasLayer.prototype.drawRect = function drawRect(_ref10) {
-    var position = _ref10.position,
-        width = _ref10.width,
-        height = _ref10.height,
-        color = _ref10.color,
-        fillColor = _ref10.fillColor,
-        _ref10$strokeWidth = _ref10.strokeWidth,
-        strokeWidth = _ref10$strokeWidth === undefined ? 1 : _ref10$strokeWidth;
+  CanvasLayer.prototype.drawRect = function drawRect(_ref9) {
+    var position = _ref9.position,
+        width = _ref9.width,
+        height = _ref9.height,
+        color = _ref9.color,
+        fillColor = _ref9.fillColor,
+        _ref9$strokeWidth = _ref9.strokeWidth,
+        strokeWidth = _ref9$strokeWidth === undefined ? 1 : _ref9$strokeWidth;
 
     this.collectStats('drawRect');
 
@@ -452,16 +569,16 @@ var CanvasLayer = function () {
     }
   };
 
-  CanvasLayer.prototype.drawText = function drawText(_ref11) {
-    var position = _ref11.position,
-        text = _ref11.text,
-        color = _ref11.color,
-        font = _ref11.font,
-        size = _ref11.size,
-        _ref11$align = _ref11.align,
-        align = _ref11$align === undefined ? 'center' : _ref11$align,
-        _ref11$baseline = _ref11.baseline,
-        baseline = _ref11$baseline === undefined ? 'middle' : _ref11$baseline;
+  CanvasLayer.prototype.drawText = function drawText(_ref10) {
+    var position = _ref10.position,
+        text = _ref10.text,
+        color = _ref10.color,
+        font = _ref10.font,
+        size = _ref10.size,
+        _ref10$align = _ref10.align,
+        align = _ref10$align === undefined ? 'center' : _ref10$align,
+        _ref10$baseline = _ref10.baseline,
+        baseline = _ref10$baseline === undefined ? 'middle' : _ref10$baseline;
 
     this.collectStats('drawText');
 
@@ -473,10 +590,10 @@ var CanvasLayer = function () {
     this.ctx.fillText(text, position.x, position.y);
   };
 
-  CanvasLayer.prototype.measureText = function measureText(_ref12) {
-    var text = _ref12.text,
-        font = _ref12.font,
-        size = _ref12.size;
+  CanvasLayer.prototype.measureText = function measureText(_ref11) {
+    var text = _ref11.text,
+        font = _ref11.font,
+        size = _ref11.size;
 
     this.collectStats('measureText');
 
@@ -490,27 +607,6 @@ var CanvasLayer = function () {
       width = this.ctx.measureText(text).width;
     }
     return width;
-  };
-
-  CanvasLayer.prototype.clearStats = function clearStats() {
-    for (var methodName in this.stats) {
-      this.stats[methodName] = 0;
-    }
-  };
-
-  CanvasLayer.prototype.collectStats = function collectStats(methodName) {
-    this.stats[methodName]++;
-  };
-
-  CanvasLayer.prototype.formatStats = function formatStats() {
-    var result = [];
-    var maxStringLength = 20;
-
-    for (var methodName in this.stats) {
-      result.push(methodName + index(this.stats[methodName], maxStringLength - methodName.length));
-    }
-
-    return result;
   };
 
   CanvasLayer.prototype.drawStats = function drawStats() {
@@ -530,10 +626,7 @@ var CanvasLayer = function () {
   };
 
   return CanvasLayer;
-}();
-
-CanvasLayer.DEFAULT_WIDTH = 100;
-CanvasLayer.DEFAULT_HEIGHT = 100;
+}(BaseLayer);
 
 var Component = function () {
   function Component() {
@@ -666,6 +759,7 @@ var Renderium = function () {
 
 Renderium.instances = [];
 
+Renderium.BaseLayer = BaseLayer;
 Renderium.CanvasLayer = CanvasLayer;
 Renderium.Component = Component;
 Renderium.colors = colors;

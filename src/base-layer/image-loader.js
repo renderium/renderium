@@ -30,7 +30,7 @@ class ImageLoader {
   }
 }
 
-ImageLoader.IMAGE_STATUS_LOADING = 1
-ImageLoader.IMAGE_STATUS_LOADED = 2
+ImageLoader.prototype.IMAGE_STATUS_LOADING = ImageLoader.IMAGE_STATUS_LOADING = 1
+ImageLoader.prototype.IMAGE_STATUS_LOADED = ImageLoader.IMAGE_STATUS_LOADED = 2
 
 export default ImageLoader
