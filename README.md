@@ -23,11 +23,9 @@
 
 ## Features
 
-- Autoresizing
-- [Image loading](https://github.com/broadsw0rd/renderium#drawimageoptions)
+- [Components](#components)
 - [Redraw Policy](#redraw-policy)
-- Tabular stats on screen
-- Logs
+- [Logs](#logs)
 - Designed with performance in mind and reviewed with [IRHydra](http://mrale.ph/irhydra/2/)
 
 ## Dependencies
@@ -117,7 +115,11 @@ Canvas Layer |
 
 ## [API](https://github.com/broadsw0rd/renderium/wiki)
 
+## Components
+
 ## Redraw Policy
+
+## Logs
 
 ## Development
 
