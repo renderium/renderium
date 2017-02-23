@@ -759,6 +759,7 @@ var Renderium = function () {
 
 Renderium.instances = [];
 
+Renderium.BaseLayer = BaseLayer;
 Renderium.CanvasLayer = CanvasLayer;
 Renderium.Component = Component;
 Renderium.colors = colors;

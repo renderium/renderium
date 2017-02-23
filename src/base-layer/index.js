@@ -95,7 +95,7 @@ class BaseLayer {
   }
 
   removeComponents (components) {
-    components.forEach(tis.removeComponent, this)
+    components.forEach(this.removeComponent, this)
   }
 
   clearComponents () {

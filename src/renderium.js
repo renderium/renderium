@@ -1,3 +1,4 @@
+import BaseLayer from './base-layer'
 import CanvasLayer from './canvas-layer'
 import Component from './component.js'
 import colors from './colors.js'
@@ -90,6 +91,7 @@ class Renderium {
 
 Renderium.instances = []
 
+Renderium.BaseLayer = BaseLayer
 Renderium.CanvasLayer = CanvasLayer
 Renderium.Component = Component
 Renderium.colors = colors
