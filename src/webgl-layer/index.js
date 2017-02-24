@@ -110,11 +110,11 @@ class WebglLayer extends BaseLayer {
 
   drawImage ({ position, image, width = image.width, height = image.height, opacity = 1 }) {
     if (typeof image === 'string') {
-      if (this.imageLoader.getStatus(image) === ImageLoader.IMAGE_STATUS_LOADED) {
+      if (this.imageLoader.getStatus(image) === this.imageLoader.IMAGE_STATUS_LOADED) {
         image = this.imageLoader.getImage(image)
         width = width || image.width
         height = height || image.height
-      } else if (this.imageLoader.getStatus(image) !== ImageLoader.IMAGE_STATUS_LOADING) {
+      } else if (this.imageLoader.getStatus(image) !== this.imageLoader.IMAGE_STATUS_LOADING) {
         this.imageLoader.load(image)
         return
       } else {
