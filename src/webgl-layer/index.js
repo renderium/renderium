@@ -1,4 +1,5 @@
 import BaseLayer from '../base-layer'
+import Gradient from './gradient.js'
 import { parseColor } from '../helpers.js'
 
 // -------------------------------------
@@ -52,32 +53,6 @@ function createProgram (gl, vertexShader, fragmentShader) {
     throw Error(`program failed to link:${gl.getProgramInfoLog(program)}`)
   }
   return program
-}
-
-class Gradient {
-  static isGradient (color) {
-    return color && color._isGradient
-  }
-
-  constructor ({ start, end, from, to }) {
-    this.start = start
-    this.end = end
-    this.from = parseColor(from)
-    this.to = parseColor(to)
-
-    this._isGradient = true
-    this._gradient = null
-  }
-
-  createGradient (layer) {
-    layer.collectStats('createGradient')
-
-    return this.from
-  }
-
-  valueOf () {
-    return this.from
-  }
 }
 
 class WebglLayer extends BaseLayer {
