@@ -1,5 +1,4 @@
-import leftPad from 'left-pad'
-import ImageLoader from '../image-loader.js'
+import BaseLayer from '../base-layer'
 import { parseColor } from '../helpers.js'
 
 // -------------------------------------
@@ -81,36 +80,17 @@ class Gradient {
   }
 }
 
-class WebglLayer {
+class WebglLayer extends BaseLayer {
   constructor ({ Vector, stats, width, height }) {
-    this.Vector = Vector || window.Vector
-    this.logStats = Boolean(stats)
-    this.canvas = document.createElement('canvas')
+    super({ Vector, stats, width, height })
+
     this.gl = getContext(this.canvas)
-    this.scale({
-      width: width || WebglLayer.DEFAULT_WIDTH,
-      height: height || WebglLayer.DEFAULT_HEIGHT
-    })
-    this.imageLoader = new ImageLoader()
+
+    this.scale({ width, height })
+
     this.imageLoader.onload = this.forceRedraw.bind(this)
 
-    this.components = []
-
     this.positions = []
-
-    this.stats = {
-      createGradient: 0,
-      drawArc: 0,
-      drawCircle: 0,
-      drawImage: 0,
-      drawPolygon: 0,
-      drawPolyline: 0,
-      drawRect: 0,
-      drawText: 0,
-      measureText: 0,
-      stroke: 0,
-      fill: 0
-    }
 
     this._vertexShader = compileShader(this.gl, VSHADER_SOURCE, this.gl.VERTEX_SHADER)
     this._fragmentShader = compileShader(this.gl, FSHADER_SOURCE, this.gl.FRAGMENT_SHADER)
@@ -143,41 +123,19 @@ class WebglLayer {
     )
   }
 
-  applyStyles () {
-    this.canvas.style.width = `${this.width}px`
-    this.canvas.style.height = `${this.height}px`
-    this.canvas.style.position = 'absolute'
-    this.canvas.style.top = 0
-    this.canvas.style.left = 0
-    this.canvas.style.right = 0
-    this.canvas.style.bottom = 0
-  }
-
   scale ({ width, height }) {
-    this.width = width || WebglLayer.DEFAULT_WIDTH
-    this.height = height || WebglLayer.DEFAULT_HEIGHT
-
-    this.canvas.removeAttribute('width')
-    this.canvas.removeAttribute('height')
-    this.canvas.removeAttribute('style')
-
-    this.gl.canvas.width = this.width
-    this.gl.canvas.height = this.height
-
-    this.applyStyles()
+    super.scale({ width, height })
 
     if (window.devicePixelRatio) {
-      this.gl.canvas.width = this.width *= window.devicePixelRatio
-      this.gl.canvas.height = this.height *= window.devicePixelRatio
+      this.canvas.width = this.width *= window.devicePixelRatio
+      this.canvas.height = this.height *= window.devicePixelRatio
     }
 
     this.gl.viewport(0, 0, this.width, this.height)
-
-    this.forceRedraw()
   }
 
   clear () {
-    this.clearStats()
+    super.clear()
     this.positions = []
     this.gl.clearColor(0, 0, 0, 0)
     this.gl.clearDepth(1)
@@ -185,52 +143,14 @@ class WebglLayer {
   }
 
   redraw () {
-    for (var i = 0, component; i < this.components.length; i++) {
-      component = this.components[i]
-      component.plot(this)
-      component.draw(this)
-    }
+    super.redraw()
+
     this.gl.bufferData(
       this.gl.ARRAY_BUFFER,
       new Float32Array(this.positions),
       this.gl.STATIC_DRAW
     )
     this.gl.drawArrays(this.gl.LINES, 0, this.positions.length / 6)
-    this._shouldRedraw = false
-  }
-
-  forceRedraw () {
-    this._shouldRedraw = true
-  }
-
-  shouldRedraw () {
-    for (var i = 0, component; i < this.components.length; i++) {
-      component = this.components[i]
-      if (component.shouldRedraw()) {
-        return true
-      }
-    }
-    return this._shouldRedraw
-  }
-
-  addComponent (component) {
-    var idx = this.components.indexOf(component)
-    if (idx !== -1) {
-      throw new Error(`component ${component.constructor.name} has already been added to layer`)
-    }
-    if (typeof component.plot !== 'function' || typeof component.draw !== 'function' || typeof component.shouldRedraw !== 'function') {
-      throw new Error(`component ${component.constructor.name} has not implemented Component interface`)
-    }
-    this.components.push(component)
-    this.forceRedraw()
-  }
-
-  removeComponent (component) {
-    var idx = this.components.indexOf(component)
-    if (idx !== -1) {
-      this.components.splice(idx, 1)
-      this.forceRedraw()
-    }
   }
 
   convertPoints (points) {
@@ -250,14 +170,6 @@ class WebglLayer {
 
   getColor (color) {
     return Gradient.isGradient(color) ? color.createGradient(this) : parseColor(color)
-  }
-
-  drawArea ({ points, threshold, color, fillColor, width = 1 }) {
-    this.drawPolyline({
-      points,
-      color,
-      width
-    })
   }
 
   drawArc ({ position, radius, startAngle, endAngle, color, width = 1 }) {
@@ -316,27 +228,6 @@ class WebglLayer {
     return 0
   }
 
-  clearStats () {
-    for (var methodName in this.stats) {
-      this.stats[methodName] = 0
-    }
-  }
-
-  collectStats (methodName) {
-    this.stats[methodName]++
-  }
-
-  formatStats () {
-    var result = []
-    var maxStringLength = 20
-
-    for (var methodName in this.stats) {
-      result.push(methodName + leftPad(this.stats[methodName], maxStringLength - methodName.length))
-    }
-
-    return result
-  }
-
   drawStats () {
     var stats = this.formatStats()
 
@@ -353,8 +244,5 @@ class WebglLayer {
     }
   }
 }
-
-WebglLayer.DEFAULT_WIDTH = 100
-WebglLayer.DEFAULT_HEIGHT = 100
 
 export default WebglLayer
