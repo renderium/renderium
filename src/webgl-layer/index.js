@@ -1,28 +1,12 @@
 import BaseLayer from '../base-layer'
 import Gradient from './gradient.js'
-import { parseColor } from '../helpers.js'
+import { parseColor } from './utils.js'
+import vertextShaderSource from './vertex.glsl'
+import fragmentShaderSource from './fragment.glsl'
 
 // -------------------------------------
 // WebglLayer
 // -------------------------------------
-
-var VSHADER_SOURCE = [
-  'attribute vec2 a_position;',
-  'attribute vec4 a_color;',
-  'varying vec4 v_color;',
-  'void main() {',
-  '  gl_Position = vec4(a_position, 0, 1);',
-  '  v_color = a_color;',
-  '}'
-].join('\n')
-
-var FSHADER_SOURCE = [
-  'precision mediump float;',
-  'varying vec4 v_color;',
-  'void main() {',
-  '  gl_FragColor = v_color;',
-  '}'
-].join('\n')
 
 function getContext (canvas) {
   var gl = canvas.getContext('webgl')
@@ -67,8 +51,8 @@ class WebglLayer extends BaseLayer {
 
     this.positions = []
 
-    this._vertexShader = compileShader(this.gl, VSHADER_SOURCE, this.gl.VERTEX_SHADER)
-    this._fragmentShader = compileShader(this.gl, FSHADER_SOURCE, this.gl.FRAGMENT_SHADER)
+    this._vertexShader = compileShader(this.gl, vertextShaderSource, this.gl.VERTEX_SHADER)
+    this._fragmentShader = compileShader(this.gl, fragmentShaderSource, this.gl.FRAGMENT_SHADER)
 
     this._program = createProgram(this.gl, this._vertexShader, this._fragmentShader)
     this.gl.useProgram(this._program)

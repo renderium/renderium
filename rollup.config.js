@@ -1,6 +1,7 @@
 import babel from 'rollup-plugin-babel'
 import nodeResolve from 'rollup-plugin-node-resolve'
 import commonjs from 'rollup-plugin-commonjs'
+import string from 'rollup-plugin-string'
 
 export default {
   moduleName: 'Renderium',
@@ -8,6 +9,11 @@ export default {
   dest: 'dist/renderium.js',
   format: 'umd',
   plugins: [
+    string({
+      include: [
+        'src/webgl-layer/*.glsl'
+      ]
+    }),
     babel(),
     nodeResolve(),
     commonjs()

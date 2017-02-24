@@ -237,7 +237,7 @@ var BaseLayer = function () {
   };
 
   BaseLayer.prototype.removeComponents = function removeComponents(components) {
-    components.forEach(tis.removeComponent, this);
+    components.forEach(this.removeComponent, this);
   };
 
   BaseLayer.prototype.clearComponents = function clearComponents() {
