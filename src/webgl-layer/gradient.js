@@ -1,3 +1,5 @@
+import { parseColor } from './utils.js'
+
 class Gradient {
   static isGradient (color) {
     return color && color._isGradient
