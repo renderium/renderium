@@ -673,9 +673,9 @@ function parseHexColor(color) {
 function parseRgbColor(color) {
   color = color.match(/\d+\.?\d*/g);
 
-  var r = parseInt(color[0]) / 255;
-  var g = parseInt(color[1]) / 255;
-  var b = parseInt(color[2]) / 255;
+  var r = parseInt(color[0], 10) / 255;
+  var g = parseInt(color[1], 10) / 255;
+  var b = parseInt(color[2], 10) / 255;
   var a = color[3] ? parseFloat(color[3]) : 1.0;
 
   return [r, g, b, a];
