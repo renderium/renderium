@@ -628,6 +628,326 @@ var CanvasLayer = function (_BaseLayer) {
   return CanvasLayer;
 }(BaseLayer);
 
+function getContext(canvas) {
+  var gl = canvas.getContext('webgl');
+  if (!gl) {
+    gl = canvas.getContext('experimental-webgl');
+  }
+  return gl;
+}
+
+function compileShader(gl, shaderSource, shaderType) {
+  var shader = gl.createShader(shaderType);
+  gl.shaderSource(shader, shaderSource);
+  gl.compileShader(shader);
+  var success = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
+  if (!success) {
+    throw new Error('could not compile shader: ' + gl.getShaderInfoLog(shader));
+  }
+  return shader;
+}
+
+function createProgram(gl, vertexShader, fragmentShader) {
+  var program = gl.createProgram();
+  gl.attachShader(program, vertexShader);
+  gl.attachShader(program, fragmentShader);
+  gl.linkProgram(program);
+  var success = gl.getProgramParameter(program, gl.LINK_STATUS);
+  if (!success) {
+    throw new Error('program failed to link: ' + gl.getProgramInfoLog(program));
+  }
+  return program;
+}
+
+function parseHexColor(color) {
+  color = parseInt(color.replace('#', ''), 16);
+
+  var r = (color >> 16 & 255) / 255;
+  var g = (color >> 8 & 255) / 255;
+  var b = (color & 255) / 255;
+  var a = 1.0;
+
+  return [r, g, b, a];
+}
+
+function parseRgbColor(color) {
+  color = color.match(/\d+\.?\d*/g);
+
+  var r = parseInt(color[0]) / 255;
+  var g = parseInt(color[1]) / 255;
+  var b = parseInt(color[2]) / 255;
+  var a = color[3] ? parseFloat(color[3]) : 1.0;
+
+  return [r, g, b, a];
+}
+
+function parseColor(color) {
+  if (color[0] === '#') {
+    return parseHexColor(color);
+  } else if (color[0] === 'r') {
+    return parseRgbColor(color);
+  } else {
+    throw new Error('Wrong color format: ' + color);
+  }
+}
+
+var Gradient$2 = function () {
+  Gradient.isGradient = function isGradient(color) {
+    return color && color._isGradient;
+  };
+
+  function Gradient(_ref) {
+    var start = _ref.start,
+        end = _ref.end,
+        from = _ref.from,
+        to = _ref.to;
+    classCallCheck(this, Gradient);
+
+    this.start = start;
+    this.end = end;
+    this.from = parseColor(from);
+    this.to = parseColor(to);
+
+    this._isGradient = true;
+    this._gradient = null;
+  }
+
+  Gradient.prototype.createGradient = function createGradient(layer) {
+    layer.collectStats('createGradient');
+
+    return this.from;
+  };
+
+  Gradient.prototype.valueOf = function valueOf() {
+    return this.from;
+  };
+
+  return Gradient;
+}();
+
+var vertextShaderSource = "attribute vec2 a_position;\r\nattribute vec4 a_color;\r\nvarying vec4 v_color;\r\nvoid main() {\r\n  gl_Position = vec4(a_position, 0, 1);\r\n  v_color = a_color;\r\n}\r\n";
+
+var fragmentShaderSource = "precision mediump float;\r\nvarying vec4 v_color;\r\nvoid main() {\r\n  gl_FragColor = v_color;\r\n}\r\n";
+
+// -------------------------------------
+// WebglLayer
+// -------------------------------------
+
+var WebglLayer = function (_BaseLayer) {
+  inherits(WebglLayer, _BaseLayer);
+
+  function WebglLayer(_ref) {
+    var Vector = _ref.Vector,
+        stats = _ref.stats,
+        width = _ref.width,
+        height = _ref.height;
+    classCallCheck(this, WebglLayer);
+
+    var _this = possibleConstructorReturn(this, _BaseLayer.call(this, { Vector: Vector, stats: stats, width: width, height: height }));
+
+    _this.gl = getContext(_this.canvas);
+
+    _this.scale({ width: width, height: height });
+
+    _this.imageLoader.onload = _this.forceRedraw.bind(_this);
+
+    _this.positions = [];
+
+    _this._vertexShader = compileShader(_this.gl, vertextShaderSource, _this.gl.VERTEX_SHADER);
+    _this._fragmentShader = compileShader(_this.gl, fragmentShaderSource, _this.gl.FRAGMENT_SHADER);
+
+    _this._program = createProgram(_this.gl, _this._vertexShader, _this._fragmentShader);
+    _this.gl.useProgram(_this._program);
+
+    _this._positionLocation = _this.gl.getAttribLocation(_this._program, 'a_position');
+    _this._colorLocation = _this.gl.getAttribLocation(_this._program, 'a_color');
+
+    _this._buffer = _this.gl.createBuffer();
+    _this.gl.bindBuffer(_this.gl.ARRAY_BUFFER, _this._buffer);
+    _this.gl.enableVertexAttribArray(_this._positionLocation);
+    _this.gl.vertexAttribPointer(_this._positionLocation, 2, _this.gl.FLOAT, false, Float32Array.BYTES_PER_ELEMENT * 6, 0);
+    _this.gl.enableVertexAttribArray(_this._colorLocation);
+    _this.gl.vertexAttribPointer(_this._colorLocation, 4, _this.gl.FLOAT, false, Float32Array.BYTES_PER_ELEMENT * 6, Float32Array.BYTES_PER_ELEMENT * 2);
+    return _this;
+  }
+
+  WebglLayer.prototype.scale = function scale(_ref2) {
+    var width = _ref2.width,
+        height = _ref2.height;
+
+    _BaseLayer.prototype.scale.call(this, { width: width, height: height });
+
+    if (window.devicePixelRatio) {
+      this.canvas.width = this.width *= window.devicePixelRatio;
+      this.canvas.height = this.height *= window.devicePixelRatio;
+    }
+
+    this.gl.viewport(0, 0, this.width, this.height);
+  };
+
+  WebglLayer.prototype.clear = function clear() {
+    _BaseLayer.prototype.clear.call(this);
+    this.positions = [];
+    this.gl.clearColor(0, 0, 0, 0);
+    this.gl.clearDepth(1);
+    this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+  };
+
+  WebglLayer.prototype.redraw = function redraw() {
+    _BaseLayer.prototype.redraw.call(this);
+
+    this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(this.positions), this.gl.STATIC_DRAW);
+    this.gl.drawArrays(this.gl.LINES, 0, this.positions.length / 6);
+  };
+
+  WebglLayer.prototype.convertPoints = function convertPoints(points) {
+    var result = [];
+    for (var i = 0; i < points.length; i++) {
+      var point = points[i];
+      var x = point.x;
+      var y = point.y;
+      result.push(new this.Vector(x / this.width * 2 - 1, y / this.height * -2 + 1));
+    }
+    return result;
+  };
+
+  WebglLayer.prototype.createGradient = function createGradient(_ref3) {
+    var start = _ref3.start,
+        end = _ref3.end,
+        from = _ref3.from,
+        to = _ref3.to;
+
+    return new Gradient$2({ start: start, end: end, from: from, to: to });
+  };
+
+  WebglLayer.prototype.getColor = function getColor(color) {
+    return Gradient$2.isGradient(color) ? color.createGradient(this) : parseColor(color);
+  };
+
+  WebglLayer.prototype.drawArc = function drawArc(_ref4) {
+    var position = _ref4.position,
+        radius = _ref4.radius,
+        startAngle = _ref4.startAngle,
+        endAngle = _ref4.endAngle,
+        color = _ref4.color,
+        _ref4$width = _ref4.width,
+        width = _ref4$width === undefined ? 1 : _ref4$width;
+  };
+
+  WebglLayer.prototype.drawCircle = function drawCircle(_ref5) {
+    var position = _ref5.position,
+        radius = _ref5.radius,
+        color = _ref5.color,
+        fillColor = _ref5.fillColor,
+        _ref5$width = _ref5.width,
+        width = _ref5$width === undefined ? 1 : _ref5$width;
+  };
+
+  WebglLayer.prototype.drawImage = function drawImage(_ref6) {
+    var position = _ref6.position,
+        image = _ref6.image,
+        _ref6$width = _ref6.width,
+        width = _ref6$width === undefined ? image.width : _ref6$width,
+        _ref6$height = _ref6.height,
+        height = _ref6$height === undefined ? image.height : _ref6$height,
+        _ref6$opacity = _ref6.opacity,
+        opacity = _ref6$opacity === undefined ? 1 : _ref6$opacity;
+
+    if (typeof image === 'string') {
+      if (this.imageLoader.getStatus(image) === this.imageLoader.IMAGE_STATUS_LOADED) {
+        image = this.imageLoader.getImage(image);
+        width = width || image.width;
+        height = height || image.height;
+      } else if (this.imageLoader.getStatus(image) !== this.imageLoader.IMAGE_STATUS_LOADING) {
+        this.imageLoader.load(image);
+        return;
+      } else {
+        return;
+      }
+    }
+  };
+
+  WebglLayer.prototype.drawPolygon = function drawPolygon(_ref7) {
+    var points = _ref7.points,
+        color = _ref7.color,
+        fillColor = _ref7.fillColor,
+        _ref7$width = _ref7.width,
+        width = _ref7$width === undefined ? 1 : _ref7$width;
+
+    this.collectStats('drawPolygon');
+
+    this.drawPolyline({
+      points: points.concat(points[0]),
+      color: color,
+      width: width
+    });
+  };
+
+  WebglLayer.prototype.drawPolyline = function drawPolyline(_ref8) {
+    var points = _ref8.points,
+        color = _ref8.color,
+        _ref8$lineDash = _ref8.lineDash,
+        lineDash = _ref8$lineDash === undefined ? [] : _ref8$lineDash,
+        _ref8$width = _ref8.width,
+        width = _ref8$width === undefined ? 1 : _ref8$width;
+
+    this.collectStats('drawPolyline');
+
+    points = this.convertPoints(points);
+    color = this.getColor(color);
+    for (var i = 1; i < points.length; i++) {
+      this.positions.push(points[i - 1].x, points[i - 1].y, color[0], color[1], color[2], 1);
+      this.positions.push(points[i].x, points[i].y, color[0], color[1], color[2], 1);
+    }
+  };
+
+  WebglLayer.prototype.drawRect = function drawRect(_ref9) {
+    var position = _ref9.position,
+        width = _ref9.width,
+        height = _ref9.height,
+        color = _ref9.color,
+        fillColor = _ref9.fillColor,
+        _ref9$strokeWidth = _ref9.strokeWidth,
+        strokeWidth = _ref9$strokeWidth === undefined ? 1 : _ref9$strokeWidth;
+  };
+
+  WebglLayer.prototype.drawText = function drawText(_ref10) {
+    var position = _ref10.position,
+        text = _ref10.text,
+        color = _ref10.color,
+        font = _ref10.font,
+        size = _ref10.size,
+        _ref10$align = _ref10.align,
+        align = _ref10$align === undefined ? 'center' : _ref10$align,
+        _ref10$baseline = _ref10.baseline,
+        baseline = _ref10$baseline === undefined ? 'middle' : _ref10$baseline;
+  };
+
+  WebglLayer.prototype.measureText = function measureText(_ref11) {
+    var text = _ref11.text;
+
+    return 0;
+  };
+
+  WebglLayer.prototype.drawStats = function drawStats() {
+    var stats = this.formatStats();
+
+    for (var i = stats.length; i--;) {
+      this.drawText({
+        position: new this.Vector(this.width - 10, this.height - 14 * (stats.length - i)),
+        text: stats[i],
+        color: '#fff',
+        font: 'Courier, monospace',
+        size: 14,
+        align: 'right',
+        baleline: 'bottom'
+      });
+    }
+  };
+
+  return WebglLayer;
+}(BaseLayer);
+
 var Component = function () {
   function Component() {
     classCallCheck(this, Component);
@@ -761,6 +1081,7 @@ Renderium.instances = [];
 
 Renderium.BaseLayer = BaseLayer;
 Renderium.CanvasLayer = CanvasLayer;
+Renderium.WebglLayer = WebglLayer;
 Renderium.Component = Component;
 Renderium.colors = colors;
 

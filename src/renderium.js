@@ -1,5 +1,6 @@
 import BaseLayer from './base-layer'
 import CanvasLayer from './canvas-layer'
+import WebglLayer from './webgl-layer'
 import Component from './component.js'
 import colors from './colors.js'
 
@@ -93,6 +94,7 @@ Renderium.instances = []
 
 Renderium.BaseLayer = BaseLayer
 Renderium.CanvasLayer = CanvasLayer
+Renderium.WebglLayer = WebglLayer
 Renderium.Component = Component
 Renderium.colors = colors
 
