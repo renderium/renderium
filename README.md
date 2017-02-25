@@ -99,18 +99,18 @@ layer.addComponent(component)
 
 ## Examples
 
-Canvas Layer |
-------- |
-**[All](http://codepen.io/collection/AEydae/)** |
-[Drawing arcs](http://codepen.io/broadsw0rd/pen/amyjmZ) |
-[Drawing circles](http://codepen.io/broadsw0rd/pen/xEXNkP) |
-[Drawing images](http://codepen.io/broadsw0rd/pen/zKPOKd) |
-[Drawing polygons](http://codepen.io/broadsw0rd/pen/NRBJpB) |
-[Drawing polylines](http://codepen.io/broadsw0rd/pen/amjrKN) |
-[Drawing rectangles](http://codepen.io/broadsw0rd/pen/VKGZRq) |
-[Drawing text](http://codepen.io/broadsw0rd/pen/ozPbRa) |
-[Drawing text with different alignments](http://codepen.io/broadsw0rd/pen/LRkoqJ) |
-[Conway's Game of Life](http://codepen.io/broadsw0rd/pen/KgJrLy) |
+Canvas Layer | Webgl Layer
+------- | -------
+**[All](http://codepen.io/collection/AEydae/)** | **[All](http://codepen.io/collection/XMjQrb/)**
+[Drawing arcs](http://codepen.io/broadsw0rd/pen/amyjmZ) | [Drawing arcs](http://codepen.io/broadsw0rd/pen/XMJeOd)
+[Drawing circles](http://codepen.io/broadsw0rd/pen/xEXNkP) | [Drawing circles](http://codepen.io/broadsw0rd/pen/LWEzqL)
+[Drawing images](http://codepen.io/broadsw0rd/pen/zKPOKd) | [Drawing images](http://codepen.io/broadsw0rd/pen/ZeYXPG)
+[Drawing polygons](http://codepen.io/broadsw0rd/pen/NRBJpB) | [Drawing polygons](http://codepen.io/broadsw0rd/pen/JWorzW)
+[Drawing polylines](http://codepen.io/broadsw0rd/pen/amjrKN) | [Drawing polylines](http://codepen.io/broadsw0rd/pen/ryaGbe)
+[Drawing rectangles](http://codepen.io/broadsw0rd/pen/VKGZRq) | [Drawing rectangles](http://codepen.io/broadsw0rd/pen/LWEzvj)
+[Drawing text](http://codepen.io/broadsw0rd/pen/ozPbRa) | [Drawing text](http://codepen.io/broadsw0rd/pen/PpwJgy)
+[Drawing text with different alignments](http://codepen.io/broadsw0rd/pen/LRkoqJ) | [Drawing text with different alignments](http://codepen.io/broadsw0rd/pen/ygqMad)
+[Conway's Game of Life](http://codepen.io/broadsw0rd/pen/KgJrLy) | [Conway's Game of Life](http://codepen.io/broadsw0rd/pen/jBEGRg)
 
 ## Development
 
