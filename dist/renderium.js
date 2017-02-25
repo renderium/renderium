@@ -1005,8 +1005,8 @@ var Renderium = function () {
   Renderium.digest = function digest() {
     for (var i = 0; i < Renderium.instances.length; i++) {
       var renderer = Renderium.instances[i];
-      renderer.clear();
       renderer.scale();
+      renderer.clear();
       renderer.redraw();
     }
   };
