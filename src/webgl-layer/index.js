@@ -78,7 +78,7 @@ class WebglLayer extends BaseLayer {
   redraw () {
     super.redraw()
 
-    this.gl.uniform2f(this.resolutionLocation, this.width, this.height)
+    this.gl.uniform2f(this._resolutionLocation, this.width, this.height)
 
     this.gl.bufferData(
       this.gl.ARRAY_BUFFER,

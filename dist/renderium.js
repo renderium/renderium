@@ -810,7 +810,7 @@ var WebglLayer = function (_BaseLayer) {
   WebglLayer.prototype.redraw = function redraw() {
     _BaseLayer.prototype.redraw.call(this);
 
-    this.gl.uniform2f(this.resolutionLocation, this.width, this.height);
+    this.gl.uniform2f(this._resolutionLocation, this.width, this.height);
 
     this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(this.positions), this.gl.STATIC_DRAW);
     this.gl.drawArrays(this.gl.LINES, 0, this.positions.length / this.attributesLength);
