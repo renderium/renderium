@@ -681,14 +681,31 @@ function parseRgbColor(color) {
   return [r, g, b, a];
 }
 
+var colorCache = {};
+var cacheLength = 0;
+var MAX_CACHE_LENGTH = 64;
+
 function parseColor(color) {
+  var result;
+
+  if (colorCache[color]) {
+    return colorCache[color];
+  }
+
   if (color[0] === '#') {
-    return parseHexColor(color);
+    result = parseHexColor(color);
   } else if (color[0] === 'r') {
-    return parseRgbColor(color);
+    result = parseRgbColor(color);
   } else {
     throw new Error('Wrong color format: ' + color);
   }
+
+  if (cacheLength < MAX_CACHE_LENGTH) {
+    colorCache[color] = result;
+    cacheLength++;
+  }
+
+  return result;
 }
 
 var Gradient$2 = function () {
