@@ -27,7 +27,6 @@ class WebglLayer extends BaseLayer {
     this.gl.useProgram(this._program)
 
     this._resolutionLocation = this.gl.getUniformLocation(this._program, 'u_resolution')
-    this._ratioLocation = this.gl.getUniformLocation(this._program, 'u_ratio')
     this._positionLocation = this.gl.getAttribLocation(this._program, 'a_position')
     this._colorLocation = this.gl.getAttribLocation(this._program, 'a_color')
 
@@ -80,7 +79,6 @@ class WebglLayer extends BaseLayer {
     super.redraw()
 
     this.gl.uniform2f(this._resolutionLocation, this.width, this.height)
-    this.gl.uniform1f(this._ratioLocation, BaseLayer.PIXEL_RATIO)
 
     this.gl.bufferData(
       this.gl.ARRAY_BUFFER,

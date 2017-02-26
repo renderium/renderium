@@ -736,7 +736,7 @@ var Gradient$2 = function () {
   return Gradient;
 }();
 
-var vertextShaderSource = "uniform vec2 u_resolution;\r\nuniform float u_ratio;\r\n\r\nattribute vec2 a_position;\r\nattribute float a_color;\r\n\r\nvarying vec4 v_color;\r\n\r\nvoid main() {\r\n  // convert points\r\n  vec2 position = (a_position / u_resolution * 2.0 - 1.0) * vec2(1, -1) * u_ratio;\r\n  gl_Position = vec4(position, 0, 1);\r\n\r\n  // because bitwise operators not supported\r\n  float color = a_color;\r\n  v_color.b = mod(color, 256.0) / 255.0; color = floor(color / 256.0);\r\n  v_color.g = mod(color, 256.0) / 255.0; color = floor(color / 256.0);\r\n  v_color.r = mod(color, 256.0) / 255.0; color = floor(color / 256.0);\r\n  v_color.a = 1.0;\r\n}\r\n";
+var vertextShaderSource = "uniform vec2 u_resolution;\r\n\r\nattribute vec2 a_position;\r\nattribute float a_color;\r\n\r\nvarying vec4 v_color;\r\n\r\nvoid main() {\r\n  // convert points\r\n  vec2 position = (a_position / u_resolution * 2.0 - 1.0) * vec2(1, -1);\r\n  gl_Position = vec4(position, 0, 1);\r\n\r\n  // because bitwise operators not supported\r\n  float color = a_color;\r\n  v_color.b = mod(color, 256.0) / 255.0; color = floor(color / 256.0);\r\n  v_color.g = mod(color, 256.0) / 255.0; color = floor(color / 256.0);\r\n  v_color.r = mod(color, 256.0) / 255.0; color = floor(color / 256.0);\r\n  v_color.a = 1.0;\r\n}\r\n";
 
 var fragmentShaderSource = "precision mediump float;\r\nvarying vec4 v_color;\r\nvoid main() {\r\n  gl_FragColor = v_color;\r\n}\r\n";
 
@@ -771,7 +771,6 @@ var WebglLayer = function (_BaseLayer) {
     _this.gl.useProgram(_this._program);
 
     _this._resolutionLocation = _this.gl.getUniformLocation(_this._program, 'u_resolution');
-    _this._ratioLocation = _this.gl.getUniformLocation(_this._program, 'u_ratio');
     _this._positionLocation = _this.gl.getAttribLocation(_this._program, 'a_position');
     _this._colorLocation = _this.gl.getAttribLocation(_this._program, 'a_color');
 
@@ -809,7 +808,6 @@ var WebglLayer = function (_BaseLayer) {
     _BaseLayer.prototype.redraw.call(this);
 
     this.gl.uniform2f(this._resolutionLocation, this.width, this.height);
-    this.gl.uniform1f(this._ratioLocation, BaseLayer.PIXEL_RATIO);
 
     this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(this.positions), this.gl.STATIC_DRAW);
     this.gl.drawArrays(this.gl.LINES, 0, this.positions.length / this.attributesLength);
