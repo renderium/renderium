@@ -734,7 +734,7 @@ var Gradient$2 = function () {
   return Gradient;
 }();
 
-var vertextShaderSource = "attribute vec2 a_position;\r\nattribute int a_color;\r\nvarying vec4 v_color;\r\nvoid main() {\r\n  gl_Position = vec4(a_position, 0, 1);\r\n\r\n  v_color.r = ((a_color >> 16) & 255) / 255;\r\n  v_color.g = ((a_color >> 8) & 255) / 255;\r\n  v_color.b = (a_color & 255) / 255;\r\n  v_color.a = 1.0;\r\n}\r\n";
+var vertextShaderSource = "attribute vec2 a_position;\r\nattribute float a_color;\r\nvarying vec4 v_color;\r\nvoid main() {\r\n  gl_Position = vec4(a_position, 0, 1);\r\n\r\n  float color = a_color;\r\n  v_color.b = mod(color, 256.0); color = floor(color / 256.0);\r\n  v_color.g = mod(color, 256.0); color = floor(color / 256.0);\r\n  v_color.r = mod(color, 256.0); color = floor(color / 256.0); v_color /= 255.0;\r\n  v_color.a = 1.0;\r\n}\r\n";
 
 var fragmentShaderSource = "precision mediump float;\r\nvarying vec4 v_color;\r\nvoid main() {\r\n  gl_FragColor = v_color;\r\n}\r\n";
 
@@ -776,7 +776,7 @@ var WebglLayer = function (_BaseLayer) {
     _this.gl.enableVertexAttribArray(_this._positionLocation);
     _this.gl.vertexAttribPointer(_this._positionLocation, 2, _this.gl.FLOAT, false, Float32Array.BYTES_PER_ELEMENT * 3, 0);
     _this.gl.enableVertexAttribArray(_this._colorLocation);
-    _this.gl.vertexAttribPointer(_this._colorLocation, 1, _this.gl.UNSIGNED_INT, false, Float32Array.BYTES_PER_ELEMENT * 3, Float32Array.BYTES_PER_ELEMENT * 2);
+    _this.gl.vertexAttribPointer(_this._colorLocation, 1, _this.gl.FLOAT, false, Float32Array.BYTES_PER_ELEMENT * 3, Float32Array.BYTES_PER_ELEMENT * 2);
     return _this;
   }
 

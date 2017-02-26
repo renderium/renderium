@@ -1,11 +1,12 @@
 attribute vec2 a_position;
-attribute int a_color;
+attribute float a_color;
 varying vec4 v_color;
 void main() {
   gl_Position = vec4(a_position, 0, 1);
 
-  v_color.r = ((a_color >> 16) & 255) / 255;
-  v_color.g = ((a_color >> 8) & 255) / 255;
-  v_color.b = (a_color & 255) / 255;
+  float color = a_color;
+  v_color.b = mod(color, 256.0); color = floor(color / 256.0);
+  v_color.g = mod(color, 256.0); color = floor(color / 256.0);
+  v_color.r = mod(color, 256.0); color = floor(color / 256.0); v_color /= 255.0;
   v_color.a = 1.0;
 }
