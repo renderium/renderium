@@ -44,7 +44,7 @@ class WebglLayer extends BaseLayer {
     this.gl.vertexAttribPointer(
       this._colorLocation,
       1,
-      this.gl.FLOAT,
+      this.gl.UNSIGNED_INT,
       false,
       Float32Array.BYTES_PER_ELEMENT * 3,
       Float32Array.BYTES_PER_ELEMENT * 2
