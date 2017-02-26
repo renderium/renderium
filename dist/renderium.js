@@ -660,25 +660,17 @@ function createProgram(gl, vertexShader, fragmentShader) {
 }
 
 function parseHexColor(color) {
-  color = parseInt(color.replace('#', ''), 16);
-
-  var r = (color >> 16 & 255) / 255;
-  var g = (color >> 8 & 255) / 255;
-  var b = (color & 255) / 255;
-  var a = 1.0;
-
-  return [r, g, b, a];
+  return parseInt(color.replace('#', ''), 16);
 }
 
 function parseRgbColor(color) {
   color = color.match(/\d+\.?\d*/g);
 
-  var r = parseInt(color[0], 10) / 255;
-  var g = parseInt(color[1], 10) / 255;
-  var b = parseInt(color[2], 10) / 255;
-  var a = color[3] ? parseFloat(color[3]) : 1.0;
+  var r = Number(color[0]);
+  var g = Number(color[1]);
+  var b = Number(color[2]);
 
-  return [r, g, b, a];
+  return (r << 16) + (g << 8) + b;
 }
 
 var colorCache = {};
@@ -742,7 +734,7 @@ var Gradient$2 = function () {
   return Gradient;
 }();
 
-var vertextShaderSource = "attribute vec2 a_position;\r\nattribute vec4 a_color;\r\nvarying vec4 v_color;\r\nvoid main() {\r\n  gl_Position = vec4(a_position, 0, 1);\r\n  v_color = a_color;\r\n}\r\n";
+var vertextShaderSource = "attribute vec2 a_position;\r\nattribute float a_color;\r\nvarying vec4 v_color;\r\nvoid main() {\r\n  gl_Position = vec4(a_position, 0, 1);\r\n\r\n  v_color.r = ((a_color >> 16) & 255) / 255;\r\n  v_color.g = ((a_color >> 8) & 255) / 255;\r\n  v_color.b = (a_color & 255) / 255;\r\n  v_color.a = 1.0\r\n}\r\n";
 
 var fragmentShaderSource = "precision mediump float;\r\nvarying vec4 v_color;\r\nvoid main() {\r\n  gl_FragColor = v_color;\r\n}\r\n";
 
@@ -782,9 +774,9 @@ var WebglLayer = function (_BaseLayer) {
     _this._buffer = _this.gl.createBuffer();
     _this.gl.bindBuffer(_this.gl.ARRAY_BUFFER, _this._buffer);
     _this.gl.enableVertexAttribArray(_this._positionLocation);
-    _this.gl.vertexAttribPointer(_this._positionLocation, 2, _this.gl.FLOAT, false, Float32Array.BYTES_PER_ELEMENT * 6, 0);
+    _this.gl.vertexAttribPointer(_this._positionLocation, 2, _this.gl.FLOAT, false, Float32Array.BYTES_PER_ELEMENT * 3, 0);
     _this.gl.enableVertexAttribArray(_this._colorLocation);
-    _this.gl.vertexAttribPointer(_this._colorLocation, 4, _this.gl.FLOAT, false, Float32Array.BYTES_PER_ELEMENT * 6, Float32Array.BYTES_PER_ELEMENT * 2);
+    _this.gl.vertexAttribPointer(_this._colorLocation, 1, _this.gl.FLOAT, false, Float32Array.BYTES_PER_ELEMENT * 3, Float32Array.BYTES_PER_ELEMENT * 2);
     return _this;
   }
 
@@ -913,8 +905,8 @@ var WebglLayer = function (_BaseLayer) {
     points = this.convertPoints(points);
     color = this.getColor(color);
     for (var i = 1; i < points.length; i++) {
-      this.positions.push(points[i - 1].x, points[i - 1].y, color[0], color[1], color[2], 1);
-      this.positions.push(points[i].x, points[i].y, color[0], color[1], color[2], 1);
+      this.positions.push(points[i - 1].x, points[i - 1].y, color);
+      this.positions.push(points[i].x, points[i].y, color);
     }
   };
 

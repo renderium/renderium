@@ -30,25 +30,17 @@ export function createProgram (gl, vertexShader, fragmentShader) {
 }
 
 function parseHexColor (color) {
-  color = parseInt(color.replace('#', ''), 16)
-
-  var r = ((color >> 16) & 255) / 255
-  var g = ((color >> 8) & 255) / 255
-  var b = (color & 255) / 255
-  var a = 1.0
-
-  return [r, g, b, a]
+  return parseInt(color.replace('#', ''), 16)
 }
 
 function parseRgbColor (color) {
   color = color.match(/\d+\.?\d*/g)
 
-  var r = parseInt(color[0], 10) / 255
-  var g = parseInt(color[1], 10) / 255
-  var b = parseInt(color[2], 10) / 255
-  var a = color[3] ? parseFloat(color[3]) : 1.0
+  var r = Number(color[0])
+  var g = Number(color[1])
+  var b = Number(color[2])
 
-  return [r, g, b, a]
+  return (r << 16) + (g << 8) + b
 }
 
 var colorCache = {}

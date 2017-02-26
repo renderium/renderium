@@ -37,16 +37,16 @@ class WebglLayer extends BaseLayer {
       2,
       this.gl.FLOAT,
       false,
-      Float32Array.BYTES_PER_ELEMENT * 6,
+      Float32Array.BYTES_PER_ELEMENT * 3,
       0
     )
     this.gl.enableVertexAttribArray(this._colorLocation)
     this.gl.vertexAttribPointer(
       this._colorLocation,
-      4,
+      1,
       this.gl.FLOAT,
       false,
-      Float32Array.BYTES_PER_ELEMENT * 6,
+      Float32Array.BYTES_PER_ELEMENT * 3,
       Float32Array.BYTES_PER_ELEMENT * 2
     )
   }
@@ -139,8 +139,8 @@ class WebglLayer extends BaseLayer {
     points = this.convertPoints(points)
     color = this.getColor(color)
     for (var i = 1; i < points.length; i++) {
-      this.positions.push(points[i - 1].x, points[i - 1].y, color[0], color[1], color[2], 1)
-      this.positions.push(points[i].x, points[i].y, color[0], color[1], color[2], 1)
+      this.positions.push(points[i - 1].x, points[i - 1].y, color)
+      this.positions.push(points[i].x, points[i].y, color)
     }
   }
 
