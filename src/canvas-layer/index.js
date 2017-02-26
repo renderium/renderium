@@ -5,8 +5,6 @@ import Gradient from './gradient.js'
 // CanvasLayer
 // -------------------------------------
 
-const PIXEL_RATIO = window.devicePixelRatio || 1
-
 class CanvasLayer extends BaseLayer {
   constructor ({ Vector, stats, antialiasing, width, height }) {
     super({ Vector, stats, width, height })
@@ -37,9 +35,7 @@ class CanvasLayer extends BaseLayer {
     super.scale({ width, height })
 
     if (window.devicePixelRatio) {
-      this.canvas.width = this.width * PIXEL_RATIO
-      this.canvas.height = this.height * PIXEL_RATIO
-      this.ctx.scale(PIXEL_RATIO, PIXEL_RATIO)
+      this.ctx.scale(BaseLayer.PIXEL_RATIO, BaseLayer.PIXEL_RATIO)
     }
 
     if (!this.antialiasing) {

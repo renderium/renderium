@@ -1,4 +1,5 @@
 uniform vec2 u_resolution;
+uniform float u_ratio;
 
 attribute vec2 a_position;
 attribute float a_color;
@@ -7,7 +8,7 @@ varying vec4 v_color;
 
 void main() {
   // convert points
-  vec2 position = (a_position / u_resolution * 2.0 - 1.0) * vec2(1, -1);
+  vec2 position = (a_position / u_resolution * 2.0 - 1.0) * vec2(1, -1) * u_ratio;
   gl_Position = vec4(position, 0, 1);
 
   // because bitwise operators not supported
