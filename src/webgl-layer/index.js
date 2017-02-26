@@ -26,6 +26,7 @@ class WebglLayer extends BaseLayer {
     this._program = utils.createProgram(this.gl, this._vertexShader, this._fragmentShader)
     this.gl.useProgram(this._program)
 
+    this._resolutionLocation = this.gl.getUniformLocation(this._program, 'u_resolution')
     this._positionLocation = this.gl.getAttribLocation(this._program, 'a_position')
     this._colorLocation = this.gl.getAttribLocation(this._program, 'a_color')
 
@@ -77,23 +78,14 @@ class WebglLayer extends BaseLayer {
   redraw () {
     super.redraw()
 
+    this.gl.uniform2f(this.resolutionLocation, this.width, this.height)
+
     this.gl.bufferData(
       this.gl.ARRAY_BUFFER,
       new Float32Array(this.positions),
       this.gl.STATIC_DRAW
     )
     this.gl.drawArrays(this.gl.LINES, 0, this.positions.length / this.attributesLength)
-  }
-
-  convertPoints (points) {
-    var result = []
-    for (var i = 0; i < points.length; i++) {
-      var point = points[i]
-      var x = point.x
-      var y = point.y
-      result.push(new this.Vector(x / this.width * 2 - 1, y / this.height * -2 + 1))
-    }
-    return result
   }
 
   createGradient ({ start, end, from, to }) {
@@ -140,7 +132,6 @@ class WebglLayer extends BaseLayer {
   drawPolyline ({ points, color, lineDash = [], width = 1 }) {
     this.collectStats('drawPolyline')
 
-    points = this.convertPoints(points)
     color = this.getColor(color)
     for (var i = 1; i < points.length; i++) {
       this.positions.push(points[i - 1].x, points[i - 1].y, color)

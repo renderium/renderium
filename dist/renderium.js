@@ -734,7 +734,7 @@ var Gradient$2 = function () {
   return Gradient;
 }();
 
-var vertextShaderSource = "attribute vec2 a_position;\r\nattribute float a_color;\r\nvarying vec4 v_color;\r\nvoid main() {\r\n  gl_Position = vec4(a_position, 0, 1);\r\n\r\n  float color = a_color;\r\n  v_color.b = mod(color, 256.0); color = floor(color / 256.0);\r\n  v_color.g = mod(color, 256.0); color = floor(color / 256.0);\r\n  v_color.r = mod(color, 256.0); color = floor(color / 256.0); v_color /= 255.0;\r\n  v_color.a = 1.0;\r\n}\r\n";
+var vertextShaderSource = "uniform vec2 u_resolution;\r\n\r\nattribute vec2 a_position;\r\nattribute float a_color;\r\n\r\nvarying vec4 v_color;\r\n\r\nvoid main() {\r\n  // convert points\r\n  vec2 position = (a_position / u_resolution * 2.0 - 1.0) * vec2(1, -1);\r\n  gl_Position = vec4(position, 0, 1);\r\n\r\n  // because bitwise operators not supported\r\n  float color = a_color;\r\n  v_color.b = mod(color, 256.0) / 255.0; color = floor(color / 256.0);\r\n  v_color.g = mod(color, 256.0) / 255.0; color = floor(color / 256.0);\r\n  v_color.r = mod(color, 256.0) / 255.0; color = floor(color / 256.0);\r\n  v_color.a = 1.0;\r\n}\r\n";
 
 var fragmentShaderSource = "precision mediump float;\r\nvarying vec4 v_color;\r\nvoid main() {\r\n  gl_FragColor = v_color;\r\n}\r\n";
 
@@ -768,6 +768,7 @@ var WebglLayer = function (_BaseLayer) {
     _this._program = createProgram(_this.gl, _this._vertexShader, _this._fragmentShader);
     _this.gl.useProgram(_this._program);
 
+    _this._resolutionLocation = _this.gl.getUniformLocation(_this._program, 'u_resolution');
     _this._positionLocation = _this.gl.getAttribLocation(_this._program, 'a_position');
     _this._colorLocation = _this.gl.getAttribLocation(_this._program, 'a_color');
 
@@ -809,19 +810,10 @@ var WebglLayer = function (_BaseLayer) {
   WebglLayer.prototype.redraw = function redraw() {
     _BaseLayer.prototype.redraw.call(this);
 
+    this.gl.uniform2f(this.resolutionLocation, this.width, this.height);
+
     this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(this.positions), this.gl.STATIC_DRAW);
     this.gl.drawArrays(this.gl.LINES, 0, this.positions.length / this.attributesLength);
-  };
-
-  WebglLayer.prototype.convertPoints = function convertPoints(points) {
-    var result = [];
-    for (var i = 0; i < points.length; i++) {
-      var point = points[i];
-      var x = point.x;
-      var y = point.y;
-      result.push(new this.Vector(x / this.width * 2 - 1, y / this.height * -2 + 1));
-    }
-    return result;
   };
 
   WebglLayer.prototype.createGradient = function createGradient(_ref3) {
@@ -906,7 +898,6 @@ var WebglLayer = function (_BaseLayer) {
 
     this.collectStats('drawPolyline');
 
-    points = this.convertPoints(points);
     color = this.getColor(color);
     for (var i = 1; i < points.length; i++) {
       this.positions.push(points[i - 1].x, points[i - 1].y, color);
