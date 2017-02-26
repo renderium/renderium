@@ -14,6 +14,6 @@ void main() {
   float color = a_color;
   v_color.b = mod(color, 256.0) / 255.0; color = floor(color / 256.0);
   v_color.g = mod(color, 256.0) / 255.0; color = floor(color / 256.0);
-  v_color.r = mod(color, 256.0) / 255.0; color = floor(color / 256.0);
+  v_color.r = mod(color, 256.0) / 255.0;
   v_color.a = 1.0;
 }
