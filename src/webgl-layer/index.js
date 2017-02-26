@@ -31,22 +31,26 @@ class WebglLayer extends BaseLayer {
 
     this._buffer = this.gl.createBuffer()
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this._buffer)
+
     this.gl.enableVertexAttribArray(this._positionLocation)
+    this.gl.enableVertexAttribArray(this._colorLocation)
+
+    this.attributesLength = 3
+
     this.gl.vertexAttribPointer(
       this._positionLocation,
       2,
       this.gl.FLOAT,
       false,
-      Float32Array.BYTES_PER_ELEMENT * 3,
+      Float32Array.BYTES_PER_ELEMENT * this.attributesLength,
       0
     )
-    this.gl.enableVertexAttribArray(this._colorLocation)
     this.gl.vertexAttribPointer(
       this._colorLocation,
       1,
       this.gl.FLOAT,
       false,
-      Float32Array.BYTES_PER_ELEMENT * 3,
+      Float32Array.BYTES_PER_ELEMENT * this.attributesLength,
       Float32Array.BYTES_PER_ELEMENT * 2
     )
   }
@@ -78,7 +82,7 @@ class WebglLayer extends BaseLayer {
       new Float32Array(this.positions),
       this.gl.STATIC_DRAW
     )
-    this.gl.drawArrays(this.gl.LINES, 0, this.positions.length / 6)
+    this.gl.drawArrays(this.gl.LINES, 0, this.positions.length / this.attributesLength)
   }
 
   convertPoints (points) {

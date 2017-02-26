@@ -773,10 +773,14 @@ var WebglLayer = function (_BaseLayer) {
 
     _this._buffer = _this.gl.createBuffer();
     _this.gl.bindBuffer(_this.gl.ARRAY_BUFFER, _this._buffer);
+
     _this.gl.enableVertexAttribArray(_this._positionLocation);
-    _this.gl.vertexAttribPointer(_this._positionLocation, 2, _this.gl.FLOAT, false, Float32Array.BYTES_PER_ELEMENT * 3, 0);
     _this.gl.enableVertexAttribArray(_this._colorLocation);
-    _this.gl.vertexAttribPointer(_this._colorLocation, 1, _this.gl.FLOAT, false, Float32Array.BYTES_PER_ELEMENT * 3, Float32Array.BYTES_PER_ELEMENT * 2);
+
+    _this.attributesLength = 3;
+
+    _this.gl.vertexAttribPointer(_this._positionLocation, 2, _this.gl.FLOAT, false, Float32Array.BYTES_PER_ELEMENT * _this.attributesLength, 0);
+    _this.gl.vertexAttribPointer(_this._colorLocation, 1, _this.gl.FLOAT, false, Float32Array.BYTES_PER_ELEMENT * _this.attributesLength, Float32Array.BYTES_PER_ELEMENT * 2);
     return _this;
   }
 
@@ -806,7 +810,7 @@ var WebglLayer = function (_BaseLayer) {
     _BaseLayer.prototype.redraw.call(this);
 
     this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(this.positions), this.gl.STATIC_DRAW);
-    this.gl.drawArrays(this.gl.LINES, 0, this.positions.length / 6);
+    this.gl.drawArrays(this.gl.LINES, 0, this.positions.length / this.attributesLength);
   };
 
   WebglLayer.prototype.convertPoints = function convertPoints(points) {
