@@ -48,7 +48,7 @@
     ]
   },
   "scripts": {
-    "check": "snazzy src/*.js",
+    "check": "snazzy src/*.js examples/*.js",
     "build": "rollup -c",
     "min": "uglifyjs -c -m -- dist/renderium.js > dist/renderium.min.js"
   }
