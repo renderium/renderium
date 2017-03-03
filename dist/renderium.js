@@ -752,9 +752,9 @@ var Gradient$2 = function () {
   return Gradient;
 }();
 
-var vertextShaderSource = "uniform vec2 u_resolution;\r\n\r\nattribute vec2 a_position;\r\nattribute float a_color;\r\n\r\nvarying vec4 v_color;\r\n\r\nvoid main() {\r\n  // convert points\r\n  vec2 position = (a_position / u_resolution * 2.0 - 1.0) * vec2(1, -1);\r\n  gl_Position = vec4(position, 0, 1);\r\n\r\n  // because bitwise operators not supported\r\n  float color = a_color;\r\n  v_color.b = mod(color, 256.0) / 255.0; color = floor(color / 256.0);\r\n  v_color.g = mod(color, 256.0) / 255.0; color = floor(color / 256.0);\r\n  v_color.r = mod(color, 256.0) / 255.0;\r\n  v_color.a = 1.0;\r\n}\r\n";
+var vertextShaderSource = "uniform vec2 u_resolution;\r\n\r\nattribute vec2 a_position;\r\nattribute float a_color;\r\n\r\nvarying vec4 v_color;\r\n\r\nconst vec2 unit = vec2(1, -1);\r\n\r\nvec4 convertPoints (vec2 position, vec2 resolution) {\r\n  return vec4((position / resolution * 2.0 - 1.0) * unit, 0, 1);\r\n}\r\n\r\nvec4 convertColor (float color, float alpha) {\r\n  // because bitwise operators not supported\r\n  float b = mod(color, 256.0) / 255.0; color = floor(color / 256.0);\r\n  float g = mod(color, 256.0) / 255.0; color = floor(color / 256.0);\r\n  float r = mod(color, 256.0) / 255.0;\r\n\r\n  return vec4 (r, g, b, alpha);\r\n}\r\n\r\nvoid main () {\r\n  gl_Position = convertPoints(a_position, u_resolution);\r\n  v_color = convertColor(a_color, 1.0);\r\n}\r\n";
 
-var fragmentShaderSource = "precision mediump float;\r\nvarying vec4 v_color;\r\nvoid main() {\r\n  gl_FragColor = v_color;\r\n}\r\n";
+var fragmentShaderSource = "precision mediump float;\r\n\r\nvarying vec4 v_color;\r\n\r\nvoid main() {\r\n  gl_FragColor = v_color;\r\n}\r\n";
 
 // -------------------------------------
 // WebglLayer
@@ -961,11 +961,6 @@ var WebglLayer = function (_BaseLayer) {
   };
 
   createClass(WebglLayer, [{
-    key: 'ATTRIBUTES_LENGTH',
-    get: function () {
-      return 3;
-    }
-  }, {
     key: 'POSITION_SIZE',
     get: function () {
       return 2;
@@ -974,6 +969,11 @@ var WebglLayer = function (_BaseLayer) {
     key: 'COLOR_SIZE',
     get: function () {
       return 1;
+    }
+  }, {
+    key: 'ATTRIBUTES_LENGTH',
+    get: function () {
+      return this.POSITION_SIZE + this.COLOR_SIZE;
     }
   }]);
   return WebglLayer;

@@ -54,9 +54,9 @@ class WebglLayer extends BaseLayer {
     )
   }
 
-  get ATTRIBUTES_LENGTH () { return 3 }
   get POSITION_SIZE () { return 2 }
   get COLOR_SIZE () { return 1 }
+  get ATTRIBUTES_LENGTH () { return this.POSITION_SIZE + this.COLOR_SIZE }
 
   scale ({ width, height }) {
     super.scale({ width, height })
