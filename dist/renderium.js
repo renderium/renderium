@@ -51,7 +51,23 @@ var classCallCheck = function (instance, Constructor) {
   }
 };
 
+var createClass = function () {
+  function defineProperties(target, props) {
+    for (var i = 0; i < props.length; i++) {
+      var descriptor = props[i];
+      descriptor.enumerable = descriptor.enumerable || false;
+      descriptor.configurable = true;
+      if ("value" in descriptor) descriptor.writable = true;
+      Object.defineProperty(target, descriptor.key, descriptor);
+    }
+  }
 
+  return function (Constructor, protoProps, staticProps) {
+    if (protoProps) defineProperties(Constructor.prototype, protoProps);
+    if (staticProps) defineProperties(Constructor, staticProps);
+    return Constructor;
+  };
+}();
 
 
 
@@ -780,10 +796,8 @@ var WebglLayer = function (_BaseLayer) {
     _this.gl.enableVertexAttribArray(_this._positionLocation);
     _this.gl.enableVertexAttribArray(_this._colorLocation);
 
-    _this.attributesLength = 3;
-
-    _this.gl.vertexAttribPointer(_this._positionLocation, 2, _this.gl.FLOAT, false, Float32Array.BYTES_PER_ELEMENT * _this.attributesLength, 0);
-    _this.gl.vertexAttribPointer(_this._colorLocation, 1, _this.gl.FLOAT, false, Float32Array.BYTES_PER_ELEMENT * _this.attributesLength, Float32Array.BYTES_PER_ELEMENT * 2);
+    _this.gl.vertexAttribPointer(_this._positionLocation, _this.POSITION_SIZE, _this.gl.FLOAT, false, Float32Array.BYTES_PER_ELEMENT * _this.ATTRIBUTES_LENGTH, 0);
+    _this.gl.vertexAttribPointer(_this._colorLocation, _this.COLOR_SIZE, _this.gl.FLOAT, false, Float32Array.BYTES_PER_ELEMENT * _this.ATTRIBUTES_LENGTH, Float32Array.BYTES_PER_ELEMENT * _this.POSITION_SIZE);
     return _this;
   }
 
@@ -946,6 +960,22 @@ var WebglLayer = function (_BaseLayer) {
     }
   };
 
+  createClass(WebglLayer, [{
+    key: 'ATTRIBUTES_LENGTH',
+    get: function () {
+      return 3;
+    }
+  }, {
+    key: 'POSITION_SIZE',
+    get: function () {
+      return 2;
+    }
+  }, {
+    key: 'COLOR_SIZE',
+    get: function () {
+      return 1;
+    }
+  }]);
   return WebglLayer;
 }(BaseLayer);
 

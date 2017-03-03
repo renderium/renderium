@@ -36,25 +36,27 @@ class WebglLayer extends BaseLayer {
     this.gl.enableVertexAttribArray(this._positionLocation)
     this.gl.enableVertexAttribArray(this._colorLocation)
 
-    this.attributesLength = 3
-
     this.gl.vertexAttribPointer(
       this._positionLocation,
-      2,
+      this.POSITION_SIZE,
       this.gl.FLOAT,
       false,
-      Float32Array.BYTES_PER_ELEMENT * this.attributesLength,
+      Float32Array.BYTES_PER_ELEMENT * this.ATTRIBUTES_LENGTH,
       0
     )
     this.gl.vertexAttribPointer(
       this._colorLocation,
-      1,
+      this.COLOR_SIZE,
       this.gl.FLOAT,
       false,
-      Float32Array.BYTES_PER_ELEMENT * this.attributesLength,
-      Float32Array.BYTES_PER_ELEMENT * 2
+      Float32Array.BYTES_PER_ELEMENT * this.ATTRIBUTES_LENGTH,
+      Float32Array.BYTES_PER_ELEMENT * this.POSITION_SIZE
     )
   }
+
+  get ATTRIBUTES_LENGTH () { return 3 }
+  get POSITION_SIZE () { return 2 }
+  get COLOR_SIZE () { return 1 }
 
   scale ({ width, height }) {
     super.scale({ width, height })
