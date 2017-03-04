@@ -87,7 +87,7 @@ class WebglLayer extends BaseLayer {
       new Float32Array(this.positions),
       this.gl.STATIC_DRAW
     )
-    this.gl.drawArrays(this.gl.LINES, 0, this.positions.length / this.attributesLength)
+    this.gl.drawArrays(this.gl.LINES, 0, this.positions.length / this.ATTRIBUTES_LENGTH)
   }
 
   createGradient ({ start, end, from, to }) {

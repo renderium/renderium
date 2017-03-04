@@ -824,7 +824,7 @@ var WebglLayer = function (_BaseLayer) {
     this.gl.uniform2f(this._resolutionLocation, this.width, this.height);
 
     this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(this.positions), this.gl.STATIC_DRAW);
-    this.gl.drawArrays(this.gl.LINES, 0, this.positions.length / this.attributesLength);
+    this.gl.drawArrays(this.gl.LINES, 0, this.positions.length / this.ATTRIBUTES_LENGTH);
   };
 
   WebglLayer.prototype.createGradient = function createGradient(_ref3) {
