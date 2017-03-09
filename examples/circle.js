@@ -10,7 +10,7 @@ function Circle (options) {
   this.width = options.width
   this.duration = options.duration
 
-  this._position = this.position.clone()
+  this._position = this.position.copy()
 
   this.layerWidth = 0
 
