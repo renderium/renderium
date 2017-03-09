@@ -12,6 +12,8 @@ ImageComponent.prototype.shouldRedraw = function () {
   return this._shouldRedraw
 }
 
+ImageComponent.prototype.onadd = function (layer) {}
+ImageComponent.prototype.onremove = function (layer) {}
 ImageComponent.prototype.plot = function (layer) {}
 
 ImageComponent.prototype.draw = function (layer) {

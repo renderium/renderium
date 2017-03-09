@@ -222,6 +222,7 @@ var BaseLayer = function () {
     }
     this.components.push(component);
     this.forceRedraw();
+    component.onadd(this);
   };
 
   BaseLayer.prototype.addComponents = function addComponents(components) {
@@ -234,6 +235,7 @@ var BaseLayer = function () {
       this.components.splice(idx, 1);
       this.forceRedraw();
     }
+    component.onremove(this);
   };
 
   BaseLayer.prototype.removeComponents = function removeComponents(components) {
@@ -632,6 +634,10 @@ var Component = function () {
   function Component() {
     classCallCheck(this, Component);
   }
+
+  Component.prototype.onadd = function onadd(layer) {};
+
+  Component.prototype.onremove = function onremove(layer) {};
 
   Component.prototype.plot = function plot(layer) {};
 

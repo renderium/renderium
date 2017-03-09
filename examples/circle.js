@@ -12,6 +12,8 @@ Circle.prototype.shouldRedraw = function () {
   return this._shouldRedraw
 }
 
+Circle.prototype.onadd = function (layer) {}
+Circle.prototype.onremove = function (layer) {}
 Circle.prototype.plot = function (layer) {}
 
 Circle.prototype.draw = function (layer) {

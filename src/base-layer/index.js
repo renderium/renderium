@@ -80,6 +80,7 @@ class BaseLayer {
     }
     this.components.push(component)
     this.forceRedraw()
+    component.onadd(this)
   }
 
   addComponents (components) {
@@ -92,6 +93,7 @@ class BaseLayer {
       this.components.splice(idx, 1)
       this.forceRedraw()
     }
+    component.onremove(this)
   }
 
   removeComponents (components) {

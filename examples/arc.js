@@ -13,6 +13,8 @@ Arc.prototype.shouldRedraw = function () {
   return this._shouldRedraw
 }
 
+Arc.prototype.onadd = function (layer) {}
+Arc.prototype.onremove = function (layer) {}
 Arc.prototype.plot = function (layer) {}
 
 Arc.prototype.draw = function (layer) {
