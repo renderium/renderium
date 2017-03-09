@@ -378,8 +378,8 @@ var CanvasLayer = function (_BaseLayer) {
     this.ctx.restore();
   };
 
-  CanvasLayer.prototype.redraw = function redraw() {
-    _BaseLayer.prototype.redraw.call(this);
+  CanvasLayer.prototype.redraw = function redraw(time) {
+    _BaseLayer.prototype.redraw.call(this, time);
     if (this.logStats) {
       this.drawStats();
     }
