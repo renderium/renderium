@@ -10,6 +10,8 @@ function Circle (options) {
   this.width = options.width
   this.duration = options.duration
 
+  this._position = this.position.clone()
+
   this.layerWidth = 0
 
   this.animation = new Animation({
@@ -38,7 +40,7 @@ Circle.prototype.plot = function (layer, time) {
 
 Circle.prototype.draw = function (layer) {
   layer.drawCircle({
-    position: this.position,
+    position: this._position,
     color: this.color,
     fillColor: this.fillColor,
     radius: this.radius,
@@ -47,5 +49,5 @@ Circle.prototype.draw = function (layer) {
 }
 
 Circle.prototype._hanlder = function (t) {
-  this.position.x = (this.position.x + this.layerWidth * t) % this.layerWidth
+  this._position.x = (this.position.x + this.layerWidth * t) % this.layerWidth
 }
