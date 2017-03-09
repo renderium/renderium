@@ -189,11 +189,11 @@ var BaseLayer = function () {
     this.clearStats();
   };
 
-  BaseLayer.prototype.redraw = function redraw() {
+  BaseLayer.prototype.redraw = function redraw(time) {
     for (var i = 0; i < this.components.length; i++) {
       var component = this.components[i];
-      component.plot(this);
-      component.draw(this);
+      component.plot(this, time);
+      component.draw(this, time);
     }
     this._shouldRedraw = false;
   };
@@ -688,12 +688,12 @@ var Renderium = function () {
     }
   };
 
-  Renderium.digest = function digest() {
+  Renderium.digest = function digest(time) {
     for (var i = 0; i < Renderium.instances.length; i++) {
       var renderer = Renderium.instances[i];
       renderer.scale();
       renderer.clear();
-      renderer.redraw();
+      renderer.redraw(time);
     }
   };
 
@@ -751,11 +751,11 @@ var Renderium = function () {
     }
   };
 
-  Renderium.prototype.redraw = function redraw() {
+  Renderium.prototype.redraw = function redraw(time) {
     for (var i = 0; i < this.layers.length; i++) {
       var layer = this.layers[i];
       if (layer.shouldRedraw()) {
-        layer.redraw();
+        layer.redraw(time);
       }
     }
   };

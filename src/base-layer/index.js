@@ -47,11 +47,11 @@ class BaseLayer {
     this.clearStats()
   }
 
-  redraw () {
+  redraw (time) {
     for (var i = 0; i < this.components.length; i++) {
       var component = this.components[i]
-      component.plot(this)
-      component.draw(this)
+      component.plot(this, time)
+      component.draw(this, time)
     }
     this._shouldRedraw = false
   }

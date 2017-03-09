@@ -67,8 +67,8 @@ import Vector from 'vectory'
 import MyComponent from './my-component'
 
 // start the digest loop
-requestAnimationFrame(function loop () {
-  Renderium.digest()
+requestAnimationFrame(function loop (time) {
+  Renderium.digest(time)
   requestAnimationFrame(loop)
 })
 

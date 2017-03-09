@@ -19,12 +19,12 @@ class Renderium {
     }
   }
 
-  static digest () {
+  static digest (time) {
     for (var i = 0; i < Renderium.instances.length; i++) {
       var renderer = Renderium.instances[i]
       renderer.scale()
       renderer.clear()
-      renderer.redraw()
+      renderer.redraw(time)
     }
   }
 
@@ -79,11 +79,11 @@ class Renderium {
     }
   }
 
-  redraw () {
+  redraw (time) {
     for (var i = 0; i < this.layers.length; i++) {
       var layer = this.layers[i]
       if (layer.shouldRedraw()) {
-        layer.redraw()
+        layer.redraw(time)
       }
     }
   }

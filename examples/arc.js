@@ -1,3 +1,7 @@
+/*
+global Animation
+*/
+
 function Arc (options) {
   this.position = options.position
   this.color = options.color
@@ -5,6 +9,12 @@ function Arc (options) {
   this.startAngle = options.startAngle
   this.endAngle = options.endAngle
   this.width = options.width
+  this.duration = options.duration
+
+  this.animation = new Animation({
+    duration: this.duration,
+    handler: this._hanlder.bind(this)
+  })
 
   this._shouldRedraw = true
 }
@@ -13,9 +23,17 @@ Arc.prototype.shouldRedraw = function () {
   return this._shouldRedraw
 }
 
-Arc.prototype.onadd = function (layer) {}
-Arc.prototype.onremove = function (layer) {}
-Arc.prototype.plot = function (layer) {}
+Arc.prototype.onadd = function (layer) {
+  this.animation.start()
+}
+
+Arc.prototype.onremove = function (layer) {
+  this.animation.stop()
+}
+
+Arc.prototype.plot = function (layer, time) {
+  this.animation.animate(time)
+}
 
 Arc.prototype.draw = function (layer) {
   layer.drawArc({
@@ -28,4 +46,10 @@ Arc.prototype.draw = function (layer) {
   })
 
   this._shouldRedraw = false
+}
+
+Arc.prototype._hanlder = function (t) {
+  var theta = t * Math.PI
+  this.startAngle += theta
+  this.endAngle += theta
 }
