@@ -27,7 +27,7 @@ function Circle (options) {
   })
   this.animationDelay.queue(this.animationGrowUp)
   this.animationGrowUp.queue(this.animationGrowDown)
-  this.animationGrowDown.queue(this.animationDelay)
+  this.animationGrowDown.queue(this.animationGrowUp)
 }
 
 Circle.prototype.shouldRedraw = function () {
