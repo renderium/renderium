@@ -11,6 +11,9 @@ function Arc (options) {
   this.width = options.width
   this.duration = options.duration
 
+  this._startAngle = this.startAngle
+  this._endAngle = this.endAngle
+
   this.animation = new Animation({
     duration: this.duration,
     handler: this._hanlder.bind(this)
@@ -39,14 +42,14 @@ Arc.prototype.draw = function (layer) {
     position: this.position,
     color: this.color,
     radius: this.radius,
-    startAngle: this.startAngle,
-    endAngle: this.endAngle,
+    startAngle: this._startAngle,
+    endAngle: this._endAngle,
     width: this.width
   })
 }
 
 Arc.prototype._hanlder = function (t) {
   var theta = t * (Math.PI * 2)
-  this.startAngle += theta
-  this.endAngle += theta
+  this._startAngle = this.startAngle + theta
+  this._endAngle = this.endAngle + theta
 }
