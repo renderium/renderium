@@ -16,12 +16,10 @@ function Arc (options) {
     handler: this._hanlder.bind(this)
   })
   this.animation.queue(this.animation)
-
-  this._shouldRedraw = true
 }
 
 Arc.prototype.shouldRedraw = function () {
-  return this._shouldRedraw
+  return true
 }
 
 Arc.prototype.onadd = function (layer) {
@@ -45,13 +43,10 @@ Arc.prototype.draw = function (layer) {
     endAngle: this.endAngle,
     width: this.width
   })
-
-  this._shouldRedraw = false
 }
 
 Arc.prototype._hanlder = function (t) {
   var theta = t * (Math.PI * 2)
   this.startAngle += theta
   this.endAngle += theta
-  this._shouldRedraw = true
 }
