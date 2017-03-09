@@ -35,15 +35,17 @@ Circle.prototype.shouldRedraw = function () {
 }
 
 Circle.prototype.onadd = function (layer) {
-  this.animation.start()
+  this.animationDelay.start()
 }
 
 Circle.prototype.onremove = function (layer) {
-  this.animation.stop()
+  this.animationDelay.stop()
+  this.animationGrowUp.stop()
+  this.animationGrowDown.stop()
 }
 
 Circle.prototype.plot = function (layer, time) {
-  this.animation.animate(time)
+  Animation.animate(time)
 }
 
 Circle.prototype.draw = function (layer) {
