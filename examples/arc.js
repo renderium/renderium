@@ -30,7 +30,7 @@ Arc.prototype.onadd = function (layer) {
 }
 
 Arc.prototype.onremove = function (layer) {
-  this.animation.stop()
+  this.animation.cancel()
 }
 
 Arc.prototype.plot = function (layer, time) {

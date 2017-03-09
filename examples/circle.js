@@ -39,9 +39,9 @@ Circle.prototype.onadd = function (layer) {
 }
 
 Circle.prototype.onremove = function (layer) {
-  this.animationDelay.stop()
-  this.animationGrowUp.stop()
-  this.animationGrowDown.stop()
+  this.animationDelay.cancel()
+  this.animationGrowUp.cancel()
+  this.animationGrowDown.cancel()
 }
 
 Circle.prototype.plot = function (layer, time) {
