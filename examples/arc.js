@@ -15,6 +15,7 @@ function Arc (options) {
     duration: this.duration,
     handler: this._hanlder.bind(this)
   })
+  this.animation.queue(this.animation)
 
   this._shouldRedraw = true
 }
@@ -49,7 +50,8 @@ Arc.prototype.draw = function (layer) {
 }
 
 Arc.prototype._hanlder = function (t) {
-  var theta = t * Math.PI
+  var theta = t * (Math.PI * 2)
   this.startAngle += theta
   this.endAngle += theta
+  this._shouldRedraw = true
 }
