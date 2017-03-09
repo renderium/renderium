@@ -6,28 +6,17 @@ function Circle (options) {
   this.position = options.position
   this.color = options.color
   this.fillColor = options.fillColor
-  this.minRadius = options.minRadius
-  this.maxRadius = options.maxRadius
+  this.radius = options.radius
   this.width = options.width
   this.duration = options.duration
-  this.delay = options.delay
 
-  this._radius = this.minRadius
+  this.layerWidth = 0
 
-  this.animationDelay = new Animation({
-    duration: this.delay
-  })
-  this.animationGrowUp = new Animation({
+  this.animation = new Animation({
     duration: this.duration,
-    handler: this._growUpHanlder.bind(this)
+    handler: this._hanlder.bind(this)
   })
-  this.animationGrowDown = new Animation({
-    duration: this.duration,
-    handler: this._growDownHanlder.bind(this)
-  })
-  this.animationDelay.queue(this.animationGrowUp)
-  this.animationGrowUp.queue(this.animationGrowDown)
-  this.animationGrowDown.queue(this.animationGrowUp)
+  this.animation.queue(this.animation)
 }
 
 Circle.prototype.shouldRedraw = function () {
@@ -35,16 +24,15 @@ Circle.prototype.shouldRedraw = function () {
 }
 
 Circle.prototype.onadd = function (layer) {
-  this.animationDelay.start()
+  this.animation.start()
 }
 
 Circle.prototype.onremove = function (layer) {
-  this.animationDelay.cancel()
-  this.animationGrowUp.cancel()
-  this.animationGrowDown.cancel()
+  this.animation.cancel()
 }
 
 Circle.prototype.plot = function (layer, time) {
+  this.layerWidth = layer.width
   Animation.animate(time)
 }
 
@@ -53,15 +41,11 @@ Circle.prototype.draw = function (layer) {
     position: this.position,
     color: this.color,
     fillColor: this.fillColor,
-    radius: this._radius,
+    radius: this.radius,
     width: this.width
   })
 }
 
-Circle.prototype._growUpHanlder = function (t) {
-  this._radius = this.minRadius + t * (this.maxRadius - this.minRadius)
-}
-
-Circle.prototype._growDownHanlder = function (t) {
-  this._radius = this.maxRadius - t * (this.maxRadius - this.minRadius)
+Circle.prototype._hanlder = function (t) {
+  this.position.x = (this.position.x + this.layerWidth * t) % this.layerWidth
 }
