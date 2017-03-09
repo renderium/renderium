@@ -34,7 +34,7 @@ Arc.prototype.onremove = function (layer) {
 }
 
 Arc.prototype.plot = function (layer, time) {
-  Animation.animate(time)
+  this.animation.animate(time)
 }
 
 Arc.prototype.draw = function (layer) {

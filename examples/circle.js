@@ -33,7 +33,7 @@ Circle.prototype.onremove = function (layer) {
 
 Circle.prototype.plot = function (layer, time) {
   this.layerWidth = layer.width
-  Animation.animate(time)
+  this.animation.animate(time)
 }
 
 Circle.prototype.draw = function (layer) {
