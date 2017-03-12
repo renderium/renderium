@@ -832,7 +832,7 @@ var WebglLayer = function (_BaseLayer) {
 
     this.gl.bufferData(this.gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this.indices), this.gl.DYNAMIC_DRAW);
 
-    this.gl.drawElements(this.gl.LINES, this.indices.length, this.gl.UNSIGNED_SHORT, 0);
+    this.gl.drawElements(this.gl.TRIANGLES, this.indices.length, this.gl.UNSIGNED_SHORT, 0);
   };
 
   WebglLayer.prototype.createGradient = function createGradient(_ref3) {
@@ -916,20 +916,6 @@ var WebglLayer = function (_BaseLayer) {
         width = _ref8$width === undefined ? 1 : _ref8$width;
 
     this.collectStats('drawPolyline');
-
-    var offset = this.vertices.length / this.ATTRIBUTES_SIZE;
-
-    color = this.getColor(color);
-
-    for (var i = 0; i < points.length; i++) {
-      this.vertices.push(points[i].x, points[i].y, color);
-    }
-
-    this.indices.push(offset);
-    for (var j = 1; j < points.length - 1; j++) {
-      this.indices.push(offset + j, offset + j);
-    }
-    this.indices.push(offset + j);
   };
 
   WebglLayer.prototype.drawRect = function drawRect(_ref9) {
@@ -940,6 +926,16 @@ var WebglLayer = function (_BaseLayer) {
         fillColor = _ref9.fillColor,
         _ref9$strokeWidth = _ref9.strokeWidth,
         strokeWidth = _ref9$strokeWidth === undefined ? 1 : _ref9$strokeWidth;
+
+    this.collectStats('drawRect');
+
+    var offset = this.vertices.length / this.ATTRIBUTES_SIZE;
+
+    fillColor = this.getColor(fillColor);
+
+    this.vertices.push(position.x, position.y, fillColor, position.x + width, position.y, fillColor, position.x + width, position.y + height, fillColor, position.x, position.y + height, fillColor);
+
+    this.indices.push(offset, offset + 1, offset + 2, offset, offset + 2, offset + 3);
   };
 
   WebglLayer.prototype.drawText = function drawText(_ref10) {

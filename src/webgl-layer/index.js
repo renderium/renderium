@@ -99,7 +99,7 @@ class WebglLayer extends BaseLayer {
       this.gl.DYNAMIC_DRAW
     )
 
-    this.gl.drawElements(this.gl.LINES, this.indices.length, this.gl.UNSIGNED_SHORT, 0)
+    this.gl.drawElements(this.gl.TRIANGLES, this.indices.length, this.gl.UNSIGNED_SHORT, 0)
   }
 
   createGradient ({ start, end, from, to }) {
@@ -145,24 +145,26 @@ class WebglLayer extends BaseLayer {
 
   drawPolyline ({ points, color, lineDash = [], width = 1 }) {
     this.collectStats('drawPolyline')
-
-    var offset = this.vertices.length / this.ATTRIBUTES_SIZE
-
-    color = this.getColor(color)
-
-    for (var i = 0; i < points.length; i++) {
-      this.vertices.push(points[i].x, points[i].y, color)
-    }
-
-    this.indices.push(offset)
-    for (var j = 1; j < points.length - 1; j++) {
-      this.indices.push(offset + j, offset + j)
-    }
-    this.indices.push(offset + j)
   }
 
   drawRect ({ position, width, height, color, fillColor, strokeWidth = 1 }) {
+    this.collectStats('drawRect')
 
+    var offset = this.vertices.length / this.ATTRIBUTES_SIZE
+
+    fillColor = this.getColor(fillColor)
+
+    this.vertices.push(
+      position.x,         position.y,          fillColor,
+      position.x + width, position.y,          fillColor,
+      position.x + width, position.y + height, fillColor,
+      position.x,         position.y + height, fillColor
+    )
+
+    this.indices.push(
+      offset, offset + 1, offset + 2,
+      offset, offset + 2, offset + 3
+    )
   }
 
   drawText ({ position, text, color, font, size, align = 'center', baseline = 'middle' }) {
