@@ -18,8 +18,11 @@ class WebglLayer extends BaseLayer {
 
     this.imageLoader.onload = this.forceRedraw.bind(this)
 
-    this.vertices = []
-    this.indices = []
+    this.vertices = new Float32Array(this.MAX_VERTICES_COUNT)
+    this.indices = new Uint16Array(this.MAX_INDICES_COUNT)
+
+    this.verticesCount = 0
+    this.indicesCount = 0
 
     this._vertexShader = utils.compileShader(this.gl, vertextShaderSource, this.gl.VERTEX_SHADER)
     this._fragmentShader = utils.compileShader(this.gl, fragmentShaderSource, this.gl.FRAGMENT_SHADER)
@@ -33,9 +36,11 @@ class WebglLayer extends BaseLayer {
 
     this._verticesBuffer = this.gl.createBuffer()
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this._verticesBuffer)
+    this.gl.bufferData(this.gl.ARRAY_BUFFER, this.vertices, this.gl.DYNAMIC_DRAW)
 
     this._indicesBuffer = this.gl.createBuffer()
     this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this._indicesBuffer)
+    this.gl.bufferData(this.gl.ELEMENT_ARRAY_BUFFER, this.indices, this.gl.DYNAMIC_DRAW)
 
     this.gl.enableVertexAttribArray(this._positionLocation)
     this.gl.enableVertexAttribArray(this._colorLocation)
@@ -61,6 +66,8 @@ class WebglLayer extends BaseLayer {
   get POSITION_SIZE () { return 2 }
   get COLOR_SIZE () { return 1 }
   get ATTRIBUTES_SIZE () { return this.POSITION_SIZE + this.COLOR_SIZE }
+  get MAX_INDICES_COUNT () { return 0xffffff }
+  get MAX_VERTICES_COUNT () { return this.MAX_INDICES_COUNT * Math.ceil(this.ATTRIBUTES_SIZE / 3) * 2 }
 
   scale ({ width, height }) {
     super.scale({ width, height })
@@ -75,8 +82,10 @@ class WebglLayer extends BaseLayer {
 
   clear () {
     super.clear()
-    this.vertices = []
-    this.indices = []
+
+    this.verticesCount = 0
+    this.indicesCount = 0
+
     this.gl.clearColor(0, 0, 0, 0)
     this.gl.clearDepth(1)
     this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT)
@@ -87,19 +96,19 @@ class WebglLayer extends BaseLayer {
 
     this.gl.uniform2f(this._resolutionLocation, this.width, this.height)
 
-    this.gl.bufferData(
+    this.gl.bufferSubData(
       this.gl.ARRAY_BUFFER,
-      new Float32Array(this.vertices),
-      this.gl.DYNAMIC_DRAW
+      0,
+      this.vertices.subarray(0, this.verticesCount)
     )
 
-    this.gl.bufferData(
+    this.gl.bufferSubData(
       this.gl.ELEMENT_ARRAY_BUFFER,
-      new Uint16Array(this.indices),
-      this.gl.DYNAMIC_DRAW
+      0,
+      this.indices.subarray(0, this.indicesCount)
     )
 
-    this.gl.drawElements(this.gl.TRIANGLES, this.indices.length, this.gl.UNSIGNED_SHORT, 0)
+    this.gl.drawElements(this.gl.TRIANGLES, this.indicesCount, this.gl.UNSIGNED_SHORT, 0)
   }
 
   createGradient ({ start, end, from, to }) {
@@ -150,21 +159,33 @@ class WebglLayer extends BaseLayer {
   drawRect ({ position, width, height, color, fillColor, strokeWidth = 1 }) {
     this.collectStats('drawRect')
 
-    var offset = this.vertices.length / this.ATTRIBUTES_SIZE
+    var offset = this.verticesCount / this.ATTRIBUTES_SIZE
 
     fillColor = this.getColor(fillColor)
 
-    this.vertices.push(
-      position.x,         position.y,          fillColor,
-      position.x + width, position.y,          fillColor,
-      position.x + width, position.y + height, fillColor,
-      position.x,         position.y + height, fillColor
-    )
+    this.vertices[this.verticesCount++] = position.x
+    this.vertices[this.verticesCount++] = position.y
+    this.vertices[this.verticesCount++] = fillColor
 
-    this.indices.push(
-      offset, offset + 1, offset + 2,
-      offset, offset + 2, offset + 3
-    )
+    this.vertices[this.verticesCount++] = position.x + width
+    this.vertices[this.verticesCount++] = position.y
+    this.vertices[this.verticesCount++] = fillColor
+
+    this.vertices[this.verticesCount++] = position.x + width
+    this.vertices[this.verticesCount++] = position.y + height
+    this.vertices[this.verticesCount++] = fillColor
+
+    this.vertices[this.verticesCount++] = position.x
+    this.vertices[this.verticesCount++] = position.y + height
+    this.vertices[this.verticesCount++] = fillColor
+
+    this.indices[this.indicesCount++] = offset
+    this.indices[this.indicesCount++] = offset + 1
+    this.indices[this.indicesCount++] = offset + 2
+
+    this.indices[this.indicesCount++] = offset
+    this.indices[this.indicesCount++] = offset + 2
+    this.indices[this.indicesCount++] = offset + 3
   }
 
   drawText ({ position, text, color, font, size, align = 'center', baseline = 'middle' }) {

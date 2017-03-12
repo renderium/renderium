@@ -778,8 +778,11 @@ var WebglLayer = function (_BaseLayer) {
 
     _this.imageLoader.onload = _this.forceRedraw.bind(_this);
 
-    _this.vertices = [];
-    _this.indices = [];
+    _this.vertices = new Float32Array(_this.MAX_VERTICES_COUNT);
+    _this.indices = new Uint16Array(_this.MAX_INDICES_COUNT);
+
+    _this.verticesCount = 0;
+    _this.indicesCount = 0;
 
     _this._vertexShader = compileShader(_this.gl, vertextShaderSource, _this.gl.VERTEX_SHADER);
     _this._fragmentShader = compileShader(_this.gl, fragmentShaderSource, _this.gl.FRAGMENT_SHADER);
@@ -793,9 +796,11 @@ var WebglLayer = function (_BaseLayer) {
 
     _this._verticesBuffer = _this.gl.createBuffer();
     _this.gl.bindBuffer(_this.gl.ARRAY_BUFFER, _this._verticesBuffer);
+    _this.gl.bufferData(_this.gl.ARRAY_BUFFER, _this.vertices, _this.gl.DYNAMIC_DRAW);
 
     _this._indicesBuffer = _this.gl.createBuffer();
     _this.gl.bindBuffer(_this.gl.ELEMENT_ARRAY_BUFFER, _this._indicesBuffer);
+    _this.gl.bufferData(_this.gl.ELEMENT_ARRAY_BUFFER, _this.indices, _this.gl.DYNAMIC_DRAW);
 
     _this.gl.enableVertexAttribArray(_this._positionLocation);
     _this.gl.enableVertexAttribArray(_this._colorLocation);
@@ -816,8 +821,10 @@ var WebglLayer = function (_BaseLayer) {
 
   WebglLayer.prototype.clear = function clear() {
     _BaseLayer.prototype.clear.call(this);
-    this.vertices = [];
-    this.indices = [];
+
+    this.verticesCount = 0;
+    this.indicesCount = 0;
+
     this.gl.clearColor(0, 0, 0, 0);
     this.gl.clearDepth(1);
     this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
@@ -828,11 +835,11 @@ var WebglLayer = function (_BaseLayer) {
 
     this.gl.uniform2f(this._resolutionLocation, this.width, this.height);
 
-    this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(this.vertices), this.gl.DYNAMIC_DRAW);
+    this.gl.bufferSubData(this.gl.ARRAY_BUFFER, 0, this.vertices.subarray(0, this.verticesCount));
 
-    this.gl.bufferData(this.gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this.indices), this.gl.DYNAMIC_DRAW);
+    this.gl.bufferSubData(this.gl.ELEMENT_ARRAY_BUFFER, 0, this.indices.subarray(0, this.indicesCount));
 
-    this.gl.drawElements(this.gl.TRIANGLES, this.indices.length, this.gl.UNSIGNED_SHORT, 0);
+    this.gl.drawElements(this.gl.TRIANGLES, this.indicesCount, this.gl.UNSIGNED_SHORT, 0);
   };
 
   WebglLayer.prototype.createGradient = function createGradient(_ref3) {
@@ -929,13 +936,33 @@ var WebglLayer = function (_BaseLayer) {
 
     this.collectStats('drawRect');
 
-    var offset = this.vertices.length / this.ATTRIBUTES_SIZE;
+    var offset = this.verticesCount / this.ATTRIBUTES_SIZE;
 
     fillColor = this.getColor(fillColor);
 
-    this.vertices.push(position.x, position.y, fillColor, position.x + width, position.y, fillColor, position.x + width, position.y + height, fillColor, position.x, position.y + height, fillColor);
+    this.vertices[this.verticesCount++] = position.x;
+    this.vertices[this.verticesCount++] = position.y;
+    this.vertices[this.verticesCount++] = fillColor;
 
-    this.indices.push(offset, offset + 1, offset + 2, offset, offset + 2, offset + 3);
+    this.vertices[this.verticesCount++] = position.x + width;
+    this.vertices[this.verticesCount++] = position.y;
+    this.vertices[this.verticesCount++] = fillColor;
+
+    this.vertices[this.verticesCount++] = position.x + width;
+    this.vertices[this.verticesCount++] = position.y + height;
+    this.vertices[this.verticesCount++] = fillColor;
+
+    this.vertices[this.verticesCount++] = position.x;
+    this.vertices[this.verticesCount++] = position.y + height;
+    this.vertices[this.verticesCount++] = fillColor;
+
+    this.indices[this.indicesCount++] = offset;
+    this.indices[this.indicesCount++] = offset + 1;
+    this.indices[this.indicesCount++] = offset + 2;
+
+    this.indices[this.indicesCount++] = offset;
+    this.indices[this.indicesCount++] = offset + 2;
+    this.indices[this.indicesCount++] = offset + 3;
   };
 
   WebglLayer.prototype.drawText = function drawText(_ref10) {
@@ -986,6 +1013,16 @@ var WebglLayer = function (_BaseLayer) {
     key: 'ATTRIBUTES_SIZE',
     get: function () {
       return this.POSITION_SIZE + this.COLOR_SIZE;
+    }
+  }, {
+    key: 'MAX_INDICES_COUNT',
+    get: function () {
+      return 0xffffff;
+    }
+  }, {
+    key: 'MAX_VERTICES_COUNT',
+    get: function () {
+      return this.MAX_INDICES_COUNT * Math.ceil(this.ATTRIBUTES_SIZE / 3) * 2;
     }
   }]);
   return WebglLayer;
