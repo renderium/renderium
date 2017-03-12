@@ -778,7 +778,8 @@ var WebglLayer = function (_BaseLayer) {
 
     _this.imageLoader.onload = _this.forceRedraw.bind(_this);
 
-    _this.positions = [];
+    _this.vertices = [];
+    _this.indices = [];
 
     _this._vertexShader = compileShader(_this.gl, vertextShaderSource, _this.gl.VERTEX_SHADER);
     _this._fragmentShader = compileShader(_this.gl, fragmentShaderSource, _this.gl.FRAGMENT_SHADER);
@@ -790,14 +791,17 @@ var WebglLayer = function (_BaseLayer) {
     _this._positionLocation = _this.gl.getAttribLocation(_this._program, 'a_position');
     _this._colorLocation = _this.gl.getAttribLocation(_this._program, 'a_color');
 
-    _this._buffer = _this.gl.createBuffer();
-    _this.gl.bindBuffer(_this.gl.ARRAY_BUFFER, _this._buffer);
+    _this._verticesBuffer = _this.gl.createBuffer();
+    _this.gl.bindBuffer(_this.gl.ARRAY_BUFFER, _this._verticesBuffer);
+
+    _this._indicesBuffer = _this.gl.createBuffer();
+    _this.gl.bindBuffer(_this.gl.ELEMENT_ARRAY_BUFFER, _this._indicesBuffer);
 
     _this.gl.enableVertexAttribArray(_this._positionLocation);
     _this.gl.enableVertexAttribArray(_this._colorLocation);
 
-    _this.gl.vertexAttribPointer(_this._positionLocation, _this.POSITION_SIZE, _this.gl.FLOAT, false, Float32Array.BYTES_PER_ELEMENT * _this.ATTRIBUTES_LENGTH, 0);
-    _this.gl.vertexAttribPointer(_this._colorLocation, _this.COLOR_SIZE, _this.gl.FLOAT, false, Float32Array.BYTES_PER_ELEMENT * _this.ATTRIBUTES_LENGTH, Float32Array.BYTES_PER_ELEMENT * _this.POSITION_SIZE);
+    _this.gl.vertexAttribPointer(_this._positionLocation, _this.POSITION_SIZE, _this.gl.FLOAT, false, Float32Array.BYTES_PER_ELEMENT * _this.ATTRIBUTES_SIZE, 0);
+    _this.gl.vertexAttribPointer(_this._colorLocation, _this.COLOR_SIZE, _this.gl.FLOAT, false, Float32Array.BYTES_PER_ELEMENT * _this.ATTRIBUTES_SIZE, Float32Array.BYTES_PER_ELEMENT * _this.POSITION_SIZE);
     return _this;
   }
 
@@ -812,7 +816,8 @@ var WebglLayer = function (_BaseLayer) {
 
   WebglLayer.prototype.clear = function clear() {
     _BaseLayer.prototype.clear.call(this);
-    this.positions = [];
+    this.vertices = [];
+    this.indices = [];
     this.gl.clearColor(0, 0, 0, 0);
     this.gl.clearDepth(1);
     this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
@@ -823,8 +828,11 @@ var WebglLayer = function (_BaseLayer) {
 
     this.gl.uniform2f(this._resolutionLocation, this.width, this.height);
 
-    this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(this.positions), this.gl.STATIC_DRAW);
-    this.gl.drawArrays(this.gl.LINES, 0, this.positions.length / this.ATTRIBUTES_LENGTH);
+    this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(this.vertices), this.gl.DYNAMIC_DRAW);
+
+    this.gl.bufferData(this.gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(this.indices), this.gl.DYNAMIC_DRAW);
+
+    this.gl.drawElements(this.gl.LINES, this.indices.length, this.gl.UNSIGNED_SHORT, 0);
   };
 
   WebglLayer.prototype.createGradient = function createGradient(_ref3) {
@@ -909,11 +917,19 @@ var WebglLayer = function (_BaseLayer) {
 
     this.collectStats('drawPolyline');
 
+    var offset = this.vertices.length / this.ATTRIBUTES_SIZE;
+
     color = this.getColor(color);
-    for (var i = 1; i < points.length; i++) {
-      this.positions.push(points[i - 1].x, points[i - 1].y, color);
-      this.positions.push(points[i].x, points[i].y, color);
+
+    for (var i = 0; i < points.length; i++) {
+      this.vertices.push(points[i].x, points[i].y, color);
     }
+
+    this.indices.push(offset);
+    for (var j = 1; j < points.length - 1; j++) {
+      this.indices.push(offset + j, offset + j);
+    }
+    this.indices.push(offset + j);
   };
 
   WebglLayer.prototype.drawRect = function drawRect(_ref9) {
@@ -971,7 +987,7 @@ var WebglLayer = function (_BaseLayer) {
       return 1;
     }
   }, {
-    key: 'ATTRIBUTES_LENGTH',
+    key: 'ATTRIBUTES_SIZE',
     get: function () {
       return this.POSITION_SIZE + this.COLOR_SIZE;
     }

@@ -18,7 +18,8 @@ class WebglLayer extends BaseLayer {
 
     this.imageLoader.onload = this.forceRedraw.bind(this)
 
-    this.positions = []
+    this.vertices = []
+    this.indices = []
 
     this._vertexShader = utils.compileShader(this.gl, vertextShaderSource, this.gl.VERTEX_SHADER)
     this._fragmentShader = utils.compileShader(this.gl, fragmentShaderSource, this.gl.FRAGMENT_SHADER)
@@ -30,8 +31,11 @@ class WebglLayer extends BaseLayer {
     this._positionLocation = this.gl.getAttribLocation(this._program, 'a_position')
     this._colorLocation = this.gl.getAttribLocation(this._program, 'a_color')
 
-    this._buffer = this.gl.createBuffer()
-    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this._buffer)
+    this._verticesBuffer = this.gl.createBuffer()
+    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this._verticesBuffer)
+
+    this._indicesBuffer = this.gl.createBuffer()
+    this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this._indicesBuffer)
 
     this.gl.enableVertexAttribArray(this._positionLocation)
     this.gl.enableVertexAttribArray(this._colorLocation)
@@ -41,7 +45,7 @@ class WebglLayer extends BaseLayer {
       this.POSITION_SIZE,
       this.gl.FLOAT,
       false,
-      Float32Array.BYTES_PER_ELEMENT * this.ATTRIBUTES_LENGTH,
+      Float32Array.BYTES_PER_ELEMENT * this.ATTRIBUTES_SIZE,
       0
     )
     this.gl.vertexAttribPointer(
@@ -49,14 +53,14 @@ class WebglLayer extends BaseLayer {
       this.COLOR_SIZE,
       this.gl.FLOAT,
       false,
-      Float32Array.BYTES_PER_ELEMENT * this.ATTRIBUTES_LENGTH,
+      Float32Array.BYTES_PER_ELEMENT * this.ATTRIBUTES_SIZE,
       Float32Array.BYTES_PER_ELEMENT * this.POSITION_SIZE
     )
   }
 
   get POSITION_SIZE () { return 2 }
   get COLOR_SIZE () { return 1 }
-  get ATTRIBUTES_LENGTH () { return this.POSITION_SIZE + this.COLOR_SIZE }
+  get ATTRIBUTES_SIZE () { return this.POSITION_SIZE + this.COLOR_SIZE }
 
   scale ({ width, height }) {
     super.scale({ width, height })
@@ -71,7 +75,8 @@ class WebglLayer extends BaseLayer {
 
   clear () {
     super.clear()
-    this.positions = []
+    this.vertices = []
+    this.indices = []
     this.gl.clearColor(0, 0, 0, 0)
     this.gl.clearDepth(1)
     this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT)
@@ -84,10 +89,17 @@ class WebglLayer extends BaseLayer {
 
     this.gl.bufferData(
       this.gl.ARRAY_BUFFER,
-      new Float32Array(this.positions),
-      this.gl.STATIC_DRAW
+      new Float32Array(this.vertices),
+      this.gl.DYNAMIC_DRAW
     )
-    this.gl.drawArrays(this.gl.LINES, 0, this.positions.length / this.ATTRIBUTES_LENGTH)
+
+    this.gl.bufferData(
+      this.gl.ELEMENT_ARRAY_BUFFER,
+      new Uint16Array(this.indices),
+      this.gl.DYNAMIC_DRAW
+    )
+
+    this.gl.drawElements(this.gl.LINES, this.indices.length, this.gl.UNSIGNED_SHORT, 0)
   }
 
   createGradient ({ start, end, from, to }) {
@@ -134,11 +146,19 @@ class WebglLayer extends BaseLayer {
   drawPolyline ({ points, color, lineDash = [], width = 1 }) {
     this.collectStats('drawPolyline')
 
+    var offset = this.vertices.length / this.ATTRIBUTES_SIZE
+
     color = this.getColor(color)
-    for (var i = 1; i < points.length; i++) {
-      this.positions.push(points[i - 1].x, points[i - 1].y, color)
-      this.positions.push(points[i].x, points[i].y, color)
+
+    for (var i = 0; i < points.length; i++) {
+      this.vertices.push(points[i].x, points[i].y, color)
     }
+
+    this.indices.push(offset)
+    for (var j = 1; j < points.length - 1; j++) {
+      this.indices.push(offset + j, offset + j)
+    }
+    this.indices.push(offset + j)
   }
 
   drawRect ({ position, width, height, color, fillColor, strokeWidth = 1 }) {
