@@ -1,3 +1,5 @@
+import * as utils from '../utils.js'
+
 export function getContext (canvas) {
   var gl = canvas.getContext('webgl')
   if (!gl) {
@@ -12,7 +14,7 @@ export function compileShader (gl, shaderSource, shaderType) {
   gl.compileShader(shader)
   var success = gl.getShaderParameter(shader, gl.COMPILE_STATUS)
   if (!success) {
-    throw new Error(`could not compile shader: ${gl.getShaderInfoLog(shader)}`)
+    utils.throwError(`could not compile shader:\r\n${gl.getShaderInfoLog(shader)}`)
   }
   return shader
 }
@@ -24,7 +26,7 @@ export function createProgram (gl, vertexShader, fragmentShader) {
   gl.linkProgram(program)
   var success = gl.getProgramParameter(program, gl.LINK_STATUS)
   if (!success) {
-    throw new Error(`program failed to link: ${gl.getProgramInfoLog(program)}`)
+    utils.throwError(`program failed to link:\r\n${gl.getProgramInfoLog(program)}`)
   }
   return program
 }
@@ -59,7 +61,7 @@ export function parseColor (color) {
   } else if (color[0] === 'r') {
     result = parseRgbColor(color)
   } else {
-    throw new Error(`Wrong color format: ${color}`)
+    utils.throwError(`Wrong color format: ${color}`)
   }
 
   if (cacheLength < MAX_CACHE_LENGTH) {

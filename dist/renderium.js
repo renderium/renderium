@@ -150,6 +150,14 @@ var ImageLoader = function () {
 ImageLoader.prototype.IMAGE_STATUS_LOADING = ImageLoader.IMAGE_STATUS_LOADING = 1;
 ImageLoader.prototype.IMAGE_STATUS_LOADED = ImageLoader.IMAGE_STATUS_LOADED = 2;
 
+function throwError(message) {
+  throw new Error("\r\nRenderium: " + message);
+}
+
+var utils = Object.freeze({
+	throwError: throwError
+});
+
 var BaseLayer = function () {
   function BaseLayer(_ref) {
     var Vector = _ref.Vector,
@@ -170,11 +178,16 @@ var BaseLayer = function () {
     this.components = [];
     this.stats = {};
     this._shouldRedraw = false;
+    this._renderCycleStarted = false;
   }
 
   BaseLayer.prototype.scale = function scale(_ref2) {
     var width = _ref2.width,
         height = _ref2.height;
+
+    if (this._renderCycleStarted) {
+      throwError('Layer#scale() during render cycle is forbidden');
+    }
 
     this.width = Number(width) || BaseLayer.DEFAULT_WIDTH;
     this.height = Number(height) || BaseLayer.DEFAULT_HEIGHT;
@@ -197,6 +210,10 @@ var BaseLayer = function () {
   };
 
   BaseLayer.prototype.applyStyles = function applyStyles() {
+    if (this._renderCycleStarted) {
+      throwError('Layer#applyStyles() during render cycle is forbidden');
+    }
+
     this.canvas.style.width = this.width + 'px';
     this.canvas.style.height = this.height + 'px';
     this.canvas.style.position = 'absolute';
@@ -207,15 +224,25 @@ var BaseLayer = function () {
   };
 
   BaseLayer.prototype.clear = function clear() {
+    if (this._renderCycleStarted) {
+      throwError('Layer#clear() during render cycle is forbidden');
+    }
+
     this.clearStats();
   };
 
   BaseLayer.prototype.redraw = function redraw() {
+    if (this._renderCycleStarted) {
+      throwError('Layer#redraw() during render cycle is forbidden');
+    }
+
+    this._renderCycleStarted = true;
     for (var i = 0; i < this.components.length; i++) {
       var component = this.components[i];
       component.plot(this);
       component.draw(this);
     }
+    this._renderCycleStarted = false;
     this._shouldRedraw = false;
   };
 
@@ -234,12 +261,16 @@ var BaseLayer = function () {
   };
 
   BaseLayer.prototype.addComponent = function addComponent(component) {
+    if (this._renderCycleStarted) {
+      throwError('Layer#addComponent() during render cycle is forbidden');
+    }
+
     var idx = this.components.indexOf(component);
     if (idx !== -1) {
-      throw new Error('component ' + component.constructor.name + ' has already been added to layer');
+      throwError('Component ' + component.constructor.name + ' has already been added to layer');
     }
     if (typeof component.plot !== 'function' || typeof component.draw !== 'function' || typeof component.shouldRedraw !== 'function') {
-      throw new Error('component ' + component.constructor.name + ' has not implemented Component interface');
+      throwError('Component ' + component.constructor.name + ' has not implemented Component interface');
     }
     this.components.push(component);
     this.forceRedraw();
@@ -250,6 +281,10 @@ var BaseLayer = function () {
   };
 
   BaseLayer.prototype.removeComponent = function removeComponent(component) {
+    if (this._renderCycleStarted) {
+      throwError('Layer#removeComponent() during render cycle is forbidden');
+    }
+
     var idx = this.components.indexOf(component);
     if (idx !== -1) {
       this.components.splice(idx, 1);
@@ -262,11 +297,19 @@ var BaseLayer = function () {
   };
 
   BaseLayer.prototype.clearComponents = function clearComponents() {
+    if (this._renderCycleStarted) {
+      throwError('Layer#clearComponents() during render cycle is forbidden');
+    }
+
     this.components = [];
     this.forceRedraw();
   };
 
   BaseLayer.prototype.clearStats = function clearStats() {
+    if (this._renderCycleStarted) {
+      throwError('Layer#clearStats() during render cycle is forbidden');
+    }
+
     for (var methodName in this.stats) {
       this.stats[methodName] = 0;
     }
@@ -660,7 +703,7 @@ function compileShader(gl, shaderSource, shaderType) {
   gl.compileShader(shader);
   var success = gl.getShaderParameter(shader, gl.COMPILE_STATUS);
   if (!success) {
-    throw new Error('could not compile shader: ' + gl.getShaderInfoLog(shader));
+    throwError('could not compile shader:\r\n' + gl.getShaderInfoLog(shader));
   }
   return shader;
 }
@@ -672,7 +715,7 @@ function createProgram(gl, vertexShader, fragmentShader) {
   gl.linkProgram(program);
   var success = gl.getProgramParameter(program, gl.LINK_STATUS);
   if (!success) {
-    throw new Error('program failed to link: ' + gl.getProgramInfoLog(program));
+    throwError('program failed to link:\r\n' + gl.getProgramInfoLog(program));
   }
   return program;
 }
@@ -707,7 +750,7 @@ function parseColor(color) {
   } else if (color[0] === 'r') {
     result = parseRgbColor(color);
   } else {
-    throw new Error('Wrong color format: ' + color);
+    throwError('Wrong color format: ' + color);
   }
 
   if (cacheLength < MAX_CACHE_LENGTH) {
@@ -1070,7 +1113,7 @@ var Renderium = function () {
   Renderium.spawn = function spawn(renderer) {
     var idx = Renderium.instances.indexOf(renderer);
     if (idx !== -1) {
-      throw new Error('renderer has already been spawned');
+      throwError('Renderer has already been spawned');
     }
     Renderium.instances.push(renderer);
   };
@@ -1107,7 +1150,7 @@ var Renderium = function () {
   Renderium.prototype.addLayer = function addLayer(layer) {
     var idx = this.layers.indexOf(layer);
     if (idx !== -1) {
-      throw new Error('layer has already been added to renderer');
+      throwError('Layer has already been added to renderer');
     }
     this.layers.push(layer);
     this.el.appendChild(layer.canvas);
@@ -1164,6 +1207,7 @@ Renderium.CanvasLayer = CanvasLayer;
 Renderium.WebglLayer = WebglLayer;
 Renderium.Component = Component;
 Renderium.colors = colors;
+Renderium.utils = utils;
 
 return Renderium;
 
