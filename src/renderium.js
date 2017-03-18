@@ -2,12 +2,13 @@ import BaseLayer from './base-layer'
 import CanvasLayer from './canvas-layer'
 import Component from './component.js'
 import colors from './colors.js'
+import * as utils from './utils.js'
 
 class Renderium {
   static spawn (renderer) {
     var idx = Renderium.instances.indexOf(renderer)
     if (idx !== -1) {
-      throw new Error('renderer has already been spawned')
+      utils.throwError('Renderer has already been spawned')
     }
     Renderium.instances.push(renderer)
   }
@@ -41,7 +42,7 @@ class Renderium {
   addLayer (layer) {
     var idx = this.layers.indexOf(layer)
     if (idx !== -1) {
-      throw new Error('layer has already been added to renderer')
+      utils.throwError('Layer has already been added to renderer')
     }
     this.layers.push(layer)
     this.el.appendChild(layer.canvas)
@@ -95,5 +96,6 @@ Renderium.BaseLayer = BaseLayer
 Renderium.CanvasLayer = CanvasLayer
 Renderium.Component = Component
 Renderium.colors = colors
+Renderium.utils = utils
 
 export default Renderium
