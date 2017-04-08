@@ -1,7 +1,10 @@
 <h1 align="center">Renderium</h1>
-<h4 align="center">Component based canvas renderer what you missed</h4>
+<h4 align="center">Superior renderer</h4>
 
 <p align="center">
+  <a href="https://www.npmjs.com/package/renderium" target="_blank">
+    <img src="https://img.shields.io/npm/v/renderium.svg" alt="NPM version" target="_blank"></img>
+  </a>
   <a href="https://www.bithound.io/github/broadsw0rd/renderium">
     <img src="https://www.bithound.io/github/broadsw0rd/renderium/badges/score.svg" alt="bitHound Overall Score"/>
   </a>
