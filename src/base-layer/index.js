@@ -66,7 +66,7 @@ class BaseLayer {
     this.clearStats()
   }
 
-  redraw () {
+  redraw (time) {
     if (this._renderCycleStarted) {
       utils.throwError('Layer#redraw() during render cycle is forbidden')
     }
@@ -74,8 +74,8 @@ class BaseLayer {
     this._renderCycleStarted = true
     for (var i = 0; i < this.components.length; i++) {
       var component = this.components[i]
-      component.plot(this)
-      component.draw(this)
+      component.plot(this, time)
+      component.draw(this, time)
     }
     this._renderCycleStarted = false
     this._shouldRedraw = false
@@ -109,6 +109,7 @@ class BaseLayer {
     }
     this.components.push(component)
     this.forceRedraw()
+    component.onadd(this)
   }
 
   addComponents (components) {
@@ -125,6 +126,7 @@ class BaseLayer {
       this.components.splice(idx, 1)
       this.forceRedraw()
     }
+    component.onremove(this)
   }
 
   removeComponents (components) {

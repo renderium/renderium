@@ -70,8 +70,8 @@ import Vector from 'vectory'
 import MyComponent from './my-component'
 
 // start the digest loop
-requestAnimationFrame(function loop () {
-  Renderium.digest()
+requestAnimationFrame(function loop (time) {
+  Renderium.digest(time)
   requestAnimationFrame(loop)
 })
 
@@ -105,6 +105,7 @@ layer.addComponent(component)
 Canvas Layer | Webgl Layer
 ------- | -------
 **[All](http://codepen.io/collection/AEydae/)** | **[All](http://codepen.io/collection/XMjQrb/)**
+[Boilerplate](https://gist.github.com/broadsw0rd/6f0fc5e60320c0d0c2f9486ff8306b22) | [Boilerplate](https://gist.github.com/broadsw0rd/3a96eaf3a461176a8298d1159bf6ecc0)
 [Drawing arcs](http://codepen.io/broadsw0rd/pen/amyjmZ) | [Drawing arcs](http://codepen.io/broadsw0rd/pen/XMJeOd)
 [Drawing circles](http://codepen.io/broadsw0rd/pen/xEXNkP) | [Drawing circles](http://codepen.io/broadsw0rd/pen/LWEzqL)
 [Drawing images](http://codepen.io/broadsw0rd/pen/zKPOKd) | [Drawing images](http://codepen.io/broadsw0rd/pen/ZeYXPG)
