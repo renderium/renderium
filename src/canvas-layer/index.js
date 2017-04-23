@@ -55,8 +55,8 @@ class CanvasLayer extends BaseLayer {
     this.ctx.restore()
   }
 
-  redraw () {
-    super.redraw()
+  redraw (time) {
+    super.redraw(time)
     if (this.logStats) {
       this.drawStats()
     }

@@ -210,7 +210,7 @@ var BaseLayer = function () {
     this.clearStats();
   };
 
-  BaseLayer.prototype.redraw = function redraw() {
+  BaseLayer.prototype.redraw = function redraw(time) {
     if (this._renderCycleStarted) {
       throwError('Layer#redraw() during render cycle is forbidden');
     }
@@ -218,8 +218,8 @@ var BaseLayer = function () {
     this._renderCycleStarted = true;
     for (var i = 0; i < this.components.length; i++) {
       var component = this.components[i];
-      component.plot(this);
-      component.draw(this);
+      component.plot(this, time);
+      component.draw(this, time);
     }
     this._renderCycleStarted = false;
     this._shouldRedraw = false;
@@ -253,6 +253,7 @@ var BaseLayer = function () {
     }
     this.components.push(component);
     this.forceRedraw();
+    component.onadd(this);
   };
 
   BaseLayer.prototype.addComponents = function addComponents(components) {
@@ -269,6 +270,7 @@ var BaseLayer = function () {
       this.components.splice(idx, 1);
       this.forceRedraw();
     }
+    component.onremove(this);
   };
 
   BaseLayer.prototype.removeComponents = function removeComponents(components) {
@@ -419,8 +421,8 @@ var CanvasLayer = function (_BaseLayer) {
     this.ctx.restore();
   };
 
-  CanvasLayer.prototype.redraw = function redraw() {
-    _BaseLayer.prototype.redraw.call(this);
+  CanvasLayer.prototype.redraw = function redraw(time) {
+    _BaseLayer.prototype.redraw.call(this, time);
     if (this.logStats) {
       this.drawStats();
     }
@@ -676,6 +678,10 @@ var Component = function () {
     classCallCheck(this, Component);
   }
 
+  Component.prototype.onadd = function onadd(layer) {};
+
+  Component.prototype.onremove = function onremove(layer) {};
+
   Component.prototype.plot = function plot(layer) {};
 
   Component.prototype.draw = function draw(layer) {};
@@ -725,12 +731,12 @@ var Renderium = function () {
     }
   };
 
-  Renderium.digest = function digest() {
+  Renderium.digest = function digest(time) {
     for (var i = 0; i < Renderium.instances.length; i++) {
       var renderer = Renderium.instances[i];
       renderer.scale();
       renderer.clear();
-      renderer.redraw();
+      renderer.redraw(time);
     }
   };
 
@@ -788,11 +794,11 @@ var Renderium = function () {
     }
   };
 
-  Renderium.prototype.redraw = function redraw() {
+  Renderium.prototype.redraw = function redraw(time) {
     for (var i = 0; i < this.layers.length; i++) {
       var layer = this.layers[i];
       if (layer.shouldRedraw()) {
-        layer.redraw();
+        layer.redraw(time);
       }
     }
   };
