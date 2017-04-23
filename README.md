@@ -105,6 +105,7 @@ layer.addComponent(component)
 Canvas Layer |
 ------- |
 **[All](http://codepen.io/collection/AEydae/)** |
+[Boilerplate](https://gist.github.com/broadsw0rd/6f0fc5e60320c0d0c2f9486ff8306b22) |
 [Drawing arcs](http://codepen.io/broadsw0rd/pen/amyjmZ) |
 [Drawing circles](http://codepen.io/broadsw0rd/pen/xEXNkP) |
 [Drawing images](http://codepen.io/broadsw0rd/pen/zKPOKd) |
