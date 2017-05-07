@@ -100,21 +100,7 @@ layer.addComponent(component)
 // enjoy!
 ```
 
-## Examples
-
-Canvas Layer |
-------- |
-**[All](http://codepen.io/collection/AEydae/)** |
-[Boilerplate](https://gist.github.com/broadsw0rd/6f0fc5e60320c0d0c2f9486ff8306b22) |
-[Drawing arcs](http://codepen.io/broadsw0rd/pen/amyjmZ) |
-[Drawing circles](http://codepen.io/broadsw0rd/pen/xEXNkP) |
-[Drawing images](http://codepen.io/broadsw0rd/pen/zKPOKd) |
-[Drawing polygons](http://codepen.io/broadsw0rd/pen/NRBJpB) |
-[Drawing polylines](http://codepen.io/broadsw0rd/pen/amjrKN) |
-[Drawing rectangles](http://codepen.io/broadsw0rd/pen/VKGZRq) |
-[Drawing text](http://codepen.io/broadsw0rd/pen/ozPbRa) |
-[Drawing text with different alignments](http://codepen.io/broadsw0rd/pen/LRkoqJ) |
-[Conway's Game of Life](http://codepen.io/broadsw0rd/pen/KgJrLy) |
+## [Examples](https://github.com/renderium/examples)
 
 ## Development
 
