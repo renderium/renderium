@@ -28,10 +28,6 @@ class BaseLayer {
     this.width = Number(width) || BaseLayer.DEFAULT_WIDTH
     this.height = Number(height) || BaseLayer.DEFAULT_HEIGHT
 
-    this.canvas.removeAttribute('width')
-    this.canvas.removeAttribute('height')
-    this.canvas.removeAttribute('style')
-
     this.canvas.width = this.width
     this.canvas.height = this.height
 
