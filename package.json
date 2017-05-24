@@ -37,10 +37,11 @@
     "babel-preset-es2015-loose-rollup": "^7.0.0",
     "rollup": "^0.41.4",
     "rollup-plugin-babel": "^2.6.1",
-    "rollup-plugin-commonjs": "^7.0.0",
-    "rollup-plugin-node-resolve": "^2.0.0",
-    "snazzy": "^6.0.0",
-    "uglify-js": "^2.6.2"
+    "rollup-plugin-commonjs": "^8.0.2",
+    "rollup-plugin-node-resolve": "^3.0.0",
+    "snazzy": "^7.0.0",
+    "standard": "^10.0.2",
+    "uglify-js": "^3.0.11"
   },
   "babel": {
     "presets": [
@@ -48,7 +49,7 @@
     ]
   },
   "scripts": {
-    "check": "snazzy src/*.js",
+    "check": "standard src/*.js | snazzy",
     "build": "rollup -c",
     "min": "uglifyjs -c -m -- dist/renderium.js > dist/renderium.min.js"
   }
