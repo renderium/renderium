@@ -66,7 +66,9 @@ class BaseLayer {
     this.startRenderCycle()
     for (var i = 0; i < this.components.length; i++) {
       var component = this.components[i]
-      component.plot(this, time)
+      if (component.shouldRedraw() || this._shouldRedraw) {
+        component.plot(this, time)
+      }
       component.draw(this, time)
     }
     this.completeRenderCycle()
