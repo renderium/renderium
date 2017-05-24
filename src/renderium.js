@@ -37,7 +37,7 @@ class Renderium {
     this.layers = []
   }
 
-  applyStyles () {}
+  applyStyles () {
     this.el.style.position = 'relative'
     this.el.style.width = '100%'
     this.el.style.height = '100%'

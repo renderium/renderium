@@ -1,5 +1,6 @@
 import leftPad from 'left-pad'
 import ImageLoader from './image-loader.js'
+import Component from '../component.js'
 import * as utils from '../utils.js'
 
 class BaseLayer {
@@ -111,7 +112,7 @@ class BaseLayer {
     if (idx !== -1) {
       utils.throwError(`Component ${component.constructor.name} has already been added to layer`)
     }
-    if (typeof component.plot !== 'function' || typeof component.draw !== 'function' || typeof component.shouldRedraw !== 'function') {
+    if (!Component.isComponent(component)) {
       utils.throwError(`Component ${component.constructor.name} has not implemented Component interface`)
     }
     this.components.push(component)
