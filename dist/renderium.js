@@ -150,6 +150,30 @@ var ImageLoader = function () {
 ImageLoader.prototype.IMAGE_STATUS_LOADING = ImageLoader.IMAGE_STATUS_LOADING = 1;
 ImageLoader.prototype.IMAGE_STATUS_LOADED = ImageLoader.IMAGE_STATUS_LOADED = 2;
 
+var Component = function () {
+  function Component() {
+    classCallCheck(this, Component);
+  }
+
+  Component.isComponent = function isComponent(component) {
+    return typeof component.plot === 'function' && typeof component.draw === 'function' && typeof component.shouldRedraw === 'function' && typeof component.onadd === 'function' && typeof component.onremove === 'function';
+  };
+
+  Component.prototype.onadd = function onadd(layer) {};
+
+  Component.prototype.onremove = function onremove(layer) {};
+
+  Component.prototype.plot = function plot(layer) {};
+
+  Component.prototype.draw = function draw(layer) {};
+
+  Component.prototype.shouldRedraw = function shouldRedraw() {
+    return true;
+  };
+
+  return Component;
+}();
+
 function throwError(message) {
   throw new Error("\r\nRenderium: " + message);
 }
@@ -185,16 +209,12 @@ var BaseLayer = function () {
     var width = _ref2.width,
         height = _ref2.height;
 
-    if (this._renderCycleStarted) {
+    if (this.renderCycleStarted()) {
       throwError('Layer#scale() during render cycle is forbidden');
     }
 
     this.width = Number(width) || BaseLayer.DEFAULT_WIDTH;
     this.height = Number(height) || BaseLayer.DEFAULT_HEIGHT;
-
-    this.canvas.removeAttribute('width');
-    this.canvas.removeAttribute('height');
-    this.canvas.removeAttribute('style');
 
     this.canvas.width = this.width;
     this.canvas.height = this.height;
@@ -210,7 +230,7 @@ var BaseLayer = function () {
   };
 
   BaseLayer.prototype.applyStyles = function applyStyles() {
-    if (this._renderCycleStarted) {
+    if (this.renderCycleStarted()) {
       throwError('Layer#applyStyles() during render cycle is forbidden');
     }
 
@@ -224,7 +244,7 @@ var BaseLayer = function () {
   };
 
   BaseLayer.prototype.clear = function clear() {
-    if (this._renderCycleStarted) {
+    if (this.renderCycleStarted()) {
       throwError('Layer#clear() during render cycle is forbidden');
     }
 
@@ -232,17 +252,19 @@ var BaseLayer = function () {
   };
 
   BaseLayer.prototype.redraw = function redraw(time) {
-    if (this._renderCycleStarted) {
+    if (this.renderCycleStarted()) {
       throwError('Layer#redraw() during render cycle is forbidden');
     }
 
-    this._renderCycleStarted = true;
+    this.startRenderCycle();
     for (var i = 0; i < this.components.length; i++) {
       var component = this.components[i];
-      component.plot(this, time);
+      if (component.shouldRedraw() || this._shouldRedraw) {
+        component.plot(this, time);
+      }
       component.draw(this, time);
     }
-    this._renderCycleStarted = false;
+    this.completeRenderCycle();
     this._shouldRedraw = false;
   };
 
@@ -260,8 +282,20 @@ var BaseLayer = function () {
     return this._shouldRedraw;
   };
 
+  BaseLayer.prototype.startRenderCycle = function startRenderCycle() {
+    this._renderCycleStarted = true;
+  };
+
+  BaseLayer.prototype.completeRenderCycle = function completeRenderCycle() {
+    this._renderCycleStarted = false;
+  };
+
+  BaseLayer.prototype.renderCycleStarted = function renderCycleStarted() {
+    return this._renderCycleStarted;
+  };
+
   BaseLayer.prototype.addComponent = function addComponent(component) {
-    if (this._renderCycleStarted) {
+    if (this.renderCycleStarted()) {
       throwError('Layer#addComponent() during render cycle is forbidden');
     }
 
@@ -269,7 +303,7 @@ var BaseLayer = function () {
     if (idx !== -1) {
       throwError('Component ' + component.constructor.name + ' has already been added to layer');
     }
-    if (typeof component.plot !== 'function' || typeof component.draw !== 'function' || typeof component.shouldRedraw !== 'function') {
+    if (!Component.isComponent(component)) {
       throwError('Component ' + component.constructor.name + ' has not implemented Component interface');
     }
     this.components.push(component);
@@ -282,7 +316,7 @@ var BaseLayer = function () {
   };
 
   BaseLayer.prototype.removeComponent = function removeComponent(component) {
-    if (this._renderCycleStarted) {
+    if (this.renderCycleStarted()) {
       throwError('Layer#removeComponent() during render cycle is forbidden');
     }
 
@@ -299,7 +333,7 @@ var BaseLayer = function () {
   };
 
   BaseLayer.prototype.clearComponents = function clearComponents() {
-    if (this._renderCycleStarted) {
+    if (this.renderCycleStarted()) {
       throwError('Layer#clearComponents() during render cycle is forbidden');
     }
 
@@ -308,7 +342,7 @@ var BaseLayer = function () {
   };
 
   BaseLayer.prototype.clearStats = function clearStats() {
-    if (this._renderCycleStarted) {
+    if (this.renderCycleStarted()) {
       throwError('Layer#clearStats() during render cycle is forbidden');
     }
 
@@ -1073,26 +1107,6 @@ var WebglLayer = function (_BaseLayer) {
   return WebglLayer;
 }(BaseLayer);
 
-var Component = function () {
-  function Component() {
-    classCallCheck(this, Component);
-  }
-
-  Component.prototype.onadd = function onadd(layer) {};
-
-  Component.prototype.onremove = function onremove(layer) {};
-
-  Component.prototype.plot = function plot(layer) {};
-
-  Component.prototype.draw = function draw(layer) {};
-
-  Component.prototype.shouldRedraw = function shouldRedraw() {
-    return false;
-  };
-
-  return Component;
-}();
-
 var colors = {
   RED: '#f44336',
   PINK: '#e91e63',
@@ -1145,13 +1159,17 @@ var Renderium = function () {
     classCallCheck(this, Renderium);
 
     this.el = el;
-    this.el.style.position = 'relative';
-    this.el.style.width = '100%';
-    this.el.style.height = '100%';
+    this.applyStyles();
     this.width = this.el.clientWidth;
     this.height = this.el.clientHeight;
     this.layers = [];
   }
+
+  Renderium.prototype.applyStyles = function applyStyles() {
+    this.el.style.position = 'relative';
+    this.el.style.width = '100%';
+    this.el.style.height = '100%';
+  };
 
   Renderium.prototype.addLayer = function addLayer(layer) {
     var idx = this.layers.indexOf(layer);

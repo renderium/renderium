@@ -10,9 +10,7 @@ export default {
   format: 'umd',
   plugins: [
     string({
-      include: [
-        'src/webgl-layer/*.glsl'
-      ]
+      include: /\.glsl$/
     }),
     babel(),
     nodeResolve(),
