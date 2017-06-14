@@ -2,9 +2,7 @@ var imageStatuses = {}
 var images = {}
 
 class ImageLoader {
-  onload () {
-
-  }
+  onload () {}
 
   getImage (url) {
     return images[url]
@@ -16,14 +14,13 @@ class ImageLoader {
 
   load (url) {
     var status = this.getStatus(url)
-    var _this = this
     if (status !== ImageLoader.IMAGE_STATUS_LOADING && status !== ImageLoader.IMAGE_STATUS_LOADED) {
       imageStatuses[url] = ImageLoader.IMAGE_STATUS_LOADING
       var image = new window.Image()
-      image.onload = function onload () {
+      image.onload = () => {
         imageStatuses[url] = ImageLoader.IMAGE_STATUS_LOADED
-        images[url] = this
-        _this.onload()
+        images[url] = image
+        this.onload()
       }
       image.src = url
     }

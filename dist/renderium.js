@@ -114,14 +114,15 @@ var ImageLoader = function () {
   };
 
   ImageLoader.prototype.load = function load(url) {
-    var status = this.getStatus(url);
     var _this = this;
+
+    var status = this.getStatus(url);
     if (status !== ImageLoader.IMAGE_STATUS_LOADING && status !== ImageLoader.IMAGE_STATUS_LOADED) {
       imageStatuses[url] = ImageLoader.IMAGE_STATUS_LOADING;
       var image = new window.Image();
-      image.onload = function onload() {
+      image.onload = function () {
         imageStatuses[url] = ImageLoader.IMAGE_STATUS_LOADED;
-        images[url] = this;
+        images[url] = image;
         _this.onload();
       };
       image.src = url;
