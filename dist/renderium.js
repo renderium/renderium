@@ -241,11 +241,15 @@ var BaseLayer = function () {
       component.draw(this, time);
     }
     this.completeRenderCycle();
-    this._shouldRedraw = false;
+    this.completeRedraw();
   };
 
   BaseLayer.prototype.forceRedraw = function forceRedraw() {
     this._shouldRedraw = true;
+  };
+
+  BaseLayer.prototype.completeRedraw = function completeRedraw() {
+    this._shouldRedraw = false;
   };
 
   BaseLayer.prototype.shouldRedraw = function shouldRedraw() {
@@ -348,6 +352,14 @@ var BaseLayer = function () {
 BaseLayer.DEFAULT_WIDTH = 100;
 BaseLayer.DEFAULT_HEIGHT = 100;
 
+var index$1 = function equal(arr1, arr2) {
+  var length = arr1.length;
+  if (length !== arr2.length) return false;
+  for (var i = 0; i < length; i++) {
+    if (arr1[i] !== arr2[i]) return false;
+  }return true;
+};
+
 // -------------------------------------
 // CanvasLayer
 // -------------------------------------
@@ -375,18 +387,12 @@ var CanvasLayer = function (_BaseLayer) {
     _this.imageLoader.onload = _this.forceRedraw.bind(_this);
 
     _this.stats = {
-      createGradient: 0,
-      drawArc: 0,
-      drawCircle: 0,
-      drawImage: 0,
-      drawPolygon: 0,
-      drawPolyline: 0,
-      drawRect: 0,
-      drawText: 0,
-      measureText: 0,
       stroke: 0,
       fill: 0
     };
+
+    _this._shouldStroke = false;
+    _this._shouldFill = false;
     return _this;
   }
 
@@ -417,16 +423,64 @@ var CanvasLayer = function (_BaseLayer) {
 
   CanvasLayer.prototype.redraw = function redraw(time) {
     _BaseLayer.prototype.redraw.call(this, time);
+    this.performDraw();
     if (this.logStats) {
       this.drawStats();
     }
   };
 
-  CanvasLayer.prototype.createGradient = function createGradient(_ref3) {
-    var start = _ref3.start,
-        end = _ref3.end,
-        from = _ref3.from,
-        to = _ref3.to;
+  CanvasLayer.prototype.stateChanged = function stateChanged(_ref3) {
+    var color = _ref3.color,
+        fillColor = _ref3.fillColor,
+        width = _ref3.width,
+        lineDash = _ref3.lineDash;
+
+    return color && color !== this.ctx.strokeStyle || fillColor && fillColor !== this.ctx.fillStyle || width && width !== this.ctx.lineWidth || lineDash && !index$1(lineDash, this.ctx.getLineDash());
+  };
+
+  CanvasLayer.prototype.performDraw = function performDraw() {
+    if (this.shouldStroke()) {
+      this.ctx.stroke();
+      this.completeStroke();
+      this.collectStats('stroke');
+    }
+    if (this.shouldFill()) {
+      this.ctx.fill();
+      this.completeFill();
+      this.collectStats('fill');
+    }
+    this.ctx.beginPath();
+  };
+
+  CanvasLayer.prototype.forceStroke = function forceStroke() {
+    this._shouldStroke = true;
+  };
+
+  CanvasLayer.prototype.completeStroke = function completeStroke() {
+    this._shouldStroke = false;
+  };
+
+  CanvasLayer.prototype.shouldStroke = function shouldStroke() {
+    return this._shouldStroke;
+  };
+
+  CanvasLayer.prototype.forceFill = function forceFill() {
+    this._shouldFill = true;
+  };
+
+  CanvasLayer.prototype.completeFill = function completeFill() {
+    this._shouldFill = false;
+  };
+
+  CanvasLayer.prototype.shouldFill = function shouldFill() {
+    return this._shouldFill;
+  };
+
+  CanvasLayer.prototype.createGradient = function createGradient(_ref4) {
+    var start = _ref4.start,
+        end = _ref4.end,
+        from = _ref4.from,
+        to = _ref4.to;
 
     var gradient = this.ctx.createLinearGradient(start.x, start.y, end.x, end.y);
     gradient.addColorStop(0, from);
@@ -434,42 +488,39 @@ var CanvasLayer = function (_BaseLayer) {
     return gradient;
   };
 
-  CanvasLayer.prototype.getColor = function getColor(color) {
-    return color;
-  };
-
-  CanvasLayer.prototype.drawArc = function drawArc(_ref4) {
-    var position = _ref4.position,
-        radius = _ref4.radius,
-        startAngle = _ref4.startAngle,
-        endAngle = _ref4.endAngle,
-        color = _ref4.color,
-        _ref4$width = _ref4.width,
-        width = _ref4$width === undefined ? 1 : _ref4$width;
-
-    this.collectStats('drawArc');
-
-    this.ctx.strokeStyle = this.getColor(color);
-    this.ctx.lineWidth = width;
-
-    this.ctx.beginPath();
-    this.ctx.arc(position.x, position.y, radius, startAngle, endAngle);
-
-    if (color) {
-      this.collectStats('stroke');
-      this.ctx.stroke();
-    }
-  };
-
-  CanvasLayer.prototype.drawCircle = function drawCircle(_ref5) {
+  CanvasLayer.prototype.drawArc = function drawArc(_ref5) {
     var position = _ref5.position,
         radius = _ref5.radius,
+        startAngle = _ref5.startAngle,
+        endAngle = _ref5.endAngle,
         color = _ref5.color,
-        fillColor = _ref5.fillColor,
         _ref5$width = _ref5.width,
         width = _ref5$width === undefined ? 1 : _ref5$width;
 
-    this.collectStats('drawCircle');
+    if (this.stateChanged({ color: color, width: width })) {
+      this.performDraw();
+    }
+
+    this.ctx.arc(position.x, position.y, radius, startAngle, endAngle);
+
+    if (color) {
+      this.ctx.strokeStyle = color;
+      this.ctx.lineWidth = width;
+      this.forceStroke();
+    }
+  };
+
+  CanvasLayer.prototype.drawCircle = function drawCircle(_ref6) {
+    var position = _ref6.position,
+        radius = _ref6.radius,
+        color = _ref6.color,
+        fillColor = _ref6.fillColor,
+        _ref6$width = _ref6.width,
+        width = _ref6$width === undefined ? 1 : _ref6$width;
+
+    if (this.stateChanged({ color: color, fillColor: fillColor, width: width })) {
+      this.performDraw();
+    }
 
     this.drawArc({
       position: position,
@@ -481,23 +532,22 @@ var CanvasLayer = function (_BaseLayer) {
     });
 
     if (fillColor) {
-      this.collectStats('fill');
-      this.ctx.fillStyle = this.getColor(fillColor);
-      this.ctx.fill();
+      this.ctx.fillStyle = fillColor;
+      this.forceFill();
     }
   };
 
-  CanvasLayer.prototype.drawImage = function drawImage(_ref6) {
-    var position = _ref6.position,
-        image = _ref6.image,
-        _ref6$width = _ref6.width,
-        width = _ref6$width === undefined ? image.width : _ref6$width,
-        _ref6$height = _ref6.height,
-        height = _ref6$height === undefined ? image.height : _ref6$height,
-        _ref6$opacity = _ref6.opacity,
-        opacity = _ref6$opacity === undefined ? 1 : _ref6$opacity;
+  CanvasLayer.prototype.drawImage = function drawImage(_ref7) {
+    var position = _ref7.position,
+        image = _ref7.image,
+        _ref7$width = _ref7.width,
+        width = _ref7$width === undefined ? image.width : _ref7$width,
+        _ref7$height = _ref7.height,
+        height = _ref7$height === undefined ? image.height : _ref7$height,
+        _ref7$opacity = _ref7.opacity,
+        opacity = _ref7$opacity === undefined ? 1 : _ref7$opacity;
 
-    this.collectStats('drawImage');
+    this.performDraw();
 
     if (typeof image === 'string') {
       if (this.imageLoader.getStatus(image) === this.imageLoader.IMAGE_STATUS_LOADED) {
@@ -512,24 +562,26 @@ var CanvasLayer = function (_BaseLayer) {
       }
     }
 
-    var defaultAlpha = this.ctx.globalAlpha;
+    this.ctx.save();
     this.ctx.globalAlpha = opacity;
     if (this.antialiasing) {
       this.ctx.drawImage(image, position.x, position.y, width, height);
     } else {
       this.ctx.drawImage(image, position.x - 0.5, position.y - 0.5, width, height);
     }
-    this.ctx.globalAlpha = defaultAlpha;
+    this.ctx.restore();
   };
 
-  CanvasLayer.prototype.drawPolygon = function drawPolygon(_ref7) {
-    var points = _ref7.points,
-        color = _ref7.color,
-        fillColor = _ref7.fillColor,
-        _ref7$width = _ref7.width,
-        width = _ref7$width === undefined ? 1 : _ref7$width;
+  CanvasLayer.prototype.drawPolygon = function drawPolygon(_ref8) {
+    var points = _ref8.points,
+        color = _ref8.color,
+        fillColor = _ref8.fillColor,
+        _ref8$width = _ref8.width,
+        width = _ref8$width === undefined ? 1 : _ref8$width;
 
-    this.collectStats('drawPolygon');
+    if (this.stateChanged({ color: color, fillColor: fillColor, width: width })) {
+      this.performDraw();
+    }
 
     this.drawPolyline({
       points: points.concat(points[0]),
@@ -538,25 +590,23 @@ var CanvasLayer = function (_BaseLayer) {
     });
 
     if (fillColor) {
-      this.collectStats('fill');
-      this.ctx.fillStyle = this.getColor(fillColor);
-      this.ctx.fill();
+      this.ctx.fillStyle = fillColor;
+      this.forceFill();
     }
   };
 
-  CanvasLayer.prototype.drawPolyline = function drawPolyline(_ref8) {
-    var points = _ref8.points,
-        color = _ref8.color,
-        _ref8$lineDash = _ref8.lineDash,
-        lineDash = _ref8$lineDash === undefined ? [] : _ref8$lineDash,
-        _ref8$width = _ref8.width,
-        width = _ref8$width === undefined ? 1 : _ref8$width;
+  CanvasLayer.prototype.drawPolyline = function drawPolyline(_ref9) {
+    var points = _ref9.points,
+        color = _ref9.color,
+        _ref9$width = _ref9.width,
+        width = _ref9$width === undefined ? 1 : _ref9$width,
+        _ref9$lineDash = _ref9.lineDash,
+        lineDash = _ref9$lineDash === undefined ? [] : _ref9$lineDash;
 
-    this.collectStats('drawPolyline');
+    if (this.stateChanged({ color: color, width: width, lineDash: lineDash })) {
+      this.performDraw();
+    }
 
-    this.ctx.lineWidth = width;
-
-    this.ctx.beginPath();
     this.ctx.moveTo(points[0].x, points[0].y);
 
     for (var i = 1, point; i < points.length; i++) {
@@ -564,67 +614,63 @@ var CanvasLayer = function (_BaseLayer) {
       this.ctx.lineTo(point.x, point.y);
     }
 
-    this.ctx.setLineDash(lineDash);
-
     if (points[0].equals(points[points.length - 1])) {
       this.ctx.closePath();
     }
 
     if (color) {
-      this.collectStats('stroke');
-      this.ctx.strokeStyle = this.getColor(color);
-      this.ctx.stroke();
+      this.ctx.strokeStyle = color;
+      this.ctx.lineWidth = width;
+      this.ctx.setLineDash(lineDash);
+      this.forceStroke();
     }
   };
 
-  CanvasLayer.prototype.drawRect = function drawRect(_ref9) {
-    var position = _ref9.position,
-        width = _ref9.width,
-        height = _ref9.height,
-        color = _ref9.color,
-        fillColor = _ref9.fillColor,
-        _ref9$strokeWidth = _ref9.strokeWidth,
-        strokeWidth = _ref9$strokeWidth === undefined ? 1 : _ref9$strokeWidth;
+  CanvasLayer.prototype.drawRect = function drawRect(_ref10) {
+    var position = _ref10.position,
+        width = _ref10.width,
+        height = _ref10.height,
+        color = _ref10.color,
+        fillColor = _ref10.fillColor,
+        _ref10$strokeWidth = _ref10.strokeWidth,
+        strokeWidth = _ref10$strokeWidth === undefined ? 1 : _ref10$strokeWidth;
 
-    this.collectStats('drawRect');
+    if (this.stateChanged({ color: color, fillColor: fillColor, width: strokeWidth })) {
+      this.performDraw();
+    }
 
-    this.ctx.lineWidth = strokeWidth;
-
-    this.ctx.beginPath();
     if (this.antialiasing) {
       this.ctx.rect(position.x, position.y, width, height);
     } else {
       this.ctx.rect(position.x - 0.5, position.y - 0.5, width, height);
     }
-    this.ctx.closePath();
 
     if (color) {
-      this.collectStats('stroke');
-      this.ctx.strokeStyle = this.getColor(color);
-      this.ctx.stroke();
+      this.ctx.strokeStyle = color;
+      this.ctx.lineWidth = strokeWidth;
+      this.forceStroke();
     }
 
     if (fillColor) {
-      this.collectStats('fill');
-      this.ctx.fillStyle = this.getColor(fillColor);
-      this.ctx.fill();
+      this.ctx.fillStyle = fillColor;
+      this.forceFill();
     }
   };
 
-  CanvasLayer.prototype.drawText = function drawText(_ref10) {
-    var position = _ref10.position,
-        text = _ref10.text,
-        color = _ref10.color,
-        font = _ref10.font,
-        size = _ref10.size,
-        _ref10$align = _ref10.align,
-        align = _ref10$align === undefined ? 'center' : _ref10$align,
-        _ref10$baseline = _ref10.baseline,
-        baseline = _ref10$baseline === undefined ? 'middle' : _ref10$baseline;
+  CanvasLayer.prototype.drawText = function drawText(_ref11) {
+    var position = _ref11.position,
+        text = _ref11.text,
+        color = _ref11.color,
+        font = _ref11.font,
+        size = _ref11.size,
+        _ref11$align = _ref11.align,
+        align = _ref11$align === undefined ? 'center' : _ref11$align,
+        _ref11$baseline = _ref11.baseline,
+        baseline = _ref11$baseline === undefined ? 'middle' : _ref11$baseline;
 
     this.collectStats('drawText');
 
-    this.ctx.fillStyle = this.getColor(color);
+    this.ctx.fillStyle = color;
     this.ctx.font = size + 'px ' + font;
     this.ctx.textAlign = align;
     this.ctx.textBaseline = baseline;
@@ -632,10 +678,10 @@ var CanvasLayer = function (_BaseLayer) {
     this.ctx.fillText(text, position.x, position.y);
   };
 
-  CanvasLayer.prototype.measureText = function measureText(_ref11) {
-    var text = _ref11.text,
-        font = _ref11.font,
-        size = _ref11.size;
+  CanvasLayer.prototype.measureText = function measureText(_ref12) {
+    var text = _ref12.text,
+        font = _ref12.font,
+        size = _ref12.size;
 
     this.collectStats('measureText');
 

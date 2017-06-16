@@ -72,11 +72,15 @@ class BaseLayer {
       component.draw(this, time)
     }
     this.completeRenderCycle()
-    this._shouldRedraw = false
+    this.completeRedraw()
   }
 
   forceRedraw () {
     this._shouldRedraw = true
+  }
+
+  completeRedraw () {
+    this._shouldRedraw = false
   }
 
   shouldRedraw () {

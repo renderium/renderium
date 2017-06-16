@@ -1,3 +1,4 @@
+import equal from 'array-equal'
 import BaseLayer from './base.js'
 
 // -------------------------------------
@@ -18,18 +19,12 @@ class CanvasLayer extends BaseLayer {
     this.imageLoader.onload = this.forceRedraw.bind(this)
 
     this.stats = {
-      createGradient: 0,
-      drawArc: 0,
-      drawCircle: 0,
-      drawImage: 0,
-      drawPolygon: 0,
-      drawPolyline: 0,
-      drawRect: 0,
-      drawText: 0,
-      measureText: 0,
       stroke: 0,
       fill: 0
     }
+
+    this._shouldStroke = false
+    this._shouldFill = false
   }
 
   scale ({ width, height }) {
@@ -56,9 +51,57 @@ class CanvasLayer extends BaseLayer {
 
   redraw (time) {
     super.redraw(time)
+    this.performDraw()
     if (this.logStats) {
       this.drawStats()
     }
+  }
+
+  stateChanged ({ color, fillColor, width, lineDash }) {
+    return (
+      (color && color !== this.ctx.strokeStyle) ||
+      (fillColor && fillColor !== this.ctx.fillStyle) ||
+      (width && width !== this.ctx.lineWidth) ||
+      (lineDash && !equal(lineDash, this.ctx.getLineDash()))
+    )
+  }
+
+  performDraw () {
+    if (this.shouldStroke()) {
+      this.ctx.stroke()
+      this.completeStroke()
+      this.collectStats('stroke')
+    }
+    if (this.shouldFill()) {
+      this.ctx.fill()
+      this.completeFill()
+      this.collectStats('fill')
+    }
+    this.ctx.beginPath()
+  }
+
+  forceStroke () {
+    this._shouldStroke = true
+  }
+
+  completeStroke () {
+    this._shouldStroke = false
+  }
+
+  shouldStroke () {
+    return this._shouldStroke
+  }
+
+  forceFill () {
+    this._shouldFill = true
+  }
+
+  completeFill () {
+    this._shouldFill = false
+  }
+
+  shouldFill () {
+    return this._shouldFill
   }
 
   createGradient ({ start, end, from, to }) {
@@ -68,27 +111,24 @@ class CanvasLayer extends BaseLayer {
     return gradient
   }
 
-  getColor (color) {
-    return color
-  }
-
   drawArc ({ position, radius, startAngle, endAngle, color, width = 1 }) {
-    this.collectStats('drawArc')
+    if (this.stateChanged({ color, width })) {
+      this.performDraw()
+    }
 
-    this.ctx.strokeStyle = this.getColor(color)
-    this.ctx.lineWidth = width
-
-    this.ctx.beginPath()
     this.ctx.arc(position.x, position.y, radius, startAngle, endAngle)
 
     if (color) {
-      this.collectStats('stroke')
-      this.ctx.stroke()
+      this.ctx.strokeStyle = color
+      this.ctx.lineWidth = width
+      this.forceStroke()
     }
   }
 
   drawCircle ({ position, radius, color, fillColor, width = 1 }) {
-    this.collectStats('drawCircle')
+    if (this.stateChanged({ color, fillColor, width })) {
+      this.performDraw()
+    }
 
     this.drawArc({
       position,
@@ -100,14 +140,13 @@ class CanvasLayer extends BaseLayer {
     })
 
     if (fillColor) {
-      this.collectStats('fill')
-      this.ctx.fillStyle = this.getColor(fillColor)
-      this.ctx.fill()
+      this.ctx.fillStyle = fillColor
+      this.forceFill()
     }
   }
 
   drawImage ({ position, image, width = image.width, height = image.height, opacity = 1 }) {
-    this.collectStats('drawImage')
+    this.performDraw()
 
     if (typeof image === 'string') {
       if (this.imageLoader.getStatus(image) === this.imageLoader.IMAGE_STATUS_LOADED) {
@@ -122,18 +161,20 @@ class CanvasLayer extends BaseLayer {
       }
     }
 
-    var defaultAlpha = this.ctx.globalAlpha
+    this.ctx.save()
     this.ctx.globalAlpha = opacity
     if (this.antialiasing) {
       this.ctx.drawImage(image, position.x, position.y, width, height)
     } else {
       this.ctx.drawImage(image, position.x - 0.5, position.y - 0.5, width, height)
     }
-    this.ctx.globalAlpha = defaultAlpha
+    this.ctx.restore()
   }
 
   drawPolygon ({ points, color, fillColor, width = 1 }) {
-    this.collectStats('drawPolygon')
+    if (this.stateChanged({ color, fillColor, width })) {
+      this.performDraw()
+    }
 
     this.drawPolyline({
       points: points.concat(points[0]),
@@ -142,18 +183,16 @@ class CanvasLayer extends BaseLayer {
     })
 
     if (fillColor) {
-      this.collectStats('fill')
-      this.ctx.fillStyle = this.getColor(fillColor)
-      this.ctx.fill()
+      this.ctx.fillStyle = fillColor
+      this.forceFill()
     }
   }
 
-  drawPolyline ({ points, color, lineDash = [], width = 1 }) {
-    this.collectStats('drawPolyline')
+  drawPolyline ({ points, color, width = 1, lineDash = [] }) {
+    if (this.stateChanged({ color, width, lineDash })) {
+      this.performDraw()
+    }
 
-    this.ctx.lineWidth = width
-
-    this.ctx.beginPath()
     this.ctx.moveTo(points[0].x, points[0].y)
 
     for (var i = 1, point; i < points.length; i++) {
@@ -161,49 +200,45 @@ class CanvasLayer extends BaseLayer {
       this.ctx.lineTo(point.x, point.y)
     }
 
-    this.ctx.setLineDash(lineDash)
-
     if (points[0].equals(points[points.length - 1])) {
       this.ctx.closePath()
     }
 
     if (color) {
-      this.collectStats('stroke')
-      this.ctx.strokeStyle = this.getColor(color)
-      this.ctx.stroke()
+      this.ctx.strokeStyle = color
+      this.ctx.lineWidth = width
+      this.ctx.setLineDash(lineDash)
+      this.forceStroke()
     }
   }
 
   drawRect ({ position, width, height, color, fillColor, strokeWidth = 1 }) {
-    this.collectStats('drawRect')
+    if (this.stateChanged({ color, fillColor, width: strokeWidth })) {
+      this.performDraw()
+    }
 
-    this.ctx.lineWidth = strokeWidth
-
-    this.ctx.beginPath()
     if (this.antialiasing) {
       this.ctx.rect(position.x, position.y, width, height)
     } else {
       this.ctx.rect(position.x - 0.5, position.y - 0.5, width, height)
     }
-    this.ctx.closePath()
 
     if (color) {
-      this.collectStats('stroke')
-      this.ctx.strokeStyle = this.getColor(color)
-      this.ctx.stroke()
+      this.ctx.strokeStyle = color
+      this.ctx.lineWidth = strokeWidth
+      this.forceStroke()
     }
 
     if (fillColor) {
-      this.collectStats('fill')
-      this.ctx.fillStyle = this.getColor(fillColor)
-      this.ctx.fill()
+      this.ctx.fillStyle = fillColor
+      this.forceFill()
     }
   }
 
   drawText ({ position, text, color, font, size, align = 'center', baseline = 'middle' }) {
     this.collectStats('drawText')
 
-    this.ctx.fillStyle = this.getColor(color)
+    this.ctx.fillStyle = color
     this.ctx.font = `${size}px ${font}`
     this.ctx.textAlign = align
     this.ctx.textBaseline = baseline
