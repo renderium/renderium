@@ -1,5 +1,4 @@
-import BaseLayer from '../base-layer'
-import Gradient from './gradient.js'
+import BaseLayer from './base.js'
 
 // -------------------------------------
 // CanvasLayer
@@ -63,11 +62,14 @@ class CanvasLayer extends BaseLayer {
   }
 
   createGradient ({ start, end, from, to }) {
-    return new Gradient({ start, end, from, to })
+    var gradient = this.ctx.createLinearGradient(start.x, start.y, end.x, end.y)
+    gradient.addColorStop(0, from)
+    gradient.addColorStop(1, to)
+    return gradient
   }
 
   getColor (color) {
-    return Gradient.isGradient(color) ? color.createGradient(this) : color
+    return color
   }
 
   drawArc ({ position, radius, startAngle, endAngle, color, width = 1 }) {

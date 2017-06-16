@@ -114,14 +114,15 @@ var ImageLoader = function () {
   };
 
   ImageLoader.prototype.load = function load(url) {
-    var status = this.getStatus(url);
     var _this = this;
+
+    var status = this.getStatus(url);
     if (status !== ImageLoader.IMAGE_STATUS_LOADING && status !== ImageLoader.IMAGE_STATUS_LOADED) {
       imageStatuses[url] = ImageLoader.IMAGE_STATUS_LOADING;
       var image = new window.Image();
-      image.onload = function onload() {
+      image.onload = function () {
         imageStatuses[url] = ImageLoader.IMAGE_STATUS_LOADED;
-        images[url] = this;
+        images[url] = image;
         _this.onload();
       };
       image.src = url;
@@ -161,10 +162,6 @@ var Component = function () {
 function throwError(message) {
   throw new Error("\r\nRenderium: " + message);
 }
-
-var utils = Object.freeze({
-	throwError: throwError
-});
 
 var BaseLayer = function () {
   function BaseLayer(_ref) {
@@ -351,43 +348,6 @@ var BaseLayer = function () {
 BaseLayer.DEFAULT_WIDTH = 100;
 BaseLayer.DEFAULT_HEIGHT = 100;
 
-var Gradient = function () {
-  Gradient.isGradient = function isGradient(color) {
-    return color && color._isGradient;
-  };
-
-  function Gradient(_ref) {
-    var start = _ref.start,
-        end = _ref.end,
-        from = _ref.from,
-        to = _ref.to;
-    classCallCheck(this, Gradient);
-
-    this.start = start;
-    this.end = end;
-    this.from = from;
-    this.to = to;
-
-    this._isGradient = true;
-    this._gradient = null;
-  }
-
-  Gradient.prototype.createGradient = function createGradient(layer) {
-    layer.collectStats('createGradient');
-
-    this._gradient = layer.ctx.createLinearGradient(this.start.x, this.start.y, this.end.x, this.end.y);
-    this._gradient.addColorStop(0, this.from);
-    this._gradient.addColorStop(1, this.to);
-    return this._gradient;
-  };
-
-  Gradient.prototype.valueOf = function valueOf() {
-    return this._gradient;
-  };
-
-  return Gradient;
-}();
-
 // -------------------------------------
 // CanvasLayer
 // -------------------------------------
@@ -468,11 +428,14 @@ var CanvasLayer = function (_BaseLayer) {
         from = _ref3.from,
         to = _ref3.to;
 
-    return new Gradient({ start: start, end: end, from: from, to: to });
+    var gradient = this.ctx.createLinearGradient(start.x, start.y, end.x, end.y);
+    gradient.addColorStop(0, from);
+    gradient.addColorStop(1, to);
+    return gradient;
   };
 
   CanvasLayer.prototype.getColor = function getColor(color) {
-    return Gradient.isGradient(color) ? color.createGradient(this) : color;
+    return color;
   };
 
   CanvasLayer.prototype.drawArc = function drawArc(_ref4) {
@@ -707,6 +670,29 @@ var CanvasLayer = function (_BaseLayer) {
   return CanvasLayer;
 }(BaseLayer);
 
+var LinearGradient = function () {
+  LinearGradient.isGradient = function isGradient(color) {
+    return color && color._isGradient;
+  };
+
+  function LinearGradient(_ref) {
+    var start = _ref.start,
+        end = _ref.end,
+        from = _ref.from,
+        to = _ref.to;
+    classCallCheck(this, LinearGradient);
+
+    this.start = start;
+    this.end = end;
+    this.from = from;
+    this.to = to;
+
+    this._isGradient = true;
+  }
+
+  return LinearGradient;
+}();
+
 var colors = {
   RED: '#f44336',
   PINK: '#e91e63',
@@ -828,9 +814,9 @@ Renderium.instances = [];
 
 Renderium.BaseLayer = BaseLayer;
 Renderium.CanvasLayer = CanvasLayer;
+Renderium.LinearGradient = LinearGradient;
 Renderium.Component = Component;
 Renderium.colors = colors;
-Renderium.utils = utils;
 
 return Renderium;
 
