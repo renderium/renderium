@@ -111,8 +111,8 @@ class CanvasLayer extends BaseLayer {
     return gradient
   }
 
-  drawArc ({ position, radius, startAngle, endAngle, color, width = 1 }) {
-    if (this.stateChanged({ color, width })) {
+  drawArc ({ position, radius, startAngle, endAngle, color, width = 1, lineDash = [] }) {
+    if (this.stateChanged({ color, width, lineDash })) {
       this.performDraw()
     }
 
@@ -121,12 +121,13 @@ class CanvasLayer extends BaseLayer {
     if (color) {
       this.ctx.strokeStyle = color
       this.ctx.lineWidth = width
+      this.ctx.setLineDash(lineDash)
       this.forceStroke()
     }
   }
 
-  drawCircle ({ position, radius, color, fillColor, width = 1 }) {
-    if (this.stateChanged({ color, fillColor, width })) {
+  drawCircle ({ position, radius, color, fillColor, width = 1, lineDash = [] }) {
+    if (this.stateChanged({ color, fillColor, width, lineDash })) {
       this.performDraw()
     }
 
@@ -136,7 +137,8 @@ class CanvasLayer extends BaseLayer {
       startAngle: 0,
       endAngle: 2 * Math.PI,
       color,
-      width
+      width,
+      lineDash
     })
 
     if (fillColor) {
@@ -171,15 +173,16 @@ class CanvasLayer extends BaseLayer {
     this.ctx.restore()
   }
 
-  drawPolygon ({ points, color, fillColor, width = 1 }) {
-    if (this.stateChanged({ color, fillColor, width })) {
+  drawPolygon ({ points, color, fillColor, width = 1, lineDash = [] }) {
+    if (this.stateChanged({ color, fillColor, width, lineDash })) {
       this.performDraw()
     }
 
     this.drawPolyline({
       points: points.concat(points[0]),
       color,
-      width
+      width,
+      lineDash
     })
 
     if (fillColor) {
@@ -212,8 +215,8 @@ class CanvasLayer extends BaseLayer {
     }
   }
 
-  drawRect ({ position, width, height, color, fillColor, strokeWidth = 1 }) {
-    if (this.stateChanged({ color, fillColor, width: strokeWidth })) {
+  drawRect ({ position, width, height, color, fillColor, strokeWidth = 1, lineDash = [] }) {
+    if (this.stateChanged({ color, fillColor, width: strokeWidth, lineDash })) {
       this.performDraw()
     }
 
@@ -226,6 +229,7 @@ class CanvasLayer extends BaseLayer {
     if (color) {
       this.ctx.strokeStyle = color
       this.ctx.lineWidth = strokeWidth
+      this.ctx.setLineDash(lineDash)
       this.forceStroke()
     }
 

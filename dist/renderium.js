@@ -495,9 +495,11 @@ var CanvasLayer = function (_BaseLayer) {
         endAngle = _ref5.endAngle,
         color = _ref5.color,
         _ref5$width = _ref5.width,
-        width = _ref5$width === undefined ? 1 : _ref5$width;
+        width = _ref5$width === undefined ? 1 : _ref5$width,
+        _ref5$lineDash = _ref5.lineDash,
+        lineDash = _ref5$lineDash === undefined ? [] : _ref5$lineDash;
 
-    if (this.stateChanged({ color: color, width: width })) {
+    if (this.stateChanged({ color: color, width: width, lineDash: lineDash })) {
       this.performDraw();
     }
 
@@ -506,6 +508,7 @@ var CanvasLayer = function (_BaseLayer) {
     if (color) {
       this.ctx.strokeStyle = color;
       this.ctx.lineWidth = width;
+      this.ctx.setLineDash(lineDash);
       this.forceStroke();
     }
   };
@@ -516,9 +519,11 @@ var CanvasLayer = function (_BaseLayer) {
         color = _ref6.color,
         fillColor = _ref6.fillColor,
         _ref6$width = _ref6.width,
-        width = _ref6$width === undefined ? 1 : _ref6$width;
+        width = _ref6$width === undefined ? 1 : _ref6$width,
+        _ref6$lineDash = _ref6.lineDash,
+        lineDash = _ref6$lineDash === undefined ? [] : _ref6$lineDash;
 
-    if (this.stateChanged({ color: color, fillColor: fillColor, width: width })) {
+    if (this.stateChanged({ color: color, fillColor: fillColor, width: width, lineDash: lineDash })) {
       this.performDraw();
     }
 
@@ -528,7 +533,8 @@ var CanvasLayer = function (_BaseLayer) {
       startAngle: 0,
       endAngle: 2 * Math.PI,
       color: color,
-      width: width
+      width: width,
+      lineDash: lineDash
     });
 
     if (fillColor) {
@@ -577,16 +583,19 @@ var CanvasLayer = function (_BaseLayer) {
         color = _ref8.color,
         fillColor = _ref8.fillColor,
         _ref8$width = _ref8.width,
-        width = _ref8$width === undefined ? 1 : _ref8$width;
+        width = _ref8$width === undefined ? 1 : _ref8$width,
+        _ref8$lineDash = _ref8.lineDash,
+        lineDash = _ref8$lineDash === undefined ? [] : _ref8$lineDash;
 
-    if (this.stateChanged({ color: color, fillColor: fillColor, width: width })) {
+    if (this.stateChanged({ color: color, fillColor: fillColor, width: width, lineDash: lineDash })) {
       this.performDraw();
     }
 
     this.drawPolyline({
       points: points.concat(points[0]),
       color: color,
-      width: width
+      width: width,
+      lineDash: lineDash
     });
 
     if (fillColor) {
@@ -633,9 +642,11 @@ var CanvasLayer = function (_BaseLayer) {
         color = _ref10.color,
         fillColor = _ref10.fillColor,
         _ref10$strokeWidth = _ref10.strokeWidth,
-        strokeWidth = _ref10$strokeWidth === undefined ? 1 : _ref10$strokeWidth;
+        strokeWidth = _ref10$strokeWidth === undefined ? 1 : _ref10$strokeWidth,
+        _ref10$lineDash = _ref10.lineDash,
+        lineDash = _ref10$lineDash === undefined ? [] : _ref10$lineDash;
 
-    if (this.stateChanged({ color: color, fillColor: fillColor, width: strokeWidth })) {
+    if (this.stateChanged({ color: color, fillColor: fillColor, width: strokeWidth, lineDash: lineDash })) {
       this.performDraw();
     }
 
@@ -648,6 +659,7 @@ var CanvasLayer = function (_BaseLayer) {
     if (color) {
       this.ctx.strokeStyle = color;
       this.ctx.lineWidth = strokeWidth;
+      this.ctx.setLineDash(lineDash);
       this.forceStroke();
     }
 
