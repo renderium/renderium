@@ -433,9 +433,10 @@ var CanvasLayer = function (_BaseLayer) {
     var color = _ref3.color,
         fillColor = _ref3.fillColor,
         width = _ref3.width,
-        lineDash = _ref3.lineDash;
+        lineDash = _ref3.lineDash,
+        opacity = _ref3.opacity;
 
-    return color && color !== this.ctx.strokeStyle || fillColor && fillColor !== this.ctx.fillStyle || width && width !== this.ctx.lineWidth || lineDash && !index$1(lineDash, this.ctx.getLineDash());
+    return color && color !== this.ctx.strokeStyle || fillColor && fillColor !== this.ctx.fillStyle || width && width !== this.ctx.lineWidth || opacity && opacity !== this.ctx.globalAlpha || lineDash && !index$1(lineDash, this.ctx.getLineDash());
   };
 
   CanvasLayer.prototype.performDraw = function performDraw() {
@@ -496,10 +497,12 @@ var CanvasLayer = function (_BaseLayer) {
         color = _ref5.color,
         _ref5$width = _ref5.width,
         width = _ref5$width === undefined ? 1 : _ref5$width,
+        _ref5$opacity = _ref5.opacity,
+        opacity = _ref5$opacity === undefined ? 1 : _ref5$opacity,
         _ref5$lineDash = _ref5.lineDash,
         lineDash = _ref5$lineDash === undefined ? [] : _ref5$lineDash;
 
-    if (this.stateChanged({ color: color, width: width, lineDash: lineDash })) {
+    if (this.stateChanged({ color: color, width: width, opacity: opacity, lineDash: lineDash })) {
       this.performDraw();
     }
 
@@ -508,6 +511,7 @@ var CanvasLayer = function (_BaseLayer) {
     if (color) {
       this.ctx.strokeStyle = color;
       this.ctx.lineWidth = width;
+      this.ctx.globalAlpha = opacity;
       this.ctx.setLineDash(lineDash);
       this.forceStroke();
     }
@@ -520,10 +524,12 @@ var CanvasLayer = function (_BaseLayer) {
         fillColor = _ref6.fillColor,
         _ref6$width = _ref6.width,
         width = _ref6$width === undefined ? 1 : _ref6$width,
+        _ref6$opacity = _ref6.opacity,
+        opacity = _ref6$opacity === undefined ? 1 : _ref6$opacity,
         _ref6$lineDash = _ref6.lineDash,
         lineDash = _ref6$lineDash === undefined ? [] : _ref6$lineDash;
 
-    if (this.stateChanged({ color: color, fillColor: fillColor, width: width, lineDash: lineDash })) {
+    if (this.stateChanged({ color: color, fillColor: fillColor, width: width, opacity: opacity, lineDash: lineDash })) {
       this.performDraw();
     }
 
@@ -534,11 +540,13 @@ var CanvasLayer = function (_BaseLayer) {
       endAngle: 2 * Math.PI,
       color: color,
       width: width,
+      opacity: opacity,
       lineDash: lineDash
     });
 
     if (fillColor) {
       this.ctx.fillStyle = fillColor;
+      this.ctx.globalAlpha = opacity;
       this.forceFill();
     }
   };
@@ -568,14 +576,12 @@ var CanvasLayer = function (_BaseLayer) {
       }
     }
 
-    this.ctx.save();
     this.ctx.globalAlpha = opacity;
     if (this.antialiasing) {
       this.ctx.drawImage(image, position.x, position.y, width, height);
     } else {
       this.ctx.drawImage(image, position.x - 0.5, position.y - 0.5, width, height);
     }
-    this.ctx.restore();
   };
 
   CanvasLayer.prototype.drawPolygon = function drawPolygon(_ref8) {
@@ -584,10 +590,12 @@ var CanvasLayer = function (_BaseLayer) {
         fillColor = _ref8.fillColor,
         _ref8$width = _ref8.width,
         width = _ref8$width === undefined ? 1 : _ref8$width,
+        _ref8$opacity = _ref8.opacity,
+        opacity = _ref8$opacity === undefined ? 1 : _ref8$opacity,
         _ref8$lineDash = _ref8.lineDash,
         lineDash = _ref8$lineDash === undefined ? [] : _ref8$lineDash;
 
-    if (this.stateChanged({ color: color, fillColor: fillColor, width: width, lineDash: lineDash })) {
+    if (this.stateChanged({ color: color, fillColor: fillColor, width: width, opacity: opacity, lineDash: lineDash })) {
       this.performDraw();
     }
 
@@ -595,11 +603,13 @@ var CanvasLayer = function (_BaseLayer) {
       points: points.concat(points[0]),
       color: color,
       width: width,
+      opacity: opacity,
       lineDash: lineDash
     });
 
     if (fillColor) {
       this.ctx.fillStyle = fillColor;
+      this.ctx.globalAlpha = opacity;
       this.forceFill();
     }
   };
@@ -609,10 +619,12 @@ var CanvasLayer = function (_BaseLayer) {
         color = _ref9.color,
         _ref9$width = _ref9.width,
         width = _ref9$width === undefined ? 1 : _ref9$width,
+        _ref9$opacity = _ref9.opacity,
+        opacity = _ref9$opacity === undefined ? 1 : _ref9$opacity,
         _ref9$lineDash = _ref9.lineDash,
         lineDash = _ref9$lineDash === undefined ? [] : _ref9$lineDash;
 
-    if (this.stateChanged({ color: color, width: width, lineDash: lineDash })) {
+    if (this.stateChanged({ color: color, width: width, opacity: opacity, lineDash: lineDash })) {
       this.performDraw();
     }
 
@@ -630,6 +642,7 @@ var CanvasLayer = function (_BaseLayer) {
     if (color) {
       this.ctx.strokeStyle = color;
       this.ctx.lineWidth = width;
+      this.ctx.globalAlpha = opacity;
       this.ctx.setLineDash(lineDash);
       this.forceStroke();
     }
@@ -643,10 +656,12 @@ var CanvasLayer = function (_BaseLayer) {
         fillColor = _ref10.fillColor,
         _ref10$strokeWidth = _ref10.strokeWidth,
         strokeWidth = _ref10$strokeWidth === undefined ? 1 : _ref10$strokeWidth,
+        _ref10$opacity = _ref10.opacity,
+        opacity = _ref10$opacity === undefined ? 1 : _ref10$opacity,
         _ref10$lineDash = _ref10.lineDash,
         lineDash = _ref10$lineDash === undefined ? [] : _ref10$lineDash;
 
-    if (this.stateChanged({ color: color, fillColor: fillColor, width: strokeWidth, lineDash: lineDash })) {
+    if (this.stateChanged({ color: color, fillColor: fillColor, width: strokeWidth, opacity: opacity, lineDash: lineDash })) {
       this.performDraw();
     }
 
@@ -659,11 +674,13 @@ var CanvasLayer = function (_BaseLayer) {
     if (color) {
       this.ctx.strokeStyle = color;
       this.ctx.lineWidth = strokeWidth;
+      this.ctx.globalAlpha = opacity;
       this.ctx.setLineDash(lineDash);
       this.forceStroke();
     }
 
     if (fillColor) {
+      this.ctx.globalAlpha = opacity;
       this.ctx.fillStyle = fillColor;
       this.forceFill();
     }
@@ -678,14 +695,17 @@ var CanvasLayer = function (_BaseLayer) {
         _ref11$align = _ref11.align,
         align = _ref11$align === undefined ? 'center' : _ref11$align,
         _ref11$baseline = _ref11.baseline,
-        baseline = _ref11$baseline === undefined ? 'middle' : _ref11$baseline;
+        baseline = _ref11$baseline === undefined ? 'middle' : _ref11$baseline,
+        _ref11$opacity = _ref11.opacity,
+        opacity = _ref11$opacity === undefined ? 1 : _ref11$opacity;
 
-    this.collectStats('drawText');
+    this.performDraw();
 
     this.ctx.fillStyle = color;
     this.ctx.font = size + 'px ' + font;
     this.ctx.textAlign = align;
     this.ctx.textBaseline = baseline;
+    this.ctx.globalAlpha = opacity;
 
     this.ctx.fillText(text, position.x, position.y);
   };
@@ -694,8 +714,6 @@ var CanvasLayer = function (_BaseLayer) {
     var text = _ref12.text,
         font = _ref12.font,
         size = _ref12.size;
-
-    this.collectStats('measureText');
 
     var width;
     if (font && size) {

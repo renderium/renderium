@@ -57,11 +57,12 @@ class CanvasLayer extends BaseLayer {
     }
   }
 
-  stateChanged ({ color, fillColor, width, lineDash }) {
+  stateChanged ({ color, fillColor, width, lineDash, opacity }) {
     return (
       (color && color !== this.ctx.strokeStyle) ||
       (fillColor && fillColor !== this.ctx.fillStyle) ||
       (width && width !== this.ctx.lineWidth) ||
+      (opacity && opacity !== this.ctx.globalAlpha) ||
       (lineDash && !equal(lineDash, this.ctx.getLineDash()))
     )
   }
@@ -111,8 +112,8 @@ class CanvasLayer extends BaseLayer {
     return gradient
   }
 
-  drawArc ({ position, radius, startAngle, endAngle, color, width = 1, lineDash = [] }) {
-    if (this.stateChanged({ color, width, lineDash })) {
+  drawArc ({ position, radius, startAngle, endAngle, color, width = 1, opacity = 1, lineDash = [] }) {
+    if (this.stateChanged({ color, width, opacity, lineDash })) {
       this.performDraw()
     }
 
@@ -121,13 +122,14 @@ class CanvasLayer extends BaseLayer {
     if (color) {
       this.ctx.strokeStyle = color
       this.ctx.lineWidth = width
+      this.ctx.globalAlpha = opacity
       this.ctx.setLineDash(lineDash)
       this.forceStroke()
     }
   }
 
-  drawCircle ({ position, radius, color, fillColor, width = 1, lineDash = [] }) {
-    if (this.stateChanged({ color, fillColor, width, lineDash })) {
+  drawCircle ({ position, radius, color, fillColor, width = 1, opacity = 1, lineDash = [] }) {
+    if (this.stateChanged({ color, fillColor, width, opacity, lineDash })) {
       this.performDraw()
     }
 
@@ -138,11 +140,13 @@ class CanvasLayer extends BaseLayer {
       endAngle: 2 * Math.PI,
       color,
       width,
+      opacity,
       lineDash
     })
 
     if (fillColor) {
       this.ctx.fillStyle = fillColor
+      this.ctx.globalAlpha = opacity
       this.forceFill()
     }
   }
@@ -163,18 +167,16 @@ class CanvasLayer extends BaseLayer {
       }
     }
 
-    this.ctx.save()
     this.ctx.globalAlpha = opacity
     if (this.antialiasing) {
       this.ctx.drawImage(image, position.x, position.y, width, height)
     } else {
       this.ctx.drawImage(image, position.x - 0.5, position.y - 0.5, width, height)
     }
-    this.ctx.restore()
   }
 
-  drawPolygon ({ points, color, fillColor, width = 1, lineDash = [] }) {
-    if (this.stateChanged({ color, fillColor, width, lineDash })) {
+  drawPolygon ({ points, color, fillColor, width = 1, opacity = 1, lineDash = [] }) {
+    if (this.stateChanged({ color, fillColor, width, opacity, lineDash })) {
       this.performDraw()
     }
 
@@ -182,17 +184,19 @@ class CanvasLayer extends BaseLayer {
       points: points.concat(points[0]),
       color,
       width,
+      opacity,
       lineDash
     })
 
     if (fillColor) {
       this.ctx.fillStyle = fillColor
+      this.ctx.globalAlpha = opacity
       this.forceFill()
     }
   }
 
-  drawPolyline ({ points, color, width = 1, lineDash = [] }) {
-    if (this.stateChanged({ color, width, lineDash })) {
+  drawPolyline ({ points, color, width = 1, opacity = 1, lineDash = [] }) {
+    if (this.stateChanged({ color, width, opacity, lineDash })) {
       this.performDraw()
     }
 
@@ -210,13 +214,14 @@ class CanvasLayer extends BaseLayer {
     if (color) {
       this.ctx.strokeStyle = color
       this.ctx.lineWidth = width
+      this.ctx.globalAlpha = opacity
       this.ctx.setLineDash(lineDash)
       this.forceStroke()
     }
   }
 
-  drawRect ({ position, width, height, color, fillColor, strokeWidth = 1, lineDash = [] }) {
-    if (this.stateChanged({ color, fillColor, width: strokeWidth, lineDash })) {
+  drawRect ({ position, width, height, color, fillColor, strokeWidth = 1, opacity = 1, lineDash = [] }) {
+    if (this.stateChanged({ color, fillColor, width: strokeWidth, opacity, lineDash })) {
       this.performDraw()
     }
 
@@ -229,30 +234,31 @@ class CanvasLayer extends BaseLayer {
     if (color) {
       this.ctx.strokeStyle = color
       this.ctx.lineWidth = strokeWidth
+      this.ctx.globalAlpha = opacity
       this.ctx.setLineDash(lineDash)
       this.forceStroke()
     }
 
     if (fillColor) {
+      this.ctx.globalAlpha = opacity
       this.ctx.fillStyle = fillColor
       this.forceFill()
     }
   }
 
-  drawText ({ position, text, color, font, size, align = 'center', baseline = 'middle' }) {
-    this.collectStats('drawText')
+  drawText ({ position, text, color, font, size, align = 'center', baseline = 'middle', opacity = 1 }) {
+    this.performDraw()
 
     this.ctx.fillStyle = color
     this.ctx.font = `${size}px ${font}`
     this.ctx.textAlign = align
     this.ctx.textBaseline = baseline
+    this.ctx.globalAlpha = opacity
 
     this.ctx.fillText(text, position.x, position.y)
   }
 
   measureText ({ text, font, size }) {
-    this.collectStats('measureText')
-
     var width
     if (font && size) {
       var defaultFont = this.ctx.font
