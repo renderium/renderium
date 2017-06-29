@@ -16,15 +16,15 @@ class CanvasLayer extends BaseLayer {
 
     this.scale({ width, height })
 
-    this.imageLoader.onload = this.forceRedraw.bind(this)
+    this.imageLoader.onload = this.planRedraw.bind(this)
 
     this.stats = {
       stroke: 0,
       fill: 0
     }
 
-    this._shouldStroke = false
-    this._shouldFill = false
+    this.scheduler.complete('stroke')
+    this.scheduler.complete('fill')
   }
 
   scale ({ width, height }) {
@@ -68,41 +68,17 @@ class CanvasLayer extends BaseLayer {
   }
 
   performDraw () {
-    if (this.shouldStroke()) {
+    if (this.scheduler.should('stroke')) {
       this.ctx.stroke()
-      this.completeStroke()
+      this.scheduler.complete('stroke')
       this.collectStats('stroke')
     }
-    if (this.shouldFill()) {
+    if (this.scheduler.should('fill')) {
       this.ctx.fill()
-      this.completeFill()
+      this.scheduler.complete('fill')
       this.collectStats('fill')
     }
     this.ctx.beginPath()
-  }
-
-  forceStroke () {
-    this._shouldStroke = true
-  }
-
-  completeStroke () {
-    this._shouldStroke = false
-  }
-
-  shouldStroke () {
-    return this._shouldStroke
-  }
-
-  forceFill () {
-    this._shouldFill = true
-  }
-
-  completeFill () {
-    this._shouldFill = false
-  }
-
-  shouldFill () {
-    return this._shouldFill
   }
 
   createGradient ({ start, end, from, to }) {
@@ -124,7 +100,7 @@ class CanvasLayer extends BaseLayer {
       this.ctx.lineWidth = width
       this.ctx.globalAlpha = opacity
       this.ctx.setLineDash(lineDash)
-      this.forceStroke()
+      this.scheduler.plan('stroke')
     }
   }
 
@@ -147,7 +123,7 @@ class CanvasLayer extends BaseLayer {
     if (fillColor) {
       this.ctx.fillStyle = fillColor
       this.ctx.globalAlpha = opacity
-      this.forceFill()
+      this.scheduler.plan('fill')
     }
   }
 
@@ -191,7 +167,7 @@ class CanvasLayer extends BaseLayer {
     if (fillColor) {
       this.ctx.fillStyle = fillColor
       this.ctx.globalAlpha = opacity
-      this.forceFill()
+      this.scheduler.plan('fill')
     }
   }
 
@@ -216,7 +192,7 @@ class CanvasLayer extends BaseLayer {
       this.ctx.lineWidth = width
       this.ctx.globalAlpha = opacity
       this.ctx.setLineDash(lineDash)
-      this.forceStroke()
+      this.scheduler.plan('stroke')
     }
   }
 
@@ -236,13 +212,13 @@ class CanvasLayer extends BaseLayer {
       this.ctx.lineWidth = strokeWidth
       this.ctx.globalAlpha = opacity
       this.ctx.setLineDash(lineDash)
-      this.forceStroke()
+      this.scheduler.plan('stroke')
     }
 
     if (fillColor) {
       this.ctx.globalAlpha = opacity
       this.ctx.fillStyle = fillColor
-      this.forceFill()
+      this.scheduler.plan('fill')
     }
   }
 

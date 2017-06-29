@@ -1,5 +1,6 @@
 import leftPad from 'left-pad'
 import ImageLoader from '../loaders/image.js'
+import Scheduler from '../scheduler.js'
 import Component from '../component.js'
 import { throwError } from '../utils/error.js'
 
@@ -13,10 +14,13 @@ class BaseLayer {
     this.canvas = document.createElement('canvas')
 
     this.imageLoader = new ImageLoader()
+    this.scheduler = new Scheduler({
+      redraw: false
+    })
 
     this.components = []
     this.stats = {}
-    this._shouldRedraw = false
+
     this._renderCycleStarted = false
   }
 
@@ -33,7 +37,7 @@ class BaseLayer {
 
     this.applyStyles()
 
-    this.forceRedraw()
+    this.planRedraw()
   }
 
   applyStyles () {
@@ -66,7 +70,7 @@ class BaseLayer {
     this.startRenderCycle()
     for (var i = 0; i < this.components.length; i++) {
       var component = this.components[i]
-      if (component.shouldRedraw() || this._shouldRedraw) {
+      if (component.shouldRedraw() || this.scheduler.should('redraw')) {
         component.plot(this, time)
       }
       component.draw(this, time)
@@ -76,11 +80,15 @@ class BaseLayer {
   }
 
   forceRedraw () {
-    this._shouldRedraw = true
+    this.planRedraw()
+  }
+
+  planRedraw () {
+    this.scheduler.plan('redraw')
   }
 
   completeRedraw () {
-    this._shouldRedraw = false
+    this.scheduler.complete('redraw')
   }
 
   shouldRedraw () {
@@ -90,7 +98,7 @@ class BaseLayer {
         return true
       }
     }
-    return this._shouldRedraw
+    return this.scheduler.should('redraw')
   }
 
   startRenderCycle () {
@@ -118,7 +126,7 @@ class BaseLayer {
       throwError(`Component ${component.constructor.name} has not implemented Component interface`)
     }
     this.components.push(component)
-    this.forceRedraw()
+    this.planRedraw()
     component.onadd(this)
   }
 
@@ -134,7 +142,7 @@ class BaseLayer {
     var idx = this.components.indexOf(component)
     if (idx !== -1) {
       this.components.splice(idx, 1)
-      this.forceRedraw()
+      this.planRedraw()
     }
     component.onremove(this)
   }
@@ -149,7 +157,7 @@ class BaseLayer {
     }
 
     this.components = []
-    this.forceRedraw()
+    this.planRedraw()
   }
 
   clearStats () {

@@ -135,6 +135,29 @@ var ImageLoader = function () {
 ImageLoader.prototype.IMAGE_STATUS_LOADING = ImageLoader.IMAGE_STATUS_LOADING = 1;
 ImageLoader.prototype.IMAGE_STATUS_LOADED = ImageLoader.IMAGE_STATUS_LOADED = 2;
 
+var Scheduler = function () {
+  function Scheduler() {
+    var tasks = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+    classCallCheck(this, Scheduler);
+
+    this.tasks = tasks;
+  }
+
+  Scheduler.prototype.plan = function plan(name) {
+    this.tasks[name] = true;
+  };
+
+  Scheduler.prototype.complete = function complete(name) {
+    this.tasks[name] = false;
+  };
+
+  Scheduler.prototype.should = function should(name) {
+    return Boolean(this.tasks[name]);
+  };
+
+  return Scheduler;
+}();
+
 var Component = function () {
   function Component() {
     classCallCheck(this, Component);
@@ -179,10 +202,13 @@ var BaseLayer = function () {
     this.canvas = document.createElement('canvas');
 
     this.imageLoader = new ImageLoader();
+    this.scheduler = new Scheduler({
+      redraw: false
+    });
 
     this.components = [];
     this.stats = {};
-    this._shouldRedraw = false;
+
     this._renderCycleStarted = false;
   }
 
@@ -202,7 +228,7 @@ var BaseLayer = function () {
 
     this.applyStyles();
 
-    this.forceRedraw();
+    this.planRedraw();
   };
 
   BaseLayer.prototype.applyStyles = function applyStyles() {
@@ -235,7 +261,7 @@ var BaseLayer = function () {
     this.startRenderCycle();
     for (var i = 0; i < this.components.length; i++) {
       var component = this.components[i];
-      if (component.shouldRedraw() || this._shouldRedraw) {
+      if (component.shouldRedraw() || this.scheduler.should('redraw')) {
         component.plot(this, time);
       }
       component.draw(this, time);
@@ -245,11 +271,15 @@ var BaseLayer = function () {
   };
 
   BaseLayer.prototype.forceRedraw = function forceRedraw() {
-    this._shouldRedraw = true;
+    this.planRedraw();
+  };
+
+  BaseLayer.prototype.planRedraw = function planRedraw() {
+    this.scheduler.plan('redraw');
   };
 
   BaseLayer.prototype.completeRedraw = function completeRedraw() {
-    this._shouldRedraw = false;
+    this.scheduler.complete('redraw');
   };
 
   BaseLayer.prototype.shouldRedraw = function shouldRedraw() {
@@ -259,7 +289,7 @@ var BaseLayer = function () {
         return true;
       }
     }
-    return this._shouldRedraw;
+    return this.scheduler.should('redraw');
   };
 
   BaseLayer.prototype.startRenderCycle = function startRenderCycle() {
@@ -287,7 +317,7 @@ var BaseLayer = function () {
       throwError('Component ' + component.constructor.name + ' has not implemented Component interface');
     }
     this.components.push(component);
-    this.forceRedraw();
+    this.planRedraw();
     component.onadd(this);
   };
 
@@ -303,7 +333,7 @@ var BaseLayer = function () {
     var idx = this.components.indexOf(component);
     if (idx !== -1) {
       this.components.splice(idx, 1);
-      this.forceRedraw();
+      this.planRedraw();
     }
     component.onremove(this);
   };
@@ -318,7 +348,7 @@ var BaseLayer = function () {
     }
 
     this.components = [];
-    this.forceRedraw();
+    this.planRedraw();
   };
 
   BaseLayer.prototype.clearStats = function clearStats() {
@@ -384,15 +414,15 @@ var CanvasLayer = function (_BaseLayer) {
 
     _this.scale({ width: width, height: height });
 
-    _this.imageLoader.onload = _this.forceRedraw.bind(_this);
+    _this.imageLoader.onload = _this.planRedraw.bind(_this);
 
     _this.stats = {
       stroke: 0,
       fill: 0
     };
 
-    _this._shouldStroke = false;
-    _this._shouldFill = false;
+    _this.scheduler.complete('stroke');
+    _this.scheduler.complete('fill');
     return _this;
   }
 
@@ -440,41 +470,17 @@ var CanvasLayer = function (_BaseLayer) {
   };
 
   CanvasLayer.prototype.performDraw = function performDraw() {
-    if (this.shouldStroke()) {
+    if (this.scheduler.should('stroke')) {
       this.ctx.stroke();
-      this.completeStroke();
+      this.scheduler.complete('stroke');
       this.collectStats('stroke');
     }
-    if (this.shouldFill()) {
+    if (this.scheduler.should('fill')) {
       this.ctx.fill();
-      this.completeFill();
+      this.scheduler.complete('fill');
       this.collectStats('fill');
     }
     this.ctx.beginPath();
-  };
-
-  CanvasLayer.prototype.forceStroke = function forceStroke() {
-    this._shouldStroke = true;
-  };
-
-  CanvasLayer.prototype.completeStroke = function completeStroke() {
-    this._shouldStroke = false;
-  };
-
-  CanvasLayer.prototype.shouldStroke = function shouldStroke() {
-    return this._shouldStroke;
-  };
-
-  CanvasLayer.prototype.forceFill = function forceFill() {
-    this._shouldFill = true;
-  };
-
-  CanvasLayer.prototype.completeFill = function completeFill() {
-    this._shouldFill = false;
-  };
-
-  CanvasLayer.prototype.shouldFill = function shouldFill() {
-    return this._shouldFill;
   };
 
   CanvasLayer.prototype.createGradient = function createGradient(_ref4) {
@@ -513,7 +519,7 @@ var CanvasLayer = function (_BaseLayer) {
       this.ctx.lineWidth = width;
       this.ctx.globalAlpha = opacity;
       this.ctx.setLineDash(lineDash);
-      this.forceStroke();
+      this.scheduler.plan('stroke');
     }
   };
 
@@ -547,7 +553,7 @@ var CanvasLayer = function (_BaseLayer) {
     if (fillColor) {
       this.ctx.fillStyle = fillColor;
       this.ctx.globalAlpha = opacity;
-      this.forceFill();
+      this.scheduler.plan('fill');
     }
   };
 
@@ -610,7 +616,7 @@ var CanvasLayer = function (_BaseLayer) {
     if (fillColor) {
       this.ctx.fillStyle = fillColor;
       this.ctx.globalAlpha = opacity;
-      this.forceFill();
+      this.scheduler.plan('fill');
     }
   };
 
@@ -644,7 +650,7 @@ var CanvasLayer = function (_BaseLayer) {
       this.ctx.lineWidth = width;
       this.ctx.globalAlpha = opacity;
       this.ctx.setLineDash(lineDash);
-      this.forceStroke();
+      this.scheduler.plan('stroke');
     }
   };
 
@@ -676,13 +682,13 @@ var CanvasLayer = function (_BaseLayer) {
       this.ctx.lineWidth = strokeWidth;
       this.ctx.globalAlpha = opacity;
       this.ctx.setLineDash(lineDash);
-      this.forceStroke();
+      this.scheduler.plan('stroke');
     }
 
     if (fillColor) {
       this.ctx.globalAlpha = opacity;
       this.ctx.fillStyle = fillColor;
-      this.forceFill();
+      this.scheduler.plan('fill');
     }
   };
 
