@@ -26,7 +26,7 @@ class BaseLayer {
 
   scale ({ width, height }) {
     if (this.renderCycleStarted()) {
-      throwError('Layer#scale() during render cycle is forbidden')
+      throwError('Layer#scale() is forbidden during render cycle')
     }
 
     this.width = Number(width) || BaseLayer.DEFAULT_WIDTH
@@ -42,7 +42,7 @@ class BaseLayer {
 
   applyStyles () {
     if (this.renderCycleStarted()) {
-      throwError('Layer#applyStyles() during render cycle is forbidden')
+      throwError('Layer#applyStyles() is forbidden during render cycle')
     }
 
     this.canvas.style.width = `${this.width}px`
@@ -56,7 +56,7 @@ class BaseLayer {
 
   clear () {
     if (this.renderCycleStarted()) {
-      throwError('Layer#clear() during render cycle is forbidden')
+      throwError('Layer#clear() is forbidden during render cycle')
     }
 
     this.clearStats()
@@ -64,7 +64,7 @@ class BaseLayer {
 
   redraw (time) {
     if (this.renderCycleStarted()) {
-      throwError('Layer#redraw() during render cycle is forbidden')
+      throwError('Layer#redraw() is forbidden during render cycle')
     }
 
     this.startRenderCycle()
@@ -115,7 +115,7 @@ class BaseLayer {
 
   addComponent (component) {
     if (this.renderCycleStarted()) {
-      throwError('Layer#addComponent() during render cycle is forbidden')
+      throwError('Layer#addComponent() is forbidden during render cycle')
     }
 
     var idx = this.components.indexOf(component)
@@ -136,7 +136,7 @@ class BaseLayer {
 
   removeComponent (component) {
     if (this.renderCycleStarted()) {
-      throwError('Layer#removeComponent() during render cycle is forbidden')
+      throwError('Layer#removeComponent() is forbidden during render cycle')
     }
 
     var idx = this.components.indexOf(component)
@@ -153,7 +153,7 @@ class BaseLayer {
 
   clearComponents () {
     if (this.renderCycleStarted()) {
-      throwError('Layer#clearComponents() during render cycle is forbidden')
+      throwError('Layer#clearComponents() is forbidden during render cycle')
     }
 
     this.components = []
@@ -162,7 +162,7 @@ class BaseLayer {
 
   clearStats () {
     if (this.renderCycleStarted()) {
-      throwError('Layer#clearStats() during render cycle is forbidden')
+      throwError('Layer#clearStats() is forbidden during render cycle')
     }
 
     for (var methodName in this.stats) {
