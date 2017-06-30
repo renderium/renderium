@@ -15,17 +15,16 @@ class BaseLayer {
 
     this.imageLoader = new ImageLoader()
     this.scheduler = new Scheduler({
-      redraw: false
+      redraw: false,
+      drawComponents: false
     })
 
     this.components = []
     this.stats = {}
-
-    this._renderCycleStarted = false
   }
 
   scale ({ width, height }) {
-    if (this.renderCycleStarted()) {
+    if (this.shouldDrawComponents()) {
       throwError('Layer#scale() is forbidden during render cycle')
     }
 
@@ -41,7 +40,7 @@ class BaseLayer {
   }
 
   applyStyles () {
-    if (this.renderCycleStarted()) {
+    if (this.shouldDrawComponents()) {
       throwError('Layer#applyStyles() is forbidden during render cycle')
     }
 
@@ -55,7 +54,7 @@ class BaseLayer {
   }
 
   clear () {
-    if (this.renderCycleStarted()) {
+    if (this.shouldDrawComponents()) {
       throwError('Layer#clear() is forbidden during render cycle')
     }
 
@@ -63,11 +62,11 @@ class BaseLayer {
   }
 
   redraw (time) {
-    if (this.renderCycleStarted()) {
+    if (this.shouldDrawComponents()) {
       throwError('Layer#redraw() is forbidden during render cycle')
     }
 
-    this.startRenderCycle()
+    this.planDrawComponents()
     for (var i = 0; i < this.components.length; i++) {
       var component = this.components[i]
       if (component.shouldRedraw() || this.scheduler.should('redraw')) {
@@ -75,7 +74,7 @@ class BaseLayer {
       }
       component.draw(this, time)
     }
-    this.completeRenderCycle()
+    this.completeDrawComponents()
     this.completeRedraw()
   }
 
@@ -101,20 +100,20 @@ class BaseLayer {
     return this.scheduler.should('redraw')
   }
 
-  startRenderCycle () {
-    this._renderCycleStarted = true
+  planDrawComponents () {
+    this.scheduler.plan('drawComponents')
   }
 
-  completeRenderCycle () {
-    this._renderCycleStarted = false
+  completeDrawComponents () {
+    this.scheduler.complete('drawComponents')
   }
 
-  renderCycleStarted () {
-    return this._renderCycleStarted
+  shouldDrawComponents () {
+    return this.scheduler.should('drawComponents')
   }
 
   addComponent (component) {
-    if (this.renderCycleStarted()) {
+    if (this.shouldDrawComponents()) {
       throwError('Layer#addComponent() is forbidden during render cycle')
     }
 
@@ -135,7 +134,7 @@ class BaseLayer {
   }
 
   removeComponent (component) {
-    if (this.renderCycleStarted()) {
+    if (this.shouldDrawComponents()) {
       throwError('Layer#removeComponent() is forbidden during render cycle')
     }
 
@@ -152,7 +151,7 @@ class BaseLayer {
   }
 
   clearComponents () {
-    if (this.renderCycleStarted()) {
+    if (this.shouldDrawComponents()) {
       throwError('Layer#clearComponents() is forbidden during render cycle')
     }
 
@@ -161,7 +160,7 @@ class BaseLayer {
   }
 
   clearStats () {
-    if (this.renderCycleStarted()) {
+    if (this.shouldDrawComponents()) {
       throwError('Layer#clearStats() is forbidden during render cycle')
     }
 

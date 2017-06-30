@@ -203,20 +203,19 @@ var BaseLayer = function () {
 
     this.imageLoader = new ImageLoader();
     this.scheduler = new Scheduler({
-      redraw: false
+      redraw: false,
+      drawComponents: false
     });
 
     this.components = [];
     this.stats = {};
-
-    this._renderCycleStarted = false;
   }
 
   BaseLayer.prototype.scale = function scale(_ref2) {
     var width = _ref2.width,
         height = _ref2.height;
 
-    if (this.renderCycleStarted()) {
+    if (this.shouldDrawComponents()) {
       throwError('Layer#scale() is forbidden during render cycle');
     }
 
@@ -232,7 +231,7 @@ var BaseLayer = function () {
   };
 
   BaseLayer.prototype.applyStyles = function applyStyles() {
-    if (this.renderCycleStarted()) {
+    if (this.shouldDrawComponents()) {
       throwError('Layer#applyStyles() is forbidden during render cycle');
     }
 
@@ -246,7 +245,7 @@ var BaseLayer = function () {
   };
 
   BaseLayer.prototype.clear = function clear() {
-    if (this.renderCycleStarted()) {
+    if (this.shouldDrawComponents()) {
       throwError('Layer#clear() is forbidden during render cycle');
     }
 
@@ -254,11 +253,11 @@ var BaseLayer = function () {
   };
 
   BaseLayer.prototype.redraw = function redraw(time) {
-    if (this.renderCycleStarted()) {
+    if (this.shouldDrawComponents()) {
       throwError('Layer#redraw() is forbidden during render cycle');
     }
 
-    this.startRenderCycle();
+    this.planDrawComponents();
     for (var i = 0; i < this.components.length; i++) {
       var component = this.components[i];
       if (component.shouldRedraw() || this.scheduler.should('redraw')) {
@@ -266,7 +265,7 @@ var BaseLayer = function () {
       }
       component.draw(this, time);
     }
-    this.completeRenderCycle();
+    this.completeDrawComponents();
     this.completeRedraw();
   };
 
@@ -292,20 +291,20 @@ var BaseLayer = function () {
     return this.scheduler.should('redraw');
   };
 
-  BaseLayer.prototype.startRenderCycle = function startRenderCycle() {
-    this._renderCycleStarted = true;
+  BaseLayer.prototype.planDrawComponents = function planDrawComponents() {
+    this.scheduler.plan('drawComponents');
   };
 
-  BaseLayer.prototype.completeRenderCycle = function completeRenderCycle() {
-    this._renderCycleStarted = false;
+  BaseLayer.prototype.completeDrawComponents = function completeDrawComponents() {
+    this.scheduler.complete('drawComponents');
   };
 
-  BaseLayer.prototype.renderCycleStarted = function renderCycleStarted() {
-    return this._renderCycleStarted;
+  BaseLayer.prototype.shouldDrawComponents = function shouldDrawComponents() {
+    return this.scheduler.should('drawComponents');
   };
 
   BaseLayer.prototype.addComponent = function addComponent(component) {
-    if (this.renderCycleStarted()) {
+    if (this.shouldDrawComponents()) {
       throwError('Layer#addComponent() is forbidden during render cycle');
     }
 
@@ -326,7 +325,7 @@ var BaseLayer = function () {
   };
 
   BaseLayer.prototype.removeComponent = function removeComponent(component) {
-    if (this.renderCycleStarted()) {
+    if (this.shouldDrawComponents()) {
       throwError('Layer#removeComponent() is forbidden during render cycle');
     }
 
@@ -343,7 +342,7 @@ var BaseLayer = function () {
   };
 
   BaseLayer.prototype.clearComponents = function clearComponents() {
-    if (this.renderCycleStarted()) {
+    if (this.shouldDrawComponents()) {
       throwError('Layer#clearComponents() is forbidden during render cycle');
     }
 
@@ -352,7 +351,7 @@ var BaseLayer = function () {
   };
 
   BaseLayer.prototype.clearStats = function clearStats() {
-    if (this.renderCycleStarted()) {
+    if (this.shouldDrawComponents()) {
       throwError('Layer#clearStats() is forbidden during render cycle');
     }
 
