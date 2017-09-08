@@ -24,11 +24,11 @@
 
 ## Features
 
+- Designed with performance in mind
 - [Rich API](https://github.com/broadsw0rd/renderium/wiki/API)
 - [Components](https://github.com/broadsw0rd/renderium/wiki/Components)
 - [Redraw Policy](https://github.com/broadsw0rd/renderium/wiki/Redraw-Policy)
 - [Logs](https://github.com/broadsw0rd/renderium/wiki/Logs)
-- Designed with performance in mind and reviewed with [IRHydra](http://mrale.ph/irhydra/2/)
 
 ## Dependencies
 

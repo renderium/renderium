@@ -1,5 +1,6 @@
 import leftPad from 'left-pad'
 import ImageLoader from '../loaders/image.js'
+import Scheduler from '../scheduler.js'
 import Component from '../component.js'
 import { throwError } from '../utils/error.js'
 
@@ -13,16 +14,18 @@ class BaseLayer {
     this.canvas = document.createElement('canvas')
 
     this.imageLoader = new ImageLoader()
+    this.scheduler = new Scheduler({
+      redraw: false,
+      drawComponents: false
+    })
 
     this.components = []
     this.stats = {}
-    this._shouldRedraw = false
-    this._renderCycleStarted = false
   }
 
   scale ({ width, height }) {
-    if (this.renderCycleStarted()) {
-      throwError('Layer#scale() during render cycle is forbidden')
+    if (this.shouldDrawComponents()) {
+      throwError('Layer#scale() is forbidden during render cycle')
     }
 
     this.width = Number(width) || BaseLayer.DEFAULT_WIDTH
@@ -33,12 +36,12 @@ class BaseLayer {
 
     this.applyStyles()
 
-    this.forceRedraw()
+    this.planRedraw()
   }
 
   applyStyles () {
-    if (this.renderCycleStarted()) {
-      throwError('Layer#applyStyles() during render cycle is forbidden')
+    if (this.shouldDrawComponents()) {
+      throwError('Layer#applyStyles() is forbidden during render cycle')
     }
 
     this.canvas.style.width = `${this.width}px`
@@ -51,32 +54,40 @@ class BaseLayer {
   }
 
   clear () {
-    if (this.renderCycleStarted()) {
-      throwError('Layer#clear() during render cycle is forbidden')
+    if (this.shouldDrawComponents()) {
+      throwError('Layer#clear() is forbidden during render cycle')
     }
 
     this.clearStats()
   }
 
   redraw (time) {
-    if (this.renderCycleStarted()) {
-      throwError('Layer#redraw() during render cycle is forbidden')
+    if (this.shouldDrawComponents()) {
+      throwError('Layer#redraw() is forbidden during render cycle')
     }
 
-    this.startRenderCycle()
+    this.planDrawComponents()
     for (var i = 0; i < this.components.length; i++) {
       var component = this.components[i]
-      if (component.shouldRedraw() || this._shouldRedraw) {
+      if (component.shouldRedraw() || this.scheduler.should('redraw')) {
         component.plot(this, time)
       }
       component.draw(this, time)
     }
-    this.completeRenderCycle()
-    this._shouldRedraw = false
+    this.completeDrawComponents()
+    this.completeRedraw()
   }
 
   forceRedraw () {
-    this._shouldRedraw = true
+    this.planRedraw()
+  }
+
+  planRedraw () {
+    this.scheduler.plan('redraw')
+  }
+
+  completeRedraw () {
+    this.scheduler.complete('redraw')
   }
 
   shouldRedraw () {
@@ -86,24 +97,24 @@ class BaseLayer {
         return true
       }
     }
-    return this._shouldRedraw
+    return this.scheduler.should('redraw')
   }
 
-  startRenderCycle () {
-    this._renderCycleStarted = true
+  planDrawComponents () {
+    this.scheduler.plan('drawComponents')
   }
 
-  completeRenderCycle () {
-    this._renderCycleStarted = false
+  completeDrawComponents () {
+    this.scheduler.complete('drawComponents')
   }
 
-  renderCycleStarted () {
-    return this._renderCycleStarted
+  shouldDrawComponents () {
+    return this.scheduler.should('drawComponents')
   }
 
   addComponent (component) {
-    if (this.renderCycleStarted()) {
-      throwError('Layer#addComponent() during render cycle is forbidden')
+    if (this.shouldDrawComponents()) {
+      throwError('Layer#addComponent() is forbidden during render cycle')
     }
 
     var idx = this.components.indexOf(component)
@@ -114,7 +125,7 @@ class BaseLayer {
       throwError(`Component ${component.constructor.name} has not implemented Component interface`)
     }
     this.components.push(component)
-    this.forceRedraw()
+    this.planRedraw()
     component.onadd(this)
   }
 
@@ -123,14 +134,14 @@ class BaseLayer {
   }
 
   removeComponent (component) {
-    if (this.renderCycleStarted()) {
-      throwError('Layer#removeComponent() during render cycle is forbidden')
+    if (this.shouldDrawComponents()) {
+      throwError('Layer#removeComponent() is forbidden during render cycle')
     }
 
     var idx = this.components.indexOf(component)
     if (idx !== -1) {
       this.components.splice(idx, 1)
-      this.forceRedraw()
+      this.planRedraw()
     }
     component.onremove(this)
   }
@@ -140,17 +151,17 @@ class BaseLayer {
   }
 
   clearComponents () {
-    if (this.renderCycleStarted()) {
-      throwError('Layer#clearComponents() during render cycle is forbidden')
+    if (this.shouldDrawComponents()) {
+      throwError('Layer#clearComponents() is forbidden during render cycle')
     }
 
     this.components = []
-    this.forceRedraw()
+    this.planRedraw()
   }
 
   clearStats () {
-    if (this.renderCycleStarted()) {
-      throwError('Layer#clearStats() during render cycle is forbidden')
+    if (this.shouldDrawComponents()) {
+      throwError('Layer#clearStats() is forbidden during render cycle')
     }
 
     for (var methodName in this.stats) {

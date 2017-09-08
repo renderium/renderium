@@ -1,15 +1,18 @@
-import babel from 'rollup-plugin-babel'
+import pkg from './package.json'
+import buble from 'rollup-plugin-buble'
 import nodeResolve from 'rollup-plugin-node-resolve'
 import commonjs from 'rollup-plugin-commonjs'
 
 export default {
-  moduleName: 'Renderium',
-  entry: 'src/renderium.js',
-  dest: 'dist/renderium.js',
-  format: 'umd',
+  input: 'src/renderium.js',
+  output: [
+    { file: pkg.main, format: 'umd', name: 'Renderium' },
+    { file: pkg.module, format: 'es' }
+  ],
   plugins: [
-    babel(),
+    buble(),
     nodeResolve(),
     commonjs()
   ]
 }
+
