@@ -89,9 +89,7 @@ class CanvasLayer extends BaseLayer {
   }
 
   drawArc ({ position, radius, startAngle, endAngle, color, width = 1, opacity = 1, lineDash = [] }) {
-    if (this.stateChanged({ color, width, opacity, lineDash })) {
-      this.performDraw()
-    }
+    this.performDraw()
 
     this.ctx.arc(position.x, position.y, radius, startAngle, endAngle)
 

@@ -454,9 +454,7 @@ var CanvasLayer = (function (BaseLayer$$1) {
     var opacity = ref.opacity; if ( opacity === void 0 ) opacity = 1;
     var lineDash = ref.lineDash; if ( lineDash === void 0 ) lineDash = [];
 
-    if (this.stateChanged({ color: color, width: width, opacity: opacity, lineDash: lineDash })) {
-      this.performDraw();
-    }
+    this.performDraw();
 
     this.ctx.arc(position.x, position.y, radius, startAngle, endAngle);
 
