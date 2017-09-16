@@ -1,8 +1,8 @@
-import BaseLayer from '../base-layer'
-import Gradient from './gradient.js'
-import * as utils from './utils.js'
-import vertextShaderSource from './vertex.glsl'
-import fragmentShaderSource from './fragment.glsl'
+import BaseLayer from './base.js'
+import * as webgl from '../utils/webgl.js'
+import { parseColor } from '../utils/color.js'
+import vertextShaderSource from '../shaders/vertex.glsl'
+import fragmentShaderSource from '../shaders/fragment.glsl'
 
 // -------------------------------------
 // WebglLayer
@@ -12,7 +12,7 @@ class WebglLayer extends BaseLayer {
   constructor ({ Vector, stats, width, height }) {
     super({ Vector, stats, width, height })
 
-    this.gl = utils.getContext(this.canvas)
+    this.gl = webgl.getContext(this.canvas)
 
     this.scale({ width, height })
 
@@ -24,10 +24,10 @@ class WebglLayer extends BaseLayer {
     this.verticesCount = 0
     this.indicesCount = 0
 
-    this._vertexShader = utils.compileShader(this.gl, vertextShaderSource, this.gl.VERTEX_SHADER)
-    this._fragmentShader = utils.compileShader(this.gl, fragmentShaderSource, this.gl.FRAGMENT_SHADER)
+    this._vertexShader = webgl.compileShader(this.gl, vertextShaderSource, this.gl.VERTEX_SHADER)
+    this._fragmentShader = webgl.compileShader(this.gl, fragmentShaderSource, this.gl.FRAGMENT_SHADER)
 
-    this._program = utils.createProgram(this.gl, this._vertexShader, this._fragmentShader)
+    this._program = webgl.createProgram(this.gl, this._vertexShader, this._fragmentShader)
     this.gl.useProgram(this._program)
 
     this._resolutionLocation = this.gl.getUniformLocation(this._program, 'u_resolution')
@@ -116,7 +116,7 @@ class WebglLayer extends BaseLayer {
   }
 
   getColor (color) {
-    return Gradient.isGradient(color) ? color.createGradient(this) : utils.parseColor(color)
+    return parseColor(color)
   }
 
   drawArc ({ position, radius, startAngle, endAngle, color, width = 1 }) {

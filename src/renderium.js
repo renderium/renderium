@@ -1,15 +1,16 @@
-import BaseLayer from './base-layer'
-import CanvasLayer from './canvas-layer'
-import WebglLayer from './webgl-layer'
+import BaseLayer from './layers/base.js'
+import CanvasLayer from './layers/canvas.js'
+import WebglLayer from './layers/webgl.js'
+import LinearGradient from './gradients/linear.js'
 import Component from './component.js'
 import colors from './colors.js'
-import * as utils from './utils.js'
+import { throwError } from './utils/error.js'
 
 class Renderium {
   static spawn (renderer) {
     var idx = Renderium.instances.indexOf(renderer)
     if (idx !== -1) {
-      utils.throwError('Renderer has already been spawned')
+      throwError('Renderer has already been spawned')
     }
     Renderium.instances.push(renderer)
   }
@@ -47,7 +48,7 @@ class Renderium {
   addLayer (layer) {
     var idx = this.layers.indexOf(layer)
     if (idx !== -1) {
-      utils.throwError('Layer has already been added to renderer')
+      throwError('Layer has already been added to renderer')
     }
     this.layers.push(layer)
     this.el.appendChild(layer.canvas)
@@ -100,8 +101,8 @@ Renderium.instances = []
 Renderium.BaseLayer = BaseLayer
 Renderium.CanvasLayer = CanvasLayer
 Renderium.WebglLayer = WebglLayer
+Renderium.LinearGradient = LinearGradient
 Renderium.Component = Component
 Renderium.colors = colors
-Renderium.utils = utils
 
 export default Renderium

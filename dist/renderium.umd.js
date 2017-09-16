@@ -1,3 +1,9 @@
+(function (global, factory) {
+	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
+	typeof define === 'function' && define.amd ? define(factory) :
+	(global.Renderium = factory());
+}(this, (function () { 'use strict';
+
 /* This program is free software. It comes without any warranty, to
      * the extent permitted by applicable law. You can redistribute it
      * and/or modify it under the terms of the Do What The Fuck You Want
@@ -1152,4 +1158,6 @@ Renderium.LinearGradient = LinearGradient;
 Renderium.Component = Component;
 Renderium.colors = colors;
 
-export default Renderium;
+return Renderium;
+
+})));
