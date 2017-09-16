@@ -38,6 +38,7 @@ class WebglLayer extends BaseLayer {
     this._verticesBuffer = this.gl.createBuffer()
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this._verticesBuffer)
     this.vertices = new VerticesStore(this.DEFAULT_VERTICES_COUNT, this.gl)
+    this.verticesCount = 0
 
     this.gl.enableVertexAttribArray(this._positionLocation)
     this.gl.enableVertexAttribArray(this._colorLocation)
@@ -115,6 +116,7 @@ class WebglLayer extends BaseLayer {
   clear () {
     super.clear()
 
+    this.verticesCount = 0
     this.indices.clear()
     this.vertices.clear()
 
@@ -137,7 +139,12 @@ class WebglLayer extends BaseLayer {
       this.vertices.toArray()
     )
 
-    this.gl.drawElements(this.gl.TRIANGLE_SPTRIP, this.indices.offset, this.gl.UNSIGNED_SHORT, 0)
+    this.gl.drawElements(
+      this.gl.TRIANGLE_SPTRIP,
+      this.indices.offset / this.indices.componentSize,
+      this.gl.UNSIGNED_SHORT,
+      0
+    )
   }
 
   createGradient ({ start, end, from, to }) {
@@ -188,22 +195,24 @@ class WebglLayer extends BaseLayer {
   drawRect ({ position, width, height, color, fillColor, strokeWidth = 1, opacity = 1 }) {
     this.collectStats('drawRect')
 
-    var offset = this.vertices.offset / this.ATTRIBUTES_LENGTH
-
     var [r, g, b, alpha] = this.getColor(fillColor)
     alpha = alpha * opacity * 0xff | 0
+
+    var idx = this.verticesCount
+
+    this.indices.push(idx)
+    this.indices.push(idx)
+    this.indices.push(idx + 1)
+    this.indices.push(idx + 2)
+    this.indices.push(idx + 3)
+    this.indices.push(idx + 3)
 
     this.vertices.push(position.x, position.y, r, g, b, alpha)
     this.vertices.push(position.x + width, position.y, r, g, b, alpha)
     this.vertices.push(position.x + width, position.y + height, r, g, b, alpha)
     this.vertices.push(position.x, position.y + height, r, g, b, alpha)
 
-    this.indices.push(offset)
-    this.indices.push(offset)
-    this.indices.push(offset + 1)
-    this.indices.push(offset + 2)
-    this.indices.push(offset + 3)
-    this.indices.push(offset + 3)
+    this.verticesCount += 4
   }
 
   drawText ({ position, text, color, font, size, align = 'center', baseline = 'middle' }) {

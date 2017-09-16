@@ -1055,6 +1055,7 @@ var WebglLayer = (function (BaseLayer$$1) {
     this._verticesBuffer = this.gl.createBuffer();
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this._verticesBuffer);
     this.vertices = new VerticesStore(this.DEFAULT_VERTICES_COUNT, this.gl);
+    this.verticesCount = 0;
 
     this.gl.enableVertexAttribArray(this._positionLocation);
     this.gl.enableVertexAttribArray(this._colorLocation);
@@ -1141,6 +1142,7 @@ var WebglLayer = (function (BaseLayer$$1) {
   WebglLayer.prototype.clear = function clear () {
     BaseLayer$$1.prototype.clear.call(this);
 
+    this.verticesCount = 0;
     this.indices.clear();
     this.vertices.clear();
 
@@ -1163,7 +1165,12 @@ var WebglLayer = (function (BaseLayer$$1) {
       this.vertices.toArray()
     );
 
-    this.gl.drawElements(this.gl.TRIANGLE_SPTRIP, this.indices.offset, this.gl.UNSIGNED_SHORT, 0);
+    this.gl.drawElements(
+      this.gl.TRIANGLE_SPTRIP,
+      this.indices.offset / this.indices.componentSize,
+      this.gl.UNSIGNED_SHORT,
+      0
+    );
   };
 
   WebglLayer.prototype.createGradient = function createGradient (ref) {
@@ -1233,8 +1240,6 @@ var WebglLayer = (function (BaseLayer$$1) {
 
     this.collectStats('drawRect');
 
-    var offset = this.vertices.offset / this.ATTRIBUTES_LENGTH;
-
     var ref$1 = this.getColor(fillColor);
     var r = ref$1[0];
     var g = ref$1[1];
@@ -1242,17 +1247,21 @@ var WebglLayer = (function (BaseLayer$$1) {
     var alpha = ref$1[3];
     alpha = alpha * opacity * 0xff | 0;
 
+    var idx = this.verticesCount;
+
+    this.indices.push(idx);
+    this.indices.push(idx);
+    this.indices.push(idx + 1);
+    this.indices.push(idx + 2);
+    this.indices.push(idx + 3);
+    this.indices.push(idx + 3);
+
     this.vertices.push(position.x, position.y, r, g, b, alpha);
     this.vertices.push(position.x + width, position.y, r, g, b, alpha);
     this.vertices.push(position.x + width, position.y + height, r, g, b, alpha);
     this.vertices.push(position.x, position.y + height, r, g, b, alpha);
 
-    this.indices.push(offset);
-    this.indices.push(offset);
-    this.indices.push(offset + 1);
-    this.indices.push(offset + 2);
-    this.indices.push(offset + 3);
-    this.indices.push(offset + 3);
+    this.verticesCount += 4;
   };
 
   WebglLayer.prototype.drawText = function drawText (ref) {
