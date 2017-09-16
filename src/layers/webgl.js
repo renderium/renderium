@@ -1,6 +1,6 @@
 import BaseLayer from './base.js'
 import * as webgl from '../utils/webgl.js'
-import { parseColor } from '../utils/color.js'
+import { parse as parseColor } from '../utils/color.js'
 import vertextShaderSource from '../shaders/vertex.glsl'
 import fragmentShaderSource from '../shaders/fragment.glsl'
 

@@ -714,6 +714,153 @@ function createProgram (gl, vertexShader, fragmentShader) {
   return program
 }
 
+//
+// Main
+//
+
+function memoize (fn, options) {
+  var cache = options && options.cache
+    ? options.cache
+    : cacheDefault;
+
+  var serializer = options && options.serializer
+    ? options.serializer
+    : serializerDefault;
+
+  var strategy = options && options.strategy
+    ? options.strategy
+    : strategyDefault;
+
+  return strategy(fn, {
+    cache: cache,
+    serializer: serializer
+  })
+}
+
+//
+// Strategy
+//
+
+function isPrimitive (value) {
+  return value == null || (typeof value !== 'function' && typeof value !== 'object')
+}
+
+function monadic (fn, cache, serializer, arg) {
+  var cacheKey = isPrimitive(arg) ? arg : serializer(arg);
+
+  if (!cache.has(cacheKey)) {
+    var computedValue = fn.call(this, arg);
+    cache.set(cacheKey, computedValue);
+    return computedValue
+  }
+
+  return cache.get(cacheKey)
+}
+
+function variadic (fn, cache, serializer) {
+  var args = Array.prototype.slice.call(arguments, 3);
+  var cacheKey = serializer(args);
+
+  if (!cache.has(cacheKey)) {
+    var computedValue = fn.apply(this, args);
+    cache.set(cacheKey, computedValue);
+    return computedValue
+  }
+
+  return cache.get(cacheKey)
+}
+
+function assemble (fn, context, strategy, cache, serialize) {
+  return strategy.bind(
+    context,
+    fn,
+    cache,
+    serialize
+  )
+}
+
+function strategyDefault (fn, options) {
+  var strategy = fn.length === 1 ? monadic : variadic;
+
+  return assemble(
+    fn,
+    this,
+    strategy,
+    options.cache.create(),
+    options.serializer
+  )
+}
+
+function strategyVariadic (fn, options) {
+  var strategy = variadic;
+
+  return assemble(
+    fn,
+    this,
+    strategy,
+    options.cache.create(),
+    options.serializer
+  )
+}
+
+function strategyMonadic (fn, options) {
+  var strategy = monadic;
+
+  return assemble(
+    fn,
+    this,
+    strategy,
+    options.cache.create(),
+    options.serializer
+  )
+}
+
+//
+// Serializer
+//
+
+function serializerDefault () {
+  return JSON.stringify(arguments)
+}
+
+//
+// Cache
+//
+
+function ObjectWithoutPrototypeCache () {
+  this.cache = Object.create(null);
+}
+
+ObjectWithoutPrototypeCache.prototype.has = function (key) {
+  return (key in this.cache)
+};
+
+ObjectWithoutPrototypeCache.prototype.get = function (key) {
+  return this.cache[key]
+};
+
+ObjectWithoutPrototypeCache.prototype.set = function (key, value) {
+  this.cache[key] = value;
+};
+
+var cacheDefault = {
+  create: function create () {
+    return new ObjectWithoutPrototypeCache()
+  }
+};
+
+//
+// API
+//
+
+var src = memoize;
+var strategies = {
+  variadic: strategyVariadic,
+  monadic: strategyMonadic
+};
+
+src.strategies = strategies;
+
 function parseHexColor (color) {
   return parseInt(color.replace('#', ''), 16)
 }
@@ -728,32 +875,21 @@ function parseRgbColor (color) {
   return (r << 16) + (g << 8) + b
 }
 
-var colorCache = {};
-var cacheLength = 0;
-var MAX_CACHE_LENGTH = 64;
-
 function parseColor (color) {
   var result;
-
-  if (colorCache[color]) {
-    return colorCache[color]
-  }
 
   if (color[0] === '#') {
     result = parseHexColor(color);
   } else if (color[0] === 'r') {
     result = parseRgbColor(color);
   } else {
-    utils.throwError(("Wrong color format: " + color));
-  }
-
-  if (cacheLength < MAX_CACHE_LENGTH) {
-    colorCache[color] = result;
-    cacheLength++;
+    throwError(("Wrong color format: " + color));
   }
 
   return result
 }
+
+var parse = src(parseColor);
 
 var vertextShaderSource = "uniform vec2 u_resolution;\r\n\r\nattribute vec2 a_position;\r\nattribute float a_color;\r\n\r\nvarying vec4 v_color;\r\n\r\nconst vec2 unit = vec2(1, -1);\r\n\r\nvec4 convertPoints (vec2 position, vec2 resolution) {\r\n  return vec4((position / resolution * 2.0 - 1.0) * unit, 0, 1);\r\n}\r\n\r\nvec4 convertColor (float color, float alpha) {\r\n  // because bitwise operators not supported\r\n  float b = mod(color, 256.0) / 255.0; color = floor(color / 256.0);\r\n  float g = mod(color, 256.0) / 255.0; color = floor(color / 256.0);\r\n  float r = mod(color, 256.0) / 255.0;\r\n\r\n  return vec4 (r, g, b, alpha);\r\n}\r\n\r\nvoid main () {\r\n  gl_Position = convertPoints(a_position, u_resolution);\r\n  v_color = convertColor(a_color, 1.0);\r\n}\r\n";
 
@@ -890,7 +1026,7 @@ var WebglLayer = (function (BaseLayer$$1) {
   };
 
   WebglLayer.prototype.getColor = function getColor (color) {
-    return parseColor(color)
+    return parse(color)
   };
 
   WebglLayer.prototype.drawArc = function drawArc (ref) {
