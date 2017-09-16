@@ -20,7 +20,7 @@ class VerticesStore extends ByteStore {
     return this.offset + this.componentSize > this.size
   }
 
-  put (x, y, r, g, b, a) {
+  push (x, y, r, g, b, a) {
     if (this.shouldAlloc()) {
       this.alloc(this.size * 2, this.array)
       this.bufferData()

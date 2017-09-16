@@ -1008,7 +1008,7 @@ var VerticesStore = (function (ByteStore$$1) {
     return this.offset + this.componentSize > this.size
   };
 
-  VerticesStore.prototype.put = function put (x, y, r, g, b, a) {
+  VerticesStore.prototype.push = function push (x, y, r, g, b, a) {
     if (this.shouldAlloc()) {
       this.alloc(this.size * 2, this.array);
       this.bufferData();
