@@ -1145,8 +1145,7 @@ var WebglLayer = (function (BaseLayer$$1) {
     this.vertices.clear();
 
     this.gl.clearColor(0, 0, 0, 0);
-    this.gl.clearDepth(1);
-    this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT);
+    this.gl.clear(this.gl.COLOR_BUFFER_BIT);
   };
 
   WebglLayer.prototype.redraw = function redraw () {

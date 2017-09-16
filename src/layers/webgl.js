@@ -119,8 +119,7 @@ class WebglLayer extends BaseLayer {
     this.vertices.clear()
 
     this.gl.clearColor(0, 0, 0, 0)
-    this.gl.clearDepth(1)
-    this.gl.clear(this.gl.COLOR_BUFFER_BIT | this.gl.DEPTH_BUFFER_BIT)
+    this.gl.clear(this.gl.COLOR_BUFFER_BIT)
   }
 
   redraw () {
