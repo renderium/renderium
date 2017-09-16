@@ -919,7 +919,6 @@ ByteStore.prototype.alloc = function alloc (size, data) {
   this.size = size;
   this.array = new Uint8Array(size);
   this.buffer = this.array.buffer;
-  this.view = new DataView(this.buffer);
   this.array.set(data);
 };
 
@@ -928,22 +927,26 @@ ByteStore.prototype.clear = function clear () {
 };
 
 ByteStore.prototype.toArray = function toArray () {
-  return this.array.subarray(0, this.offset)
+  return this.array.subarray(0, this.offset).buffer
 };
 
 ByteStore.prototype.pushByte = function pushByte (value) {
-  this.view.setUint8(this.offset, value);
+  this.array[this.offset] = value;
   this.offset += 1;
 };
 
 ByteStore.prototype.pushShort = function pushShort (value) {
-  this.view.setInt16(this.offset, value);
-  this.offset += 2;
+  var a = value & 0xff;
+  var b = (value - a) / 256;
+  this.pushByte(a);
+  this.pushByte(b);
 };
 
 ByteStore.prototype.pushUShort = function pushUShort (value) {
-  this.view.setUint16(this.offset, value);
-  this.offset += 2;
+  var a = value & 0xff;
+  var b = (value >> 8) & 255;
+  this.pushByte(a);
+  this.pushByte(b);
 };
 
 var IndicesStore = (function (ByteStore$$1) {

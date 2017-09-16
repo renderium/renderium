@@ -8,7 +8,6 @@ class ByteStore {
     this.size = size
     this.array = new Uint8Array(size)
     this.buffer = this.array.buffer
-    this.view = new DataView(this.buffer)
     this.array.set(data)
   }
 
@@ -17,22 +16,26 @@ class ByteStore {
   }
 
   toArray () {
-    return this.array.subarray(0, this.offset)
+    return this.array.subarray(0, this.offset).buffer
   }
 
   pushByte (value) {
-    this.view.setUint8(this.offset, value)
+    this.array[this.offset] = value
     this.offset += 1
   }
 
   pushShort (value) {
-    this.view.setInt16(this.offset, value)
-    this.offset += 2
+    var a = value & 0xff
+    var b = (value - a) / 256
+    this.pushByte(a)
+    this.pushByte(b)
   }
 
   pushUShort (value) {
-    this.view.setUint16(this.offset, value)
-    this.offset += 2
+    var a = value & 0xff
+    var b = (value >> 8) & 255
+    this.pushByte(a)
+    this.pushByte(b)
   }
 }
 
