@@ -46,7 +46,7 @@
     "uglify-js": "3.0.28"
   },
   "scripts": {
-    "check": "standard src/*.js | snazzy",
+    "check": "standard src/*.js src/**/*.js | snazzy",
     "build": "rollup -c",
     "min": "uglifyjs dist/renderium.umd.js -c -m > dist/renderium.min.js"
   }

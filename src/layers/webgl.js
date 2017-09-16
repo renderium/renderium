@@ -3,6 +3,8 @@ import * as webgl from '../utils/webgl.js'
 import { parse as parseColor } from '../utils/color.js'
 import vertextShaderSource from '../shaders/vertex.glsl'
 import fragmentShaderSource from '../shaders/fragment.glsl'
+import IndicesStore from '../stores/indices.js'
+import VerticesStore from '../stores/vertices.js'
 
 // -------------------------------------
 // WebglLayer
@@ -18,12 +20,6 @@ class WebglLayer extends BaseLayer {
 
     this.imageLoader.onload = this.forceRedraw.bind(this)
 
-    this.vertices = new Float32Array(this.MAX_VERTICES_COUNT)
-    this.indices = new Uint16Array(this.MAX_INDICES_COUNT)
-
-    this.verticesCount = 0
-    this.indicesCount = 0
-
     this._vertexShader = webgl.compileShader(this.gl, vertextShaderSource, this.gl.VERTEX_SHADER)
     this._fragmentShader = webgl.compileShader(this.gl, fragmentShaderSource, this.gl.FRAGMENT_SHADER)
 
@@ -33,41 +29,76 @@ class WebglLayer extends BaseLayer {
     this._resolutionLocation = this.gl.getUniformLocation(this._program, 'u_resolution')
     this._positionLocation = this.gl.getAttribLocation(this._program, 'a_position')
     this._colorLocation = this.gl.getAttribLocation(this._program, 'a_color')
-
-    this._verticesBuffer = this.gl.createBuffer()
-    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this._verticesBuffer)
-    this.gl.bufferData(this.gl.ARRAY_BUFFER, this.vertices, this.gl.DYNAMIC_DRAW)
+    this._alphaLocation = this.gl.getAttribLocation(this._program, 'a_alpha')
 
     this._indicesBuffer = this.gl.createBuffer()
     this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this._indicesBuffer)
-    this.gl.bufferData(this.gl.ELEMENT_ARRAY_BUFFER, this.indices, this.gl.DYNAMIC_DRAW)
+    this.indices = new IndicesStore(this.DEFAULT_INDICES_COUNT, this.gl)
+
+    this._verticesBuffer = this.gl.createBuffer()
+    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this._verticesBuffer)
+    this.vertices = new VerticesStore(this.DEFAULT_VERTICES_COUNT, this.gl)
 
     this.gl.enableVertexAttribArray(this._positionLocation)
     this.gl.enableVertexAttribArray(this._colorLocation)
+    this.gl.enableVertexAttribArray(this._alphaLocation)
 
     this.gl.vertexAttribPointer(
       this._positionLocation,
-      this.POSITION_SIZE,
-      this.gl.FLOAT,
+      this.POSITION_LENGTH,
+      this.gl.SHORT,
       false,
-      Float32Array.BYTES_PER_ELEMENT * this.ATTRIBUTES_SIZE,
+      this.ATTRIBUTES_SIZE,
       0
     )
     this.gl.vertexAttribPointer(
       this._colorLocation,
-      this.COLOR_SIZE,
-      this.gl.FLOAT,
-      false,
-      Float32Array.BYTES_PER_ELEMENT * this.ATTRIBUTES_SIZE,
-      Float32Array.BYTES_PER_ELEMENT * this.POSITION_SIZE
+      this.COLOR_LENGTH,
+      this.gl.UNSIGNED_BYTE,
+      true,
+      this.ATTRIBUTES_SIZE,
+      this.POSITION_SIZE
+    )
+    this.gl.vertexAttribPointer(
+      this._alphaLocation,
+      this.ALPHA_LENGTH,
+      this.gl.UNSIGNED_BYTE,
+      true,
+      this.ATTRIBUTES_SIZE,
+      this.POSITION_SIZE + this.COLOR_SIZE
     )
   }
 
-  get POSITION_SIZE () { return 2 }
-  get COLOR_SIZE () { return 1 }
-  get ATTRIBUTES_SIZE () { return this.POSITION_SIZE + this.COLOR_SIZE }
-  get MAX_INDICES_COUNT () { return 0xffffff }
-  get MAX_VERTICES_COUNT () { return this.MAX_INDICES_COUNT * Math.ceil(this.ATTRIBUTES_SIZE / 3) * 2 }
+  get POSITION_LENGTH () {
+    return 2
+  }
+  get POSITION_SIZE () {
+    return this.POSITION_LENGTH * Int16Array.BYTES_PER_ELEMENT
+  }
+  get COLOR_LENGTH () {
+    return 3
+  }
+  get COLOR_SIZE () {
+    return this.COLOR_LENGTH * Uint8Array.BYTES_PER_ELEMENT
+  }
+  get ALPHA_LENGTH () {
+    return 1
+  }
+  get ALPHA_SIZE () {
+    return this.ALPHA_LENGTH * Uint8Array.BYTES_PER_ELEMENT
+  }
+  get ATTRIBUTES_LENGTH () {
+    return this.POSITION_LENGTH + this.COLOR_LENGTH + this.ALPHA_LENGTH
+  }
+  get ATTRIBUTES_SIZE () {
+    return this.POSITION_SIZE + this.COLOR_SIZE + this.ALPHA_SIZE
+  }
+  get DEFAULT_INDICES_COUNT () {
+    return 0xff
+  }
+  get DEFAULT_VERTICES_COUNT () {
+    return this.DEFAULT_INDICES_COUNT * this.ATTRIBUTES_LENGTH
+  }
 
   scale ({ width, height }) {
     super.scale({ width, height })
@@ -78,13 +109,14 @@ class WebglLayer extends BaseLayer {
       this.width * BaseLayer.PIXEL_RATIO,
       this.height * BaseLayer.PIXEL_RATIO
     )
+    this.gl.uniform2f(this._resolutionLocation, this.width, this.height)
   }
 
   clear () {
     super.clear()
 
-    this.verticesCount = 0
-    this.indicesCount = 0
+    this.indices.clear()
+    this.vertices.clear()
 
     this.gl.clearColor(0, 0, 0, 0)
     this.gl.clearDepth(1)
@@ -94,25 +126,23 @@ class WebglLayer extends BaseLayer {
   redraw () {
     super.redraw()
 
-    this.gl.uniform2f(this._resolutionLocation, this.width, this.height)
+    this.gl.bufferSubData(
+      this.gl.ELEMENT_ARRAY_BUFFER,
+      0,
+      this.indices.toArray()
+    )
 
     this.gl.bufferSubData(
       this.gl.ARRAY_BUFFER,
       0,
-      this.vertices.subarray(0, this.verticesCount)
+      this.vertices.toArray()
     )
 
-    this.gl.bufferSubData(
-      this.gl.ELEMENT_ARRAY_BUFFER,
-      0,
-      this.indices.subarray(0, this.indicesCount)
-    )
-
-    this.gl.drawElements(this.gl.TRIANGLES, this.indicesCount, this.gl.UNSIGNED_SHORT, 0)
+    this.gl.drawElements(this.gl.TRIANGLE_SPTRIP, this.indices.offset, this.gl.UNSIGNED_SHORT, 0)
   }
 
   createGradient ({ start, end, from, to }) {
-    return new Gradient({ start, end, from, to })
+    return { start, end, from, to }
   }
 
   getColor (color) {
@@ -135,9 +165,9 @@ class WebglLayer extends BaseLayer {
         height = height || image.height
       } else if (this.imageLoader.getStatus(image) !== this.imageLoader.IMAGE_STATUS_LOADING) {
         this.imageLoader.load(image)
-        return
+        return 1
       } else {
-        return
+        return 1
       }
     }
   }
@@ -156,36 +186,25 @@ class WebglLayer extends BaseLayer {
     this.collectStats('drawPolyline')
   }
 
-  drawRect ({ position, width, height, color, fillColor, strokeWidth = 1 }) {
+  drawRect ({ position, width, height, color, fillColor, strokeWidth = 1, opacity = 1 }) {
     this.collectStats('drawRect')
 
-    var offset = this.verticesCount / this.ATTRIBUTES_SIZE
+    var offset = this.vertices.offset / this.ATTRIBUTES_LENGTH
 
-    fillColor = this.getColor(fillColor)
+    var [r, g, b, alpha] = this.getColor(fillColor)
+    alpha = alpha * opacity * 0xff | 0
 
-    this.vertices[this.verticesCount++] = position.x
-    this.vertices[this.verticesCount++] = position.y
-    this.vertices[this.verticesCount++] = fillColor
+    this.vertices.push(position.x, position.y, r, g, b, alpha)
+    this.vertices.push(position.x + width, position.y, r, g, b, alpha)
+    this.vertices.push(position.x + width, position.y + height, r, g, b, alpha)
+    this.vertices.push(position.x, position.y + height, r, g, b, alpha)
 
-    this.vertices[this.verticesCount++] = position.x + width
-    this.vertices[this.verticesCount++] = position.y
-    this.vertices[this.verticesCount++] = fillColor
-
-    this.vertices[this.verticesCount++] = position.x + width
-    this.vertices[this.verticesCount++] = position.y + height
-    this.vertices[this.verticesCount++] = fillColor
-
-    this.vertices[this.verticesCount++] = position.x
-    this.vertices[this.verticesCount++] = position.y + height
-    this.vertices[this.verticesCount++] = fillColor
-
-    this.indices[this.indicesCount++] = offset
-    this.indices[this.indicesCount++] = offset + 1
-    this.indices[this.indicesCount++] = offset + 2
-
-    this.indices[this.indicesCount++] = offset
-    this.indices[this.indicesCount++] = offset + 2
-    this.indices[this.indicesCount++] = offset + 3
+    this.indices.push(offset)
+    this.indices.push(offset)
+    this.indices.push(offset + 1)
+    this.indices.push(offset + 2)
+    this.indices.push(offset + 3)
+    this.indices.push(offset + 3)
   }
 
   drawText ({ position, text, color, font, size, align = 'center', baseline = 'middle' }) {

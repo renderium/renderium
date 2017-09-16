@@ -868,7 +868,13 @@ var strategies = {
 src.strategies = strategies;
 
 function parseHexColor (color) {
-  return parseInt(color.replace('#', ''), 16)
+  color = parseInt(color.slice(1), 16);
+
+  var r = (color >> 16) & 0xff;
+  var g = (color >> 8) & 0xff;
+  var b = color & 0xff;
+
+  return [r, g, b, 1]
 }
 
 function parseRgbColor (color) {
@@ -877,8 +883,9 @@ function parseRgbColor (color) {
   var r = Number(color[0]);
   var g = Number(color[1]);
   var b = Number(color[2]);
+  var a = Number(color[3]);
 
-  return (r << 16) + (g << 8) + b
+  return [r, g, b, a]
 }
 
 function parseColor (color) {
@@ -897,9 +904,125 @@ function parseColor (color) {
 
 var parse = src(parseColor);
 
-var vertextShaderSource = "uniform vec2 u_resolution;\r\n\r\nattribute vec2 a_position;\r\nattribute float a_color;\r\n\r\nvarying vec4 v_color;\r\n\r\nconst vec2 unit = vec2(1, -1);\r\n\r\nvec4 convertPoints (vec2 position, vec2 resolution) {\r\n  return vec4((position / resolution * 2.0 - 1.0) * unit, 0, 1);\r\n}\r\n\r\nvec4 convertColor (float color, float alpha) {\r\n  // because bitwise operators not supported\r\n  float b = mod(color, 256.0) / 255.0; color = floor(color / 256.0);\r\n  float g = mod(color, 256.0) / 255.0; color = floor(color / 256.0);\r\n  float r = mod(color, 256.0) / 255.0;\r\n\r\n  return vec4 (r, g, b, alpha);\r\n}\r\n\r\nvoid main () {\r\n  gl_Position = convertPoints(a_position, u_resolution);\r\n  v_color = convertColor(a_color, 1.0);\r\n}\r\n";
+var vertextShaderSource = "uniform vec2 u_resolution;\r\n\r\nattribute vec2 a_position;\r\nattribute vec3 a_color;\r\nattribute float a_alpha;\r\n\r\nvarying vec4 v_color;\r\n\r\nconst vec2 unit = vec2(1, -1);\r\n\r\nvec4 convertPoints (vec2 position, vec2 resolution) {\r\n  return vec4((position / resolution * 2.0 - 1.0) * unit, 0, 1);\r\n}\r\n\r\nvoid main () {\r\n  gl_Position = convertPoints(a_position, u_resolution);\r\n  v_color = vec4(a_color, a_alpha);\r\n}\r\n";
 
 var fragmentShaderSource = "precision mediump float;\r\n\r\nvarying vec4 v_color;\r\n\r\nvoid main() {\r\n  gl_FragColor = v_color;\r\n}\r\n";
+
+var ByteStore = function ByteStore (size) {
+  this.offset = 0;
+  this.alloc(size, []);
+};
+
+ByteStore.prototype.alloc = function alloc (size, data) {
+    if ( data === void 0 ) data = [];
+
+  this.size = size;
+  this.array = new Uint8Array(size);
+  this.buffer = this.array.buffer;
+  this.array.set(data);
+};
+
+ByteStore.prototype.clear = function clear () {
+  this.offset = 0;
+};
+
+ByteStore.prototype.toArray = function toArray () {
+  return this.array.subarray(0, this.offset)
+};
+
+ByteStore.prototype.pushByte = function pushByte (value) {
+  this.array[this.offset] = value;
+  this.offset += 1;
+};
+
+ByteStore.prototype.pushShort = function pushShort (value) {
+  var a = value & 0xff;
+  var b = (value - a) / 256;
+  this.pushByte(b);
+  this.pushByte(a);
+};
+
+ByteStore.prototype.pushUShort = function pushUShort (value) {
+  var a = (value >> 8) & 255;
+  var b = value & 255;
+  this.pushByte(a);
+  this.pushByte(b);
+};
+
+var IndicesStore = (function (ByteStore$$1) {
+  function IndicesStore (size, gl) {
+    ByteStore$$1.call(this, size);
+    this.gl = gl;
+    this.componentSize = this.getComponentSize();
+    this.bufferData();
+  }
+
+  if ( ByteStore$$1 ) IndicesStore.__proto__ = ByteStore$$1;
+  IndicesStore.prototype = Object.create( ByteStore$$1 && ByteStore$$1.prototype );
+  IndicesStore.prototype.constructor = IndicesStore;
+
+  IndicesStore.prototype.getComponentSize = function getComponentSize () {
+    return Uint16Array.BYTES_PER_ELEMENT
+  };
+
+  IndicesStore.prototype.bufferData = function bufferData () {
+    this.gl.bufferData(this.gl.ELEMENT_ARRAY_BUFFER, this.buffer, this.gl.DYNAMIC_DRAW);
+  };
+
+  IndicesStore.prototype.shouldAlloc = function shouldAlloc () {
+    return this.offset + this.componentSize > this.size
+  };
+
+  IndicesStore.prototype.push = function push (index) {
+    if (this.shouldAlloc()) {
+      this.alloc(this.size * 2, this.array);
+      this.bufferData();
+    }
+    this.pushUShort(index);
+  };
+
+  return IndicesStore;
+}(ByteStore));
+
+var VerticesStore = (function (ByteStore$$1) {
+  function VerticesStore (size, gl) {
+    ByteStore$$1.call(this, size);
+    this.gl = gl;
+    this.componentSize = this.getComponentSize();
+    this.bufferData();
+  }
+
+  if ( ByteStore$$1 ) VerticesStore.__proto__ = ByteStore$$1;
+  VerticesStore.prototype = Object.create( ByteStore$$1 && ByteStore$$1.prototype );
+  VerticesStore.prototype.constructor = VerticesStore;
+
+  VerticesStore.prototype.getComponentSize = function getComponentSize () {
+    return Int16Array.BYTES_PER_ELEMENT * 2 + Uint8Array.BYTES_PER_ELEMENT * 4
+  };
+
+  VerticesStore.prototype.bufferData = function bufferData () {
+    this.gl.bufferData(this.gl.ARRAY_BUFFER, this.buffer, this.gl.DYNAMIC_DRAW);
+  };
+
+  VerticesStore.prototype.shouldAlloc = function shouldAlloc () {
+    return this.offset + this.componentSize > this.size
+  };
+
+  VerticesStore.prototype.put = function put (x, y, r, g, b, a) {
+    if (this.shouldAlloc()) {
+      this.alloc(this.size * 2, this.array);
+      this.bufferData();
+    }
+    this.pushShort(x);
+    this.pushShort(y);
+    this.pushByte(r);
+    this.pushByte(g);
+    this.pushByte(b);
+    this.pushByte(a);
+  };
+
+  return VerticesStore;
+}(ByteStore));
 
 // -------------------------------------
 // WebglLayer
@@ -920,12 +1043,6 @@ var WebglLayer = (function (BaseLayer$$1) {
 
     this.imageLoader.onload = this.forceRedraw.bind(this);
 
-    this.vertices = new Float32Array(this.MAX_VERTICES_COUNT);
-    this.indices = new Uint16Array(this.MAX_INDICES_COUNT);
-
-    this.verticesCount = 0;
-    this.indicesCount = 0;
-
     this._vertexShader = compileShader(this.gl, vertextShaderSource, this.gl.VERTEX_SHADER);
     this._fragmentShader = compileShader(this.gl, fragmentShaderSource, this.gl.FRAGMENT_SHADER);
 
@@ -935,33 +1052,43 @@ var WebglLayer = (function (BaseLayer$$1) {
     this._resolutionLocation = this.gl.getUniformLocation(this._program, 'u_resolution');
     this._positionLocation = this.gl.getAttribLocation(this._program, 'a_position');
     this._colorLocation = this.gl.getAttribLocation(this._program, 'a_color');
-
-    this._verticesBuffer = this.gl.createBuffer();
-    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this._verticesBuffer);
-    this.gl.bufferData(this.gl.ARRAY_BUFFER, this.vertices, this.gl.DYNAMIC_DRAW);
+    this._alphaLocation = this.gl.getAttribLocation(this._program, 'a_alpha');
 
     this._indicesBuffer = this.gl.createBuffer();
     this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, this._indicesBuffer);
-    this.gl.bufferData(this.gl.ELEMENT_ARRAY_BUFFER, this.indices, this.gl.DYNAMIC_DRAW);
+    this.indices = new IndicesStore(this.DEFAULT_INDICES_COUNT, this.gl);
+
+    this._verticesBuffer = this.gl.createBuffer();
+    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, this._verticesBuffer);
+    this.vertices = new VerticesStore(this.DEFAULT_VERTICES_COUNT, this.gl);
 
     this.gl.enableVertexAttribArray(this._positionLocation);
     this.gl.enableVertexAttribArray(this._colorLocation);
+    this.gl.enableVertexAttribArray(this._alphaLocation);
 
     this.gl.vertexAttribPointer(
       this._positionLocation,
-      this.POSITION_SIZE,
-      this.gl.FLOAT,
+      this.POSITION_LENGTH,
+      this.gl.SHORT,
       false,
-      Float32Array.BYTES_PER_ELEMENT * this.ATTRIBUTES_SIZE,
+      this.ATTRIBUTES_SIZE,
       0
     );
     this.gl.vertexAttribPointer(
       this._colorLocation,
-      this.COLOR_SIZE,
-      this.gl.FLOAT,
-      false,
-      Float32Array.BYTES_PER_ELEMENT * this.ATTRIBUTES_SIZE,
-      Float32Array.BYTES_PER_ELEMENT * this.POSITION_SIZE
+      this.COLOR_LENGTH,
+      this.gl.UNSIGNED_BYTE,
+      true,
+      this.ATTRIBUTES_SIZE,
+      this.POSITION_SIZE
+    );
+    this.gl.vertexAttribPointer(
+      this._alphaLocation,
+      this.ALPHA_LENGTH,
+      this.gl.UNSIGNED_BYTE,
+      true,
+      this.ATTRIBUTES_SIZE,
+      this.POSITION_SIZE + this.COLOR_SIZE
     );
   }
 
@@ -969,13 +1096,38 @@ var WebglLayer = (function (BaseLayer$$1) {
   WebglLayer.prototype = Object.create( BaseLayer$$1 && BaseLayer$$1.prototype );
   WebglLayer.prototype.constructor = WebglLayer;
 
-  var prototypeAccessors = { POSITION_SIZE: {},COLOR_SIZE: {},ATTRIBUTES_SIZE: {},MAX_INDICES_COUNT: {},MAX_VERTICES_COUNT: {} };
+  var prototypeAccessors = { POSITION_LENGTH: {},POSITION_SIZE: {},COLOR_LENGTH: {},COLOR_SIZE: {},ALPHA_LENGTH: {},ALPHA_SIZE: {},ATTRIBUTES_LENGTH: {},ATTRIBUTES_SIZE: {},DEFAULT_INDICES_COUNT: {},DEFAULT_VERTICES_COUNT: {} };
 
-  prototypeAccessors.POSITION_SIZE.get = function () { return 2 };
-  prototypeAccessors.COLOR_SIZE.get = function () { return 1 };
-  prototypeAccessors.ATTRIBUTES_SIZE.get = function () { return this.POSITION_SIZE + this.COLOR_SIZE };
-  prototypeAccessors.MAX_INDICES_COUNT.get = function () { return 0xffffff };
-  prototypeAccessors.MAX_VERTICES_COUNT.get = function () { return this.MAX_INDICES_COUNT * Math.ceil(this.ATTRIBUTES_SIZE / 3) * 2 };
+  prototypeAccessors.POSITION_LENGTH.get = function () {
+    return 2
+  };
+  prototypeAccessors.POSITION_SIZE.get = function () {
+    return this.POSITION_LENGTH * Int16Array.BYTES_PER_ELEMENT
+  };
+  prototypeAccessors.COLOR_LENGTH.get = function () {
+    return 3
+  };
+  prototypeAccessors.COLOR_SIZE.get = function () {
+    return this.COLOR_LENGTH * Uint8Array.BYTES_PER_ELEMENT
+  };
+  prototypeAccessors.ALPHA_LENGTH.get = function () {
+    return 1
+  };
+  prototypeAccessors.ALPHA_SIZE.get = function () {
+    return this.ALPHA_LENGTH * Uint8Array.BYTES_PER_ELEMENT
+  };
+  prototypeAccessors.ATTRIBUTES_LENGTH.get = function () {
+    return this.POSITION_LENGTH + this.COLOR_LENGTH + this.ALPHA_LENGTH
+  };
+  prototypeAccessors.ATTRIBUTES_SIZE.get = function () {
+    return this.POSITION_SIZE + this.COLOR_SIZE + this.ALPHA_SIZE
+  };
+  prototypeAccessors.DEFAULT_INDICES_COUNT.get = function () {
+    return 0xff
+  };
+  prototypeAccessors.DEFAULT_VERTICES_COUNT.get = function () {
+    return this.DEFAULT_INDICES_COUNT * this.ATTRIBUTES_LENGTH
+  };
 
   WebglLayer.prototype.scale = function scale (ref) {
     var width = ref.width;
@@ -989,13 +1141,14 @@ var WebglLayer = (function (BaseLayer$$1) {
       this.width * BaseLayer$$1.PIXEL_RATIO,
       this.height * BaseLayer$$1.PIXEL_RATIO
     );
+    this.gl.uniform2f(this._resolutionLocation, this.width, this.height);
   };
 
   WebglLayer.prototype.clear = function clear () {
     BaseLayer$$1.prototype.clear.call(this);
 
-    this.verticesCount = 0;
-    this.indicesCount = 0;
+    this.indices.clear();
+    this.vertices.clear();
 
     this.gl.clearColor(0, 0, 0, 0);
     this.gl.clearDepth(1);
@@ -1005,21 +1158,19 @@ var WebglLayer = (function (BaseLayer$$1) {
   WebglLayer.prototype.redraw = function redraw () {
     BaseLayer$$1.prototype.redraw.call(this);
 
-    this.gl.uniform2f(this._resolutionLocation, this.width, this.height);
+    this.gl.bufferSubData(
+      this.gl.ELEMENT_ARRAY_BUFFER,
+      0,
+      this.indices.toArray()
+    );
 
     this.gl.bufferSubData(
       this.gl.ARRAY_BUFFER,
       0,
-      this.vertices.subarray(0, this.verticesCount)
+      this.vertices.toArray()
     );
 
-    this.gl.bufferSubData(
-      this.gl.ELEMENT_ARRAY_BUFFER,
-      0,
-      this.indices.subarray(0, this.indicesCount)
-    );
-
-    this.gl.drawElements(this.gl.TRIANGLES, this.indicesCount, this.gl.UNSIGNED_SHORT, 0);
+    this.gl.drawElements(this.gl.TRIANGLE_SPTRIP, this.indices.offset, this.gl.UNSIGNED_SHORT, 0);
   };
 
   WebglLayer.prototype.createGradient = function createGradient (ref) {
@@ -1028,7 +1179,7 @@ var WebglLayer = (function (BaseLayer$$1) {
     var from = ref.from;
     var to = ref.to;
 
-    return new Gradient({ start: start, end: end, from: from, to: to })
+    return { start: start, end: end, from: from, to: to }
   };
 
   WebglLayer.prototype.getColor = function getColor (color) {
@@ -1055,9 +1206,9 @@ var WebglLayer = (function (BaseLayer$$1) {
         
       } else if (this.imageLoader.getStatus(image) !== this.imageLoader.IMAGE_STATUS_LOADING) {
         this.imageLoader.load(image);
-        return
+        return 1
       } else {
-        return
+        return 1
       }
     }
   };
@@ -1085,35 +1236,30 @@ var WebglLayer = (function (BaseLayer$$1) {
     var width = ref.width;
     var height = ref.height;
     var fillColor = ref.fillColor;
+    var opacity = ref.opacity; if ( opacity === void 0 ) opacity = 1;
+
     this.collectStats('drawRect');
 
-    var offset = this.verticesCount / this.ATTRIBUTES_SIZE;
+    var offset = this.vertices.offset / this.ATTRIBUTES_LENGTH;
 
-    fillColor = this.getColor(fillColor);
+    var ref$1 = this.getColor(fillColor);
+    var r = ref$1[0];
+    var g = ref$1[1];
+    var b = ref$1[2];
+    var alpha = ref$1[3];
+    alpha = alpha * opacity * 0xff | 0;
 
-    this.vertices[this.verticesCount++] = position.x;
-    this.vertices[this.verticesCount++] = position.y;
-    this.vertices[this.verticesCount++] = fillColor;
+    this.vertices.push(position.x, position.y, r, g, b, alpha);
+    this.vertices.push(position.x + width, position.y, r, g, b, alpha);
+    this.vertices.push(position.x + width, position.y + height, r, g, b, alpha);
+    this.vertices.push(position.x, position.y + height, r, g, b, alpha);
 
-    this.vertices[this.verticesCount++] = position.x + width;
-    this.vertices[this.verticesCount++] = position.y;
-    this.vertices[this.verticesCount++] = fillColor;
-
-    this.vertices[this.verticesCount++] = position.x + width;
-    this.vertices[this.verticesCount++] = position.y + height;
-    this.vertices[this.verticesCount++] = fillColor;
-
-    this.vertices[this.verticesCount++] = position.x;
-    this.vertices[this.verticesCount++] = position.y + height;
-    this.vertices[this.verticesCount++] = fillColor;
-
-    this.indices[this.indicesCount++] = offset;
-    this.indices[this.indicesCount++] = offset + 1;
-    this.indices[this.indicesCount++] = offset + 2;
-
-    this.indices[this.indicesCount++] = offset;
-    this.indices[this.indicesCount++] = offset + 2;
-    this.indices[this.indicesCount++] = offset + 3;
+    this.indices.push(offset);
+    this.indices.push(offset);
+    this.indices.push(offset + 1);
+    this.indices.push(offset + 2);
+    this.indices.push(offset + 3);
+    this.indices.push(offset + 3);
   };
 
   WebglLayer.prototype.drawText = function drawText (ref) {
