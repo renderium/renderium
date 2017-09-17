@@ -1264,8 +1264,8 @@ var WebglLayer = (function (BaseLayer$$1) {
 
     this.vertices.push(position.x, position.y, r, g, b, alpha);
     this.vertices.push(position.x + width, position.y, r, g, b, alpha);
-    this.vertices.push(position.x + width, position.y + height, r, g, b, alpha);
     this.vertices.push(position.x, position.y + height, r, g, b, alpha);
+    this.vertices.push(position.x + width, position.y + height, r, g, b, alpha);
 
     this.verticesCount += 4;
   };
