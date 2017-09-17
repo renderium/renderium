@@ -140,7 +140,7 @@ class WebglLayer extends BaseLayer {
     )
 
     this.gl.drawElements(
-      this.gl.TRIANGLE_SPTRIP,
+      this.gl.TRIANGLE_STRIP,
       this.indices.offset / this.indices.componentSize,
       this.gl.UNSIGNED_SHORT,
       0

@@ -16,7 +16,7 @@ class ByteStore {
   }
 
   toArray () {
-    return this.array.subarray(0, this.offset).buffer
+    return this.array.subarray(0, this.offset)
   }
 
   pushByte (value) {

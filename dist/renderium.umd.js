@@ -927,7 +927,7 @@ ByteStore.prototype.clear = function clear () {
 };
 
 ByteStore.prototype.toArray = function toArray () {
-  return this.array.subarray(0, this.offset).buffer
+  return this.array.subarray(0, this.offset)
 };
 
 ByteStore.prototype.pushByte = function pushByte (value) {
@@ -1172,7 +1172,7 @@ var WebglLayer = (function (BaseLayer$$1) {
     );
 
     this.gl.drawElements(
-      this.gl.TRIANGLE_SPTRIP,
+      this.gl.TRIANGLE_STRIP,
       this.indices.offset / this.indices.componentSize,
       this.gl.UNSIGNED_SHORT,
       0
