@@ -1091,6 +1091,9 @@ var WebglLayer = (function (BaseLayer$$1) {
       this.ATTRIBUTES_SIZE,
       this.POSITION_SIZE + this.COLOR_SIZE
     );
+
+    this.gl.enable(this.gl.BLEND);
+    this.gl.blendFuncSeparate(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA, this.gl.ONE, this.gl.ONE_MINUS_SRC_ALPHA);
   }
 
   if ( BaseLayer$$1 ) WebglLayer.__proto__ = BaseLayer$$1;
