@@ -9,7 +9,7 @@ class IndicesStore extends ByteStore {
   }
 
   getComponentSize () {
-    return Uint16Array.BYTES_PER_ELEMENT
+    return Uint32Array.BYTES_PER_ELEMENT
   }
 
   bufferData () {
@@ -25,7 +25,7 @@ class IndicesStore extends ByteStore {
       this.alloc(this.size * 2, this.array)
       this.bufferData()
     }
-    this.pushUShort(index)
+    this.pushUInt(index)
   }
 }
 

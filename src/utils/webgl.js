@@ -1,9 +1,10 @@
 import { throwError } from './error.js'
 
 export function getContext (canvas) {
-  var gl = canvas.getContext('webgl')
+  var gl = canvas.getContext('webgl2')
   if (!gl) {
-    gl = canvas.getContext('experimental-webgl')
+    gl = canvas.getContext('webgl')
+    gl.getExtension('OES_element_index_uint')
   }
   return gl
 }

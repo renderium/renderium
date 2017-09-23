@@ -690,9 +690,10 @@ var CanvasLayer = (function (BaseLayer$$1) {
 }(BaseLayer));
 
 function getContext (canvas) {
-  var gl = canvas.getContext('webgl');
+  var gl = canvas.getContext('webgl2');
   if (!gl) {
-    gl = canvas.getContext('experimental-webgl');
+    gl = canvas.getContext('webgl');
+    gl.getExtension('OES_element_index_uint');
   }
   return gl
 }
@@ -944,9 +945,20 @@ ByteStore.prototype.pushShort = function pushShort (value) {
 
 ByteStore.prototype.pushUShort = function pushUShort (value) {
   var a = value & 0xff;
-  var b = (value >> 8) & 255;
+  var b = (value >> 8) & 0xff;
   this.pushByte(a);
   this.pushByte(b);
+};
+
+ByteStore.prototype.pushUInt = function pushUInt (value) {
+  var a = value & 0xff;
+  var b = (value >> 8) & 0xff;
+  var c = (value >> 16) & 0xff;
+  var d = (value >> 24) & 0xff;
+  this.pushByte(a);
+  this.pushByte(b);
+  this.pushByte(c);
+  this.pushByte(d);
 };
 
 var IndicesStore = (function (ByteStore$$1) {
@@ -962,7 +974,7 @@ var IndicesStore = (function (ByteStore$$1) {
   IndicesStore.prototype.constructor = IndicesStore;
 
   IndicesStore.prototype.getComponentSize = function getComponentSize () {
-    return Uint16Array.BYTES_PER_ELEMENT
+    return Uint32Array.BYTES_PER_ELEMENT
   };
 
   IndicesStore.prototype.bufferData = function bufferData () {
@@ -978,7 +990,7 @@ var IndicesStore = (function (ByteStore$$1) {
       this.alloc(this.size * 2, this.array);
       this.bufferData();
     }
-    this.pushUShort(index);
+    this.pushUInt(index);
   };
 
   return IndicesStore;
@@ -1177,7 +1189,7 @@ var WebglLayer = (function (BaseLayer$$1) {
     this.gl.drawElements(
       this.gl.TRIANGLE_STRIP,
       this.indices.offset / this.indices.componentSize,
-      this.gl.UNSIGNED_SHORT,
+      this.gl.UNSIGNED_INT,
       0
     );
   };

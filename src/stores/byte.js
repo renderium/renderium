@@ -33,9 +33,20 @@ class ByteStore {
 
   pushUShort (value) {
     var a = value & 0xff
-    var b = (value >> 8) & 255
+    var b = (value >> 8) & 0xff
     this.pushByte(a)
     this.pushByte(b)
+  }
+
+  pushUInt (value) {
+    var a = value & 0xff
+    var b = (value >> 8) & 0xff
+    var c = (value >> 16) & 0xff
+    var d = (value >> 24) & 0xff
+    this.pushByte(a)
+    this.pushByte(b)
+    this.pushByte(c)
+    this.pushByte(d)
   }
 }
 
