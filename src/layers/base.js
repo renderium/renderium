@@ -34,6 +34,11 @@ class BaseLayer {
     this.canvas.width = this.width
     this.canvas.height = this.height
 
+    if (window.devicePixelRatio) {
+      this.canvas.width = this.width * BaseLayer.PIXEL_RATIO
+      this.canvas.height = this.height * BaseLayer.PIXEL_RATIO
+    }
+
     this.applyStyles()
 
     this.planRedraw()
@@ -185,6 +190,7 @@ class BaseLayer {
   }
 }
 
+BaseLayer.PIXEL_RATIO = window.devicePixelRatio || 1
 BaseLayer.DEFAULT_WIDTH = 100
 BaseLayer.DEFAULT_HEIGHT = 100
 
