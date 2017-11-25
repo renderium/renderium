@@ -1,15 +1,15 @@
-import leftPad from 'left-pad'
 import ImageLoader from '../loaders/image.js'
 import Scheduler from '../scheduler.js'
 import Component from '../component.js'
 import { throwError } from '../utils/error.js'
 
 class BaseLayer {
-  constructor ({ Vector, stats, width, height }) {
+  constructor ({ Vector, logger, verbose, width, height }) {
     this.Vector = Vector || window.Vector
+    this.logger = logger
+    this.verbose = Boolean(verbose)
     this.width = Number(width) || BaseLayer.DEFAULT_WIDTH
     this.height = Number(height) || BaseLayer.DEFAULT_HEIGHT
-    this.logStats = Boolean(stats)
 
     this.canvas = document.createElement('canvas')
 
@@ -42,6 +42,9 @@ class BaseLayer {
     this.applyStyles()
 
     this.planRedraw()
+
+    this.log('width', this.width)
+    this.log('height', this.height)
   }
 
   applyStyles () {
@@ -66,18 +69,22 @@ class BaseLayer {
     this.clearStats()
   }
 
-  redraw (time) {
+  redraw (time, delta) {
     if (this.shouldDrawComponents()) {
       throwError('Layer#redraw() is forbidden during render cycle')
     }
+
+    this.log('components', this.components.length)
+    this.log('delta', delta)
+    this.log('fps', (1000 / delta) | 0)
 
     this.planDrawComponents()
     for (var i = 0; i < this.components.length; i++) {
       var component = this.components[i]
       if (component.shouldRedraw() || this.scheduler.should('redraw')) {
-        component.plot(this, time)
+        component.plot(this, time, delta)
       }
-      component.draw(this, time)
+      component.draw(this, time, delta)
     }
     this.completeDrawComponents()
     this.completeRedraw()
@@ -175,18 +182,19 @@ class BaseLayer {
   }
 
   collectStats (methodName) {
-    this.stats[methodName]++
+    this.stats[methodName] = (this.stats[methodName] | 0) + 1
   }
 
-  formatStats () {
-    var result = []
-    var maxStringLength = 20
+  log (name, value) {
+    if (this.verbose && this.logger) this.logger.log(name, value)
+  }
 
-    for (var methodName in this.stats) {
-      result.push(methodName + leftPad(this.stats[methodName], maxStringLength - methodName.length))
+  printStats () {
+    if (this.verbose) {
+      for (var i in this.stats) {
+        this.log(i, this.stats[i])
+      }
     }
-
-    return result
   }
 }
 

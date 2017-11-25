@@ -6,8 +6,8 @@ import BaseLayer from './base.js'
 // -------------------------------------
 
 class CanvasLayer extends BaseLayer {
-  constructor ({ Vector, stats, antialiasing, width, height }) {
-    super({ Vector, stats, width, height })
+  constructor ({ Vector, logger, verbose, antialiasing, width, height }) {
+    super({ Vector, logger, verbose, width, height })
 
     this.antialiasing = Boolean(antialiasing)
     this.ctx = this.canvas.getContext('2d')
@@ -15,11 +15,6 @@ class CanvasLayer extends BaseLayer {
     this.scale({ width, height })
 
     this.imageLoader.onload = this.planRedraw.bind(this)
-
-    this.stats = {
-      stroke: 0,
-      fill: 0
-    }
 
     this.scheduler.complete('stroke')
     this.scheduler.complete('fill')
@@ -48,9 +43,7 @@ class CanvasLayer extends BaseLayer {
   redraw (time) {
     super.redraw(time)
     this.performDraw()
-    if (this.logStats) {
-      this.drawStats()
-    }
+    this.printStats()
   }
 
   stateChanged ({ color, fillColor, width, lineDash, opacity }) {
@@ -65,19 +58,21 @@ class CanvasLayer extends BaseLayer {
 
   performDraw () {
     if (this.scheduler.should('stroke')) {
+      this.collectStats('stroke')
       this.ctx.stroke()
       this.scheduler.complete('stroke')
-      this.collectStats('stroke')
     }
     if (this.scheduler.should('fill')) {
+      this.collectStats('fill')
       this.ctx.fill()
       this.scheduler.complete('fill')
-      this.collectStats('fill')
     }
     this.ctx.beginPath()
   }
 
   createGradient ({ start, end, from, to }) {
+    this.collectStats('gradient')
+
     var gradient = this.ctx.createLinearGradient(start.x, start.y, end.x, end.y)
     gradient.addColorStop(0, from)
     gradient.addColorStop(1, to)
@@ -85,6 +80,8 @@ class CanvasLayer extends BaseLayer {
   }
 
   drawArc ({ position, radius, startAngle, endAngle, color, width = 1, opacity = 1, lineDash = [] }) {
+    this.collectStats('arc')
+
     this.performDraw()
 
     this.ctx.arc(position.x, position.y, radius, startAngle, endAngle)
@@ -99,6 +96,8 @@ class CanvasLayer extends BaseLayer {
   }
 
   drawCircle ({ position, radius, color, fillColor, width = 1, opacity = 1, lineDash = [] }) {
+    this.collectStats('circle')
+
     if (this.stateChanged({ color, fillColor, width, opacity, lineDash })) {
       this.performDraw()
     }
@@ -122,6 +121,8 @@ class CanvasLayer extends BaseLayer {
   }
 
   drawImage ({ position, image, width = image.width, height = image.height, opacity = 1 }) {
+    this.collectStats('image')
+
     this.performDraw()
 
     if (typeof image === 'string') {
@@ -146,6 +147,8 @@ class CanvasLayer extends BaseLayer {
   }
 
   drawPolygon ({ points, color, fillColor, width = 1, opacity = 1, lineDash = [] }) {
+    this.collectStats('polygon')
+
     if (this.stateChanged({ color, fillColor, width, opacity, lineDash })) {
       this.performDraw()
     }
@@ -166,6 +169,8 @@ class CanvasLayer extends BaseLayer {
   }
 
   drawPolyline ({ points, color, width = 1, opacity = 1, lineDash = [] }) {
+    this.collectStats('polyline')
+
     if (this.stateChanged({ color, width, opacity, lineDash })) {
       this.performDraw()
     }
@@ -191,6 +196,8 @@ class CanvasLayer extends BaseLayer {
   }
 
   drawRect ({ position, width, height, color, fillColor, strokeWidth = 1, opacity = 1, lineDash = [] }) {
+    this.collectStats('rect')
+
     if (this.stateChanged({ color, fillColor, width: strokeWidth, opacity, lineDash })) {
       this.performDraw()
     }
@@ -217,6 +224,8 @@ class CanvasLayer extends BaseLayer {
   }
 
   drawText ({ position, text, color, font, size, align = 'center', baseline = 'middle', opacity = 1 }) {
+    this.collectStats('text')
+
     this.performDraw()
 
     this.ctx.fillStyle = color
@@ -239,22 +248,6 @@ class CanvasLayer extends BaseLayer {
       width = this.ctx.measureText(text).width
     }
     return width
-  }
-
-  drawStats () {
-    var stats = this.formatStats()
-
-    for (var i = stats.length; i--;) {
-      this.drawText({
-        position: new this.Vector(this.width - 10, this.height - 14 * (stats.length - i)),
-        text: stats[i],
-        color: '#fff',
-        font: 'Courier, monospace',
-        size: 14,
-        align: 'right',
-        baleline: 'bottom'
-      })
-    }
   }
 }
 

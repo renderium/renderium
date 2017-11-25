@@ -6,6 +6,8 @@ import Component from './component.js'
 import colors from './colors.js'
 import { throwError } from './utils/error.js'
 
+var prevTime = 0
+
 class Renderium {
   static spawn (renderer) {
     var idx = Renderium.instances.indexOf(renderer)
@@ -23,11 +25,14 @@ class Renderium {
   }
 
   static digest (time) {
+    var delta = time - prevTime
+    prevTime = time
+
     for (var i = 0; i < Renderium.instances.length; i++) {
       var renderer = Renderium.instances[i]
       renderer.scale()
       renderer.clear()
-      renderer.redraw(time)
+      renderer.redraw(time, delta)
     }
   }
 
