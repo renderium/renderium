@@ -11,8 +11,8 @@ import VerticesStore from '../stores/vertices.js'
 // -------------------------------------
 
 class WebglLayer extends BaseLayer {
-  constructor ({ Vector, stats, width, height }) {
-    super({ Vector, stats, width, height })
+  constructor ({ Vector, logger, verbose, width, height }) {
+    super({ Vector, logger, verbose, width, height })
 
     this.gl = webgl.getContext(this.canvas)
 
@@ -148,6 +148,10 @@ class WebglLayer extends BaseLayer {
       this.gl.UNSIGNED_INT,
       0
     )
+
+    this.printStats()
+    this.log('vertices', this.verticesCount)
+    this.log('memory', this.vertices.size)
   }
 
   createGradient ({ start, end, from, to }) {
@@ -159,14 +163,16 @@ class WebglLayer extends BaseLayer {
   }
 
   drawArc ({ position, radius, startAngle, endAngle, color, width = 1 }) {
-
+    this.collectStats('arc')
   }
 
   drawCircle ({ position, radius, color, fillColor, width = 1 }) {
-
+    this.collectStats('circle')
   }
 
   drawImage ({ position, image, width = image.width, height = image.height, opacity = 1 }) {
+    this.collectStats('image')
+
     if (typeof image === 'string') {
       if (this.imageLoader.getStatus(image) === this.imageLoader.IMAGE_STATUS_LOADED) {
         image = this.imageLoader.getImage(image)
@@ -182,7 +188,7 @@ class WebglLayer extends BaseLayer {
   }
 
   drawPolygon ({ points, color, fillColor, width = 1 }) {
-    this.collectStats('drawPolygon')
+    this.collectStats('polygon')
 
     this.drawPolyline({
       points: points.concat(points[0]),
@@ -192,11 +198,11 @@ class WebglLayer extends BaseLayer {
   }
 
   drawPolyline ({ points, color, lineDash = [], width = 1 }) {
-    this.collectStats('drawPolyline')
+    this.collectStats('polyline')
   }
 
   drawRect ({ position, width, height, color, fillColor, strokeWidth = 1, opacity = 1 }) {
-    this.collectStats('drawRect')
+    this.collectStats('rect')
 
     var [r, g, b, alpha] = this.getColor(fillColor)
     alpha = alpha * opacity * 0xff | 0
@@ -219,27 +225,11 @@ class WebglLayer extends BaseLayer {
   }
 
   drawText ({ position, text, color, font, size, align = 'center', baseline = 'middle' }) {
-
+    this.collectStats('text')
   }
 
   measureText ({ text }) {
     return 0
-  }
-
-  drawStats () {
-    var stats = this.formatStats()
-
-    for (var i = stats.length; i--;) {
-      this.drawText({
-        position: new this.Vector(this.width - 10, this.height - 14 * (stats.length - i)),
-        text: stats[i],
-        color: '#fff',
-        font: 'Courier, monospace',
-        size: 14,
-        align: 'right',
-        baleline: 'bottom'
-      })
-    }
   }
 }
 

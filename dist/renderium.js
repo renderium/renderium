@@ -1,56 +1,3 @@
-/* This program is free software. It comes without any warranty, to
-     * the extent permitted by applicable law. You can redistribute it
-     * and/or modify it under the terms of the Do What The Fuck You Want
-     * To Public License, Version 2, as published by Sam Hocevar. See
-     * http://www.wtfpl.net/ for more details. */
-'use strict';
-var leftPad_1$1 = leftPad;
-
-var cache = [
-  '',
-  ' ',
-  '  ',
-  '   ',
-  '    ',
-  '     ',
-  '      ',
-  '       ',
-  '        ',
-  '         '
-];
-
-function leftPad (str, len, ch) {
-  // convert `str` to `string`
-  str = str + '';
-  // `len` is the `pad`'s length now
-  len = len - str.length;
-  // doesn't need to pad
-  if (len <= 0) { return str; }
-  // `ch` defaults to `' '`
-  if (!ch && ch !== 0) { ch = ' '; }
-  // convert `ch` to `string`
-  ch = ch + '';
-  // cache common use cases
-  if (ch === ' ' && len < 10) { return cache[len] + str; }
-  // `pad` starts with an empty string
-  var pad = '';
-  // loop
-  while (true) {
-    // add `ch` to `pad` if `len` is odd
-    if (len & 1) { pad += ch; }
-    // divide `len` by 2, ditch the remainder
-    len >>= 1;
-    // "double" the `ch` so this operation count grows logarithmically on `len`
-    // each time `ch` is "doubled", the `len` would need to be "doubled" too
-    // similar to finding a value in binary search tree, hence O(log(n))
-    if (len) { ch += ch; }
-    // `len` is 0, exit the loop
-    else { break; }
-  }
-  // pad `str`!
-  return pad + str;
-}
-
 var imageStatuses = {};
 var images = {};
 
@@ -128,14 +75,16 @@ function throwError (message) {
 
 var BaseLayer = function BaseLayer (ref) {
   var Vector = ref.Vector;
-  var stats = ref.stats;
+  var logger = ref.logger;
+  var verbose = ref.verbose;
   var width = ref.width;
   var height = ref.height;
 
   this.Vector = Vector || window.Vector;
+  this.logger = logger;
+  this.verbose = Boolean(verbose);
   this.width = Number(width) || BaseLayer.DEFAULT_WIDTH;
   this.height = Number(height) || BaseLayer.DEFAULT_HEIGHT;
-  this.logStats = Boolean(stats);
 
   this.canvas = document.createElement('canvas');
 
@@ -171,6 +120,9 @@ BaseLayer.prototype.scale = function scale (ref) {
   this.applyStyles();
 
   this.planRedraw();
+
+  this.log('width', this.width);
+  this.log('height', this.height);
 };
 
 BaseLayer.prototype.applyStyles = function applyStyles () {
@@ -195,20 +147,24 @@ BaseLayer.prototype.clear = function clear () {
   this.clearStats();
 };
 
-BaseLayer.prototype.redraw = function redraw (time) {
+BaseLayer.prototype.redraw = function redraw (time, delta) {
     var this$1 = this;
 
   if (this.shouldDrawComponents()) {
     throwError('Layer#redraw() is forbidden during render cycle');
   }
 
+  this.log('components', this.components.length);
+  this.log('delta', delta);
+  this.log('fps', (1000 / delta) | 0);
+
   this.planDrawComponents();
   for (var i = 0; i < this.components.length; i++) {
     var component = this$1.components[i];
     if (component.shouldRedraw() || this$1.scheduler.should('redraw')) {
-      component.plot(this$1, time);
+      component.plot(this$1, time, delta);
     }
-    component.draw(this$1, time);
+    component.draw(this$1, time, delta);
   }
   this.completeDrawComponents();
   this.completeRedraw();
@@ -310,20 +266,21 @@ BaseLayer.prototype.clearStats = function clearStats () {
 };
 
 BaseLayer.prototype.collectStats = function collectStats (methodName) {
-  this.stats[methodName]++;
+  this.stats[methodName] = (this.stats[methodName] | 0) + 1;
 };
 
-BaseLayer.prototype.formatStats = function formatStats () {
+BaseLayer.prototype.log = function log (name, value) {
+  if (this.verbose && this.logger) { this.logger.log(name, value); }
+};
+
+BaseLayer.prototype.printStats = function printStats () {
     var this$1 = this;
 
-  var result = [];
-  var maxStringLength = 20;
-
-  for (var methodName in this$1.stats) {
-    result.push(methodName + leftPad_1$1(this$1.stats[methodName], maxStringLength - methodName.length));
+  if (this.verbose) {
+    for (var i in this$1.stats) {
+      this$1.log(i, this$1.stats[i]);
+    }
   }
-
-  return result
 };
 
 BaseLayer.PIXEL_RATIO = window.devicePixelRatio || 1;
@@ -346,12 +303,13 @@ var arrayEqual = function equal(arr1, arr2) {
 var CanvasLayer = (function (BaseLayer$$1) {
   function CanvasLayer (ref) {
     var Vector = ref.Vector;
-    var stats = ref.stats;
+    var logger = ref.logger;
+    var verbose = ref.verbose;
     var antialiasing = ref.antialiasing;
     var width = ref.width;
     var height = ref.height;
 
-    BaseLayer$$1.call(this, { Vector: Vector, stats: stats, width: width, height: height });
+    BaseLayer$$1.call(this, { Vector: Vector, logger: logger, verbose: verbose, width: width, height: height });
 
     this.antialiasing = Boolean(antialiasing);
     this.ctx = this.canvas.getContext('2d');
@@ -359,11 +317,6 @@ var CanvasLayer = (function (BaseLayer$$1) {
     this.scale({ width: width, height: height });
 
     this.imageLoader.onload = this.planRedraw.bind(this);
-
-    this.stats = {
-      stroke: 0,
-      fill: 0
-    };
 
     this.scheduler.complete('stroke');
     this.scheduler.complete('fill');
@@ -399,9 +352,7 @@ var CanvasLayer = (function (BaseLayer$$1) {
   CanvasLayer.prototype.redraw = function redraw (time) {
     BaseLayer$$1.prototype.redraw.call(this, time);
     this.performDraw();
-    if (this.logStats) {
-      this.drawStats();
-    }
+    this.printStats();
   };
 
   CanvasLayer.prototype.stateChanged = function stateChanged (ref) {
@@ -422,14 +373,14 @@ var CanvasLayer = (function (BaseLayer$$1) {
 
   CanvasLayer.prototype.performDraw = function performDraw () {
     if (this.scheduler.should('stroke')) {
+      this.collectStats('stroke');
       this.ctx.stroke();
       this.scheduler.complete('stroke');
-      this.collectStats('stroke');
     }
     if (this.scheduler.should('fill')) {
+      this.collectStats('fill');
       this.ctx.fill();
       this.scheduler.complete('fill');
-      this.collectStats('fill');
     }
     this.ctx.beginPath();
   };
@@ -439,6 +390,8 @@ var CanvasLayer = (function (BaseLayer$$1) {
     var end = ref.end;
     var from = ref.from;
     var to = ref.to;
+
+    this.collectStats('gradient');
 
     var gradient = this.ctx.createLinearGradient(start.x, start.y, end.x, end.y);
     gradient.addColorStop(0, from);
@@ -455,6 +408,8 @@ var CanvasLayer = (function (BaseLayer$$1) {
     var width = ref.width; if ( width === void 0 ) width = 1;
     var opacity = ref.opacity; if ( opacity === void 0 ) opacity = 1;
     var lineDash = ref.lineDash; if ( lineDash === void 0 ) lineDash = [];
+
+    this.collectStats('arc');
 
     this.performDraw();
 
@@ -477,6 +432,8 @@ var CanvasLayer = (function (BaseLayer$$1) {
     var width = ref.width; if ( width === void 0 ) width = 1;
     var opacity = ref.opacity; if ( opacity === void 0 ) opacity = 1;
     var lineDash = ref.lineDash; if ( lineDash === void 0 ) lineDash = [];
+
+    this.collectStats('circle');
 
     if (this.stateChanged({ color: color, fillColor: fillColor, width: width, opacity: opacity, lineDash: lineDash })) {
       this.performDraw();
@@ -506,6 +463,8 @@ var CanvasLayer = (function (BaseLayer$$1) {
     var width = ref.width; if ( width === void 0 ) width = image.width;
     var height = ref.height; if ( height === void 0 ) height = image.height;
     var opacity = ref.opacity; if ( opacity === void 0 ) opacity = 1;
+
+    this.collectStats('image');
 
     this.performDraw();
 
@@ -538,6 +497,8 @@ var CanvasLayer = (function (BaseLayer$$1) {
     var opacity = ref.opacity; if ( opacity === void 0 ) opacity = 1;
     var lineDash = ref.lineDash; if ( lineDash === void 0 ) lineDash = [];
 
+    this.collectStats('polygon');
+
     if (this.stateChanged({ color: color, fillColor: fillColor, width: width, opacity: opacity, lineDash: lineDash })) {
       this.performDraw();
     }
@@ -564,6 +525,8 @@ var CanvasLayer = (function (BaseLayer$$1) {
     var width = ref.width; if ( width === void 0 ) width = 1;
     var opacity = ref.opacity; if ( opacity === void 0 ) opacity = 1;
     var lineDash = ref.lineDash; if ( lineDash === void 0 ) lineDash = [];
+
+    this.collectStats('polyline');
 
     if (this.stateChanged({ color: color, width: width, opacity: opacity, lineDash: lineDash })) {
       this.performDraw();
@@ -598,6 +561,8 @@ var CanvasLayer = (function (BaseLayer$$1) {
     var strokeWidth = ref.strokeWidth; if ( strokeWidth === void 0 ) strokeWidth = 1;
     var opacity = ref.opacity; if ( opacity === void 0 ) opacity = 1;
     var lineDash = ref.lineDash; if ( lineDash === void 0 ) lineDash = [];
+
+    this.collectStats('rect');
 
     if (this.stateChanged({ color: color, fillColor: fillColor, width: strokeWidth, opacity: opacity, lineDash: lineDash })) {
       this.performDraw();
@@ -634,6 +599,8 @@ var CanvasLayer = (function (BaseLayer$$1) {
     var baseline = ref.baseline; if ( baseline === void 0 ) baseline = 'middle';
     var opacity = ref.opacity; if ( opacity === void 0 ) opacity = 1;
 
+    this.collectStats('text');
+
     this.performDraw();
 
     this.ctx.fillStyle = color;
@@ -660,24 +627,6 @@ var CanvasLayer = (function (BaseLayer$$1) {
       width = this.ctx.measureText(text).width;
     }
     return width
-  };
-
-  CanvasLayer.prototype.drawStats = function drawStats () {
-    var this$1 = this;
-
-    var stats = this.formatStats();
-
-    for (var i = stats.length; i--;) {
-      this$1.drawText({
-        position: new this$1.Vector(this$1.width - 10, this$1.height - 14 * (stats.length - i)),
-        text: stats[i],
-        color: '#fff',
-        font: 'Courier, monospace',
-        size: 14,
-        align: 'right',
-        baleline: 'bottom'
-      });
-    }
   };
 
   return CanvasLayer;
@@ -1037,11 +986,12 @@ var VerticesStore = (function (ByteStore$$1) {
 var WebglLayer = (function (BaseLayer$$1) {
   function WebglLayer (ref) {
     var Vector = ref.Vector;
-    var stats = ref.stats;
+    var logger = ref.logger;
+    var verbose = ref.verbose;
     var width = ref.width;
     var height = ref.height;
 
-    BaseLayer$$1.call(this, { Vector: Vector, stats: stats, width: width, height: height });
+    BaseLayer$$1.call(this, { Vector: Vector, logger: logger, verbose: verbose, width: width, height: height });
 
     this.gl = getContext(this.canvas);
 
@@ -1186,6 +1136,10 @@ var WebglLayer = (function (BaseLayer$$1) {
       this.gl.UNSIGNED_INT,
       0
     );
+
+    this.printStats();
+    this.log('vertices', this.verticesCount);
+    this.log('memory', this.vertices.size);
   };
 
   WebglLayer.prototype.createGradient = function createGradient (ref) {
@@ -1202,19 +1156,17 @@ var WebglLayer = (function (BaseLayer$$1) {
   };
 
   WebglLayer.prototype.drawArc = function drawArc (ref) {
-    
-
-
+    this.collectStats('arc');
   };
 
   WebglLayer.prototype.drawCircle = function drawCircle (ref) {
-    
-
-
+    this.collectStats('circle');
   };
 
   WebglLayer.prototype.drawImage = function drawImage (ref) {
     var image = ref.image;
+    this.collectStats('image');
+
     if (typeof image === 'string') {
       if (this.imageLoader.getStatus(image) === this.imageLoader.IMAGE_STATUS_LOADED) {
         image = this.imageLoader.getImage(image);
@@ -1233,7 +1185,7 @@ var WebglLayer = (function (BaseLayer$$1) {
     var color = ref.color;
     var width = ref.width; if ( width === void 0 ) width = 1;
 
-    this.collectStats('drawPolygon');
+    this.collectStats('polygon');
 
     this.drawPolyline({
       points: points.concat(points[0]),
@@ -1243,7 +1195,7 @@ var WebglLayer = (function (BaseLayer$$1) {
   };
 
   WebglLayer.prototype.drawPolyline = function drawPolyline (ref) {
-    this.collectStats('drawPolyline');
+    this.collectStats('polyline');
   };
 
   WebglLayer.prototype.drawRect = function drawRect (ref) {
@@ -1253,7 +1205,7 @@ var WebglLayer = (function (BaseLayer$$1) {
     var fillColor = ref.fillColor;
     var opacity = ref.opacity; if ( opacity === void 0 ) opacity = 1;
 
-    this.collectStats('drawRect');
+    this.collectStats('rect');
 
     var ref$1 = this.getColor(fillColor);
     var r = ref$1[0];
@@ -1280,31 +1232,11 @@ var WebglLayer = (function (BaseLayer$$1) {
   };
 
   WebglLayer.prototype.drawText = function drawText (ref) {
-    
-
-
+    this.collectStats('text');
   };
 
   WebglLayer.prototype.measureText = function measureText (ref) {
     return 0
-  };
-
-  WebglLayer.prototype.drawStats = function drawStats () {
-    var this$1 = this;
-
-    var stats = this.formatStats();
-
-    for (var i = stats.length; i--;) {
-      this$1.drawText({
-        position: new this$1.Vector(this$1.width - 10, this$1.height - 14 * (stats.length - i)),
-        text: stats[i],
-        color: '#fff',
-        font: 'Courier, monospace',
-        size: 14,
-        align: 'right',
-        baleline: 'bottom'
-      });
-    }
   };
 
   Object.defineProperties( WebglLayer.prototype, prototypeAccessors );
@@ -1352,6 +1284,8 @@ var colors = {
   BLUE_GREY: '#607d8b'
 };
 
+var prevTime = 0;
+
 var Renderium = function Renderium (ref) {
   var el = ref.el;
 
@@ -1378,11 +1312,14 @@ Renderium.kill = function kill (renderer) {
 };
 
 Renderium.digest = function digest (time) {
+  var delta = time - prevTime;
+  prevTime = time;
+
   for (var i = 0; i < Renderium.instances.length; i++) {
     var renderer = Renderium.instances[i];
     renderer.scale();
     renderer.clear();
-    renderer.redraw(time);
+    renderer.redraw(time, delta);
   }
 };
 
